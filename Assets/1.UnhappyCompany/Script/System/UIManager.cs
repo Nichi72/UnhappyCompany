@@ -10,11 +10,15 @@ public class UIManager : MonoBehaviour
     public TMP_Text totalConsumersText; // 전체 개체 수 (TMP로 변경)
     public TMP_Text totalBatteryLevelText; // 중앙 배터리의 전력 소모량 (TMP로 변경)
 
+    public TMP_Text totalGoldText;
     [Header("Player Status UI")]
     public Slider healthBar; // HP 게이지 바
     public Slider staminaBar; // 스테미나 게이지 바
 
+
     public GameObject gameOverImage;
+
+    public GameObject computerView;
     private void Awake()
     {
         // 싱글톤 인스턴스 설정
@@ -40,7 +44,15 @@ public class UIManager : MonoBehaviour
             staminaBar.fillRect.GetComponent<Image>().color = Color.yellow;
         }
     }
-
+    private void Update()
+    {
+        
+        
+    }
+    public void UpdateGold(int totalGold)
+    {
+        totalGoldText.text = $"Total Gold: {totalGold}";
+    }
     // 소비자 정보를 추가하는 메서드
     public void AddConsumerInfo(string info)
     {

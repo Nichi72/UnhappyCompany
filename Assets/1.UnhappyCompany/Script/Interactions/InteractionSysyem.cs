@@ -33,7 +33,7 @@ public class InteractionSystem : MonoBehaviour
             CenterText.SetActive(true);
             if (Input.GetKeyDown(KeyCode.F))
             {
-                hitEvent.HitEventInteractionF(player, hit);
+                hitEvent.HitEventInteractionF(player);
             }
         }
         else

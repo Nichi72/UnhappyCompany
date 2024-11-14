@@ -20,6 +20,10 @@ public class Player : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
+            if(QuickSlotSystem.instance.mountingItem == null)
+            {
+                return;
+            }
             //playt
             var tempItem = QuickSlotSystem.instance.mountingItem.GetComponent<Item>();
             if (tempItem == null) return;

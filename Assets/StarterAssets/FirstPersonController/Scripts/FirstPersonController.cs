@@ -51,6 +51,10 @@ namespace StarterAssets
 		[Tooltip("How far in degrees can you move the camera down")]
 		public float BottomClamp = -90.0f;
 
+
+		public StarterAssetsInputs _input;
+
+
 		// cinemachine
 		private float _cinemachineTargetPitch;
 
@@ -73,7 +77,6 @@ namespace StarterAssets
 		private PlayerInput _playerInput;
 #endif
 		private CharacterController _controller;
-		private StarterAssetsInputs _input;
 		private GameObject _mainCamera;
 
 		private const float _threshold = 0.01f;

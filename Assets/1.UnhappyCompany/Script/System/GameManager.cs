@@ -8,6 +8,7 @@ public class GameManager : MonoBehaviour
     public static GameManager instance = null;
     public PlayerStatus playerStatus;
     public Player currentPlayer;
+    public int totalGold = 10;
 
     private void Awake()
     {
@@ -19,6 +20,10 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         StartCoroutine(CheckGameOver());
+    }
+    private void Update()
+    {
+        UIManager.Instance.UpdateGold(totalGold);
     }
     private IEnumerator CheckGameOver()
     {
@@ -35,5 +40,17 @@ public class GameManager : MonoBehaviour
             }
             yield return null;
         }
+    }
+
+    public bool BuyItemWithGold(ItemData itemData)
+    {
+        var temp = totalGold - itemData.BuyPrice;
+        if(temp <= 0)
+        {
+            Debug.Log("구매불가");
+            return false;
+        }
+        totalGold -= itemData.BuyPrice; ;
+        return true;
     }
 }

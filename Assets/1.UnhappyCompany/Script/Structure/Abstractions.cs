@@ -6,11 +6,13 @@ public class Abstractions
 }
 
 /// <summary>
-/// 인터렉션
+/// 오브젝트가 월드에 존재하고 있을 때 플레이어에 의해 레이캐스트를 맞았을 때 호출되는 함수
 /// </summary>
+/// <param name="player">레이캐스트를 쏜 플레이어</param>
+/// <param name="raycastHit">맞은 개체</param>
 public interface InteractionF
 {
-    public void HitEventInteractionF(Player rayOrigin , RaycastHit hitObject);
+    public void HitEventInteractionF(Player rayOrigin);
 
 }
 /// <summary>

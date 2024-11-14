@@ -8,7 +8,8 @@ public class Structures
 
 public enum Tag
 {
-    RaycastHit
+    RaycastHit,
+    Item
 }
 
 public enum EItem
