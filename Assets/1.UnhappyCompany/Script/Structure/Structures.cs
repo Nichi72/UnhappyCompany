@@ -11,7 +11,7 @@ public enum Tag
     RaycastHit
 }
 
-public enum Item
+public enum EItem
 {
     CCTV
 }

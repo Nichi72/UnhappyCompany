@@ -40,6 +40,7 @@ public class BuildSystem : MonoBehaviour
         if (objectToPlace != null)
         {
             currentObject = Instantiate(objectToPlace); // 설치할 객체 인스턴스화
+            //currentObject.layer = 
             SetPreviewMaterial(currentObject); // 미리보기 재질 적용
 
             // 객체의 Rigidbody가 있다면 설치 모드 동안 비활성화

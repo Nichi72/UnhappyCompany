@@ -3,13 +3,12 @@ using UnityEngine;
 public class DoorBtn : MonoBehaviour , InteractionF
 {
     public Door door;
-    public void HitEvent()
+    public void HitEventInteractionF(Player rayOrigin, RaycastHit hitObject)
     {
         Debug.Log("Hit");
         // 효과음
 
         // 기능처리
         door.OpenCloseDoor();
-
     }
 }

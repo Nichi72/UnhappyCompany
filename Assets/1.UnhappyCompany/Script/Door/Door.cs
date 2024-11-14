@@ -1,7 +1,8 @@
 using System.Collections;
 using UnityEngine;
+using MyUtility;
 
-public class Door : MonoBehaviour
+public class Door : CentralBatteryConsumer
 {
     public enum DoorState
     {
@@ -25,8 +26,17 @@ public class Door : MonoBehaviour
         currentDoorState = DoorState.Open;
         currentDoorOpening = DoorOpening.End;
         transform.position = openTransform.position;
+        CentralBatterySystem.Instance.RegisterConsumer(this); // 중앙 배터리 시스템에 등록
     }
-   
+    public override void DrainBattery()
+    {
+        // 닫혔을때만 배터리 소모
+        if(currentDoorState == DoorState.Close)
+        {
+            base.DrainBattery(); // 기본 배터리 소모 기능 사용
+        }
+    }
+
     public void OpenCloseDoor()
     {
         if(currentDoorOpening == DoorOpening.Ing)

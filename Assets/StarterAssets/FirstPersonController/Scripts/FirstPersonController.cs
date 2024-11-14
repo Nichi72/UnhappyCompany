@@ -64,7 +64,11 @@ namespace StarterAssets
 		private float _jumpTimeoutDelta;
 		private float _fallTimeoutDelta;
 
-	
+		// 
+		float weightSpeedAmount = 0.01f;
+		float weightSpeed = 1f;
+
+
 #if ENABLE_INPUT_SYSTEM
 		private PlayerInput _playerInput;
 #endif
@@ -74,15 +78,17 @@ namespace StarterAssets
 
 		private const float _threshold = 0.01f;
 
+		private PlayerStatus _playerStatus;
+
 		private bool IsCurrentDeviceMouse
 		{
 			get
 			{
-				#if ENABLE_INPUT_SYSTEM
+#if ENABLE_INPUT_SYSTEM
 				return _playerInput.currentControlScheme == "KeyboardMouse";
-				#else
+#else
 				return false;
-				#endif
+#endif
 			}
 		}
 
@@ -99,10 +105,11 @@ namespace StarterAssets
 		{
 			_controller = GetComponent<CharacterController>();
 			_input = GetComponent<StarterAssetsInputs>();
+			_playerStatus = GetComponent<PlayerStatus>();
 #if ENABLE_INPUT_SYSTEM
 			_playerInput = GetComponent<PlayerInput>();
 #else
-			Debug.LogError( "Starter Assets package is missing dependencies. Please use Tools/Starter Assets/Reinstall Dependencies to fix it");
+			Debug.LogError("Starter Assets package is missing dependencies. Please use Tools/Starter Assets/Reinstall Dependencies to fix it");
 #endif
 
 			// reset our timeouts on start
@@ -136,7 +143,7 @@ namespace StarterAssets
 			{
 				//Don't multiply mouse input by Time.deltaTime
 				float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
-				
+
 				_cinemachineTargetPitch += _input.look.y * RotationSpeed * deltaTimeMultiplier;
 				_rotationVelocity = _input.look.x * RotationSpeed * deltaTimeMultiplier;
 
@@ -156,9 +163,17 @@ namespace StarterAssets
 			// set target speed based on move speed, sprint speed and if sprint is pressed
 			float targetSpeed = _input.sprint ? SprintSpeed : MoveSpeed;
 
-			// a simplistic acceleration and deceleration designed to be easy to remove, replace, or iterate upon
+			// if sprinting, reduce stamina
+			if (_input.sprint && _playerStatus != null && _playerStatus.CanRunOrJump())
+			{
+				_playerStatus.ReduceStamina(_playerStatus.StaminaReduce * Time.deltaTime);
+			}
+			else
+			{
+				_playerStatus.StopConsumingStamina();
+				targetSpeed = MoveSpeed; // reduce speed if stamina is depleted
+			}
 
-			// note: Vector2's == operator uses approximation so is not floating point error prone, and is cheaper than magnitude
 			// if there is no input, set the target speed to 0
 			if (_input.move == Vector2.zero) targetSpeed = 0.0f;
 
@@ -171,11 +186,7 @@ namespace StarterAssets
 			// accelerate or decelerate to target speed
 			if (currentHorizontalSpeed < targetSpeed - speedOffset || currentHorizontalSpeed > targetSpeed + speedOffset)
 			{
-				// creates curved result rather than a linear one giving a more organic speed change
-				// note T in Lerp is clamped, so we don't need to clamp our speed
 				_speed = Mathf.Lerp(currentHorizontalSpeed, targetSpeed * inputMagnitude, Time.deltaTime * SpeedChangeRate);
-
-				// round speed to 3 decimal places
 				_speed = Mathf.Round(_speed * 1000f) / 1000f;
 			}
 			else
@@ -186,39 +197,31 @@ namespace StarterAssets
 			// normalise input direction
 			Vector3 inputDirection = new Vector3(_input.move.x, 0.0f, _input.move.y).normalized;
 
-			// note: Vector2's != operator uses approximation so is not floating point error prone, and is cheaper than magnitude
-			// if there is a move input rotate player when the player is moving
 			if (_input.move != Vector2.zero)
 			{
-				// move
 				inputDirection = transform.right * _input.move.x + transform.forward * _input.move.y;
 			}
 
 			// move the player
-			_controller.Move(inputDirection.normalized * (_speed * Time.deltaTime) + new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
+			_controller.Move(inputDirection.normalized * ((_speed* weightSpeed) * Time.deltaTime) + new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
 		}
-
 		private void JumpAndGravity()
 		{
 			if (Grounded)
 			{
-				// reset the fall timeout timer
 				_fallTimeoutDelta = FallTimeout;
 
-				// stop our velocity dropping infinitely when grounded
 				if (_verticalVelocity < 0.0f)
 				{
 					_verticalVelocity = -2f;
 				}
 
-				// Jump
-				if (_input.jump && _jumpTimeoutDelta <= 0.0f)
+				if (_input.jump && _jumpTimeoutDelta <= 0.0f && _playerStatus.CanRunOrJump())
 				{
-					// the square root of H * -2 * G = how much velocity needed to reach desired height
 					_verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity);
+					_playerStatus.ReduceStamina(_playerStatus.StaminaJumpReduce);
 				}
 
-				// jump timeout
 				if (_jumpTimeoutDelta >= 0.0f)
 				{
 					_jumpTimeoutDelta -= Time.deltaTime;
@@ -226,20 +229,14 @@ namespace StarterAssets
 			}
 			else
 			{
-				// reset the jump timeout timer
 				_jumpTimeoutDelta = JumpTimeout;
-
-				// fall timeout
 				if (_fallTimeoutDelta >= 0.0f)
 				{
 					_fallTimeoutDelta -= Time.deltaTime;
 				}
-
-				// if we are not grounded, do not jump
 				_input.jump = false;
 			}
 
-			// apply gravity over time if under terminal (multiply by delta time twice to linearly speed up over time)
 			if (_verticalVelocity < _terminalVelocity)
 			{
 				_verticalVelocity += Gravity * Time.deltaTime;
@@ -252,6 +249,14 @@ namespace StarterAssets
 			if (lfAngle > 360f) lfAngle -= 360f;
 			return Mathf.Clamp(lfAngle, lfMin, lfMax);
 		}
+		public void SetSpeedBasedOnWeight(float weight)
+		{
+			// 10이면 속도를 1/10으로 만든다.
+			float weightSpeedTemp = weight * weightSpeedAmount;
+			weightSpeed = Mathf.Lerp(1, 0, weightSpeedTemp);
+			// 10 * 0.01f = 0.1
+			// 50 * 0.01f = 0.5
+		}
 
 		private void OnDrawGizmosSelected()
 		{
@@ -261,8 +266,16 @@ namespace StarterAssets
 			if (Grounded) Gizmos.color = transparentGreen;
 			else Gizmos.color = transparentRed;
 
-			// when selected, draw a gizmo in the position of, and matching radius of, the grounded collider
 			Gizmos.DrawSphere(new Vector3(transform.position.x, transform.position.y - GroundedOffset, transform.position.z), GroundedRadius);
+		}
+
+		
+		public void TakeDamage(float damage)
+		{
+			if (_playerStatus != null)
+			{
+				_playerStatus.ReduceHealth(damage);
+			}
 		}
 	}
 }
