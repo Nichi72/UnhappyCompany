@@ -4,13 +4,12 @@ using UnityEngine;
 public class ItemsMeleeAttack : Item ,IDamager
 {
     public Animator animator;
-
+    
     public int damage { get; set; } = 20;
 
     public override void Use()
     {
         base.Use();
-        Debug.Log("¾¾»¡·Ã¾Æ");
         StartCoroutine(PlayAttackAnimation());
     }
     IEnumerator PlayAttackAnimation()

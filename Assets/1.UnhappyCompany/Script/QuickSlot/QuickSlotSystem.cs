@@ -9,13 +9,13 @@ public class QuickSlotSystem : MonoBehaviour
     public Transform quickSlotContainer; // Äü½½·Ô UIÀÇ ºÎ¸ð ¿ÀºêÁ§Æ®
     public GameObject quickSlotPrefab; // Äü½½·Ô UI ÇÁ¸®ÆÕ
     public int maxQuickSlots = 9; // ÃÖ´ë Äü½½·Ô °³¼ö
-    public GameObject mountingItem = null;
 
     [SerializeField] private int currentQuickSlotCount = 5; // ÇöÀç Äü½½·Ô °³¼ö
 
     [SerializeField] private List<QuickSlot> quickSlots = new List<QuickSlot>();
-    private int selectedSlotIndex = -1;
-    //[SerializeField] private Item currentItem;
+    [ReadOnly][SerializeField] private int selectedSlotIndex = -1;
+    [ReadOnly] public GameObject mountingItem = null;
+    [ReadOnly] [SerializeField] private Item currentItem;
     [SerializeField] private Player player;
 
     [Header("Player Settings")]
@@ -84,7 +84,7 @@ public class QuickSlotSystem : MonoBehaviour
             quickSlots[selectedSlotIndex].Select();
             //UseItemInSlot(selectedSlotIndex);
             if(mountingItem != null) Destroy(mountingItem); // µé±âÀü¿¡ ÆÄ±«
-            var currentItem = GetCurrentItemInSlot();
+            currentItem = GetCurrentItemInSlot();
 
             if (currentItem == null)
             {
@@ -118,19 +118,40 @@ public class QuickSlotSystem : MonoBehaviour
 
     public void DropItem()
     {
-        var tempQuickSlot = GetCurrentQuickSlot();
+        //var tempQuickSlot = GetCurrentQuickSlot();
         if(mountingItem != null)
         {
-            mountingItem.transform.SetParent(null);
             mountingItem.AddComponent<Rigidbody>();
-            mountingItem = null;
         }
-       
+        RemoveCurrentItem();
+    }
+
+    public void DestroyCurrentItem()
+    {
+        if (mountingItem != null)
+        {
+            Destroy(mountingItem);
+        }
+        RemoveCurrentItem();
+    }
+    public void RemoveCurrentItem()
+    {
+        var tempQuickSlot = GetCurrentQuickSlot();
+        if (mountingItem != null)
+        {
+            mountingItem.transform.SetParent(null);
+            mountingItem = null;
+            Destroy(mountingItem);
+        }
+        if (currentItem != null)
+        {
+            currentItem = null;
+        }
+
         tempQuickSlot.icon.sprite = null;
         tempQuickSlot.RemoveItem();
         UpdatePlayerSpeed();
     }
-
 
     public Item GetCurrentItemInSlot()
     {

@@ -11,6 +11,9 @@ public class EnemyManager : MonoBehaviour
     [Tooltip("적이 생성될 확률 (0에서 1 사이의 값)")] public float spawnChance = 0.5f; // 적이 생성될 확률 (0에서 1 사이의 값)
     [Tooltip("알이 성체로 부화하는 데 걸리는 시간")] public float eggHatchTime = 5.0f; // 알이 성체로 부화하는 데 걸리는 시간
 
+    RollingCubeManager rollingCubeManager;
+    RollingCubeController rollingCubeController;
+
     private List<GameObject> activeEnemies = new List<GameObject>();
 
     void Start()
@@ -49,6 +52,11 @@ public class EnemyManager : MonoBehaviour
                 enemyBehavior.ChangeState(EnemyState.Patrolling);
             }
         }
+    }
+
+    void SpwanCube()
+    {
+
     }
 }
 

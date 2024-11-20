@@ -29,8 +29,8 @@ public class CCTV : CentralBatteryConsumerItem
         }
     }
 
-    //public override void Use()
-    //{
-        
-    //}
+    public override void Use()
+    {
+        BuildSystem.instance.StartPlacing(itemData.prefab.gameObject); // 설치 모드 시작
+    }
 }

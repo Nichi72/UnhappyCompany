@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 public class BuildSystem : MonoBehaviour
 {
+    public static BuildSystem instance = null;
     public GameObject objectToPlace; // 설치할 객체
     public LayerMask groundLayer; // 설치 가능한 레이어
     public Material previewMaterial; // 설치 미리보기용 반투명 재질
@@ -10,7 +11,13 @@ public class BuildSystem : MonoBehaviour
     private GameObject currentObject; // 현재 설치 중인 객체
     private bool isPlacing = false; // 설치 모드 여부
     private Dictionary<Renderer, Material> originalMaterials = new Dictionary<Renderer, Material>(); // 원래 재질 백업용
-
+    private void Awake()
+    {
+        if(instance == null)
+        {
+            instance = this;
+        }
+    }
     void Update()
     {
         if (isPlacing)
@@ -29,18 +36,16 @@ public class BuildSystem : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.B))
         {
-            StartPlacing(); // 설치 모드 시작
+            //StartPlacing(); // 설치 모드 시작
         }
     }
 
     // 설치 모드 시작 - 객체를 생성하고 미리보기 재질 적용
-    void StartPlacing()
+    public void StartPlacing(GameObject objectToPlace)
     {
-        //objectToPlace = GetBuildObject();
         if (objectToPlace != null)
         {
             currentObject = Instantiate(objectToPlace); // 설치할 객체 인스턴스화
-            //currentObject.layer = 
             SetPreviewMaterial(currentObject); // 미리보기 재질 적용
 
             // 객체의 Rigidbody가 있다면 설치 모드 동안 비활성화
@@ -88,6 +93,7 @@ public class BuildSystem : MonoBehaviour
         RemovePreviewMaterial(currentObject); // 미리보기 재질 제거
         currentObject = null;
         isPlacing = false; // 설치 모드 비활성화
+        QuickSlotSystem.instance.DestroyCurrentItem();
     }
 
     // 설치 취소 - 현재 객체 삭제
