@@ -312,7 +312,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: b3fc1a346856262458600fb494897f11, type: 2}
     - target: {fileID: 919132149155446097, guid: 44c918d5bac770640bbac0e424e3fd9d, type: 3}
       propertyPath: m_Name
-      value: EnemyCube
+      value: EnemyCube 1
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 44c918d5bac770640bbac0e424e3fd9d, type: 3}
       propertyPath: m_Layer
@@ -336,7 +336,7 @@ PrefabInstance:
       addedObject: {fileID: 2878715665495357690}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 44c918d5bac770640bbac0e424e3fd9d, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2129398275109687030}
+      addedObject: {fileID: 7272476379550069669}
   m_SourcePrefab: {fileID: 100100000, guid: 44c918d5bac770640bbac0e424e3fd9d, type: 3}
 --- !u!4 &4996483890402947541 stripped
 Transform:
@@ -396,7 +396,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &2129398275109687030
+--- !u!114 &7272476379550069669
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -405,18 +405,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 5628588093563841391}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 859d79f6fcfe69e4abc233cbeaa72c5f, type: 3}
+  m_Script: {fileID: 11500000, guid: 80c10b4b696f3a04ebaa4fd43e482502, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pathManager: {fileID: 0}
-  moveForce: 500
-  maxSpeed: 100
-  rotationForce: 20
-  chargeForce: 0
-  chargeCooldown: 300
-  stuckThreshold: 0.1
-  stuckCheckInterval: 1.5
-  stuckCheckCount: 5
-  centerPivot: {fileID: 7127709519257998312}
-  restTime: 2
-  stuckPower: 2
+  target: {fileID: 0}
+  torqueForce: 50
+  maxAngularVelocity: 10
+  waitTime: 1.5
+  others: []
+  fixedJoints: []

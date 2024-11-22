@@ -9,10 +9,11 @@ public class EnemyManager : MonoBehaviour
     [Tooltip("알 상태의 적 프리팹")] public GameObject eggPrefab; // 알 상태의 적 프리팹
     [Tooltip("성체 상태의 적 프리팹")] public GameObject adultEnemyPrefab; // 성체 상태의 적 프리팹
     [Tooltip("적이 생성될 확률 (0에서 1 사이의 값)")] public float spawnChance = 0.5f; // 적이 생성될 확률 (0에서 1 사이의 값)
-    [Tooltip("알이 성체로 부화하는 데 걸리는 시간")] public float eggHatchTime = 5.0f; // 알이 성체로 부화하는 데 걸리는 시간
+    [Tooltip("알이 성체로 부화하는 데 걸리는 시간")] public float eggHatchTime = 5.0f; // 알이 성체로 부화하는 데 걸리는 시간(초)
 
-    RollingCubeManager rollingCubeManager;
-    RollingCubeController rollingCubeController;
+    [Header("SO_Enemy")]
+    public List<SO_Enemy> so_Enemies;
+    public LayerMask SpawnLayer; // 레이어를 변수로 설정
 
     private List<GameObject> activeEnemies = new List<GameObject>();
 
@@ -28,8 +29,7 @@ public class EnemyManager : MonoBehaviour
         {
             if (Random.value <= spawnChance)
             {
-                GameObject egg = Instantiate(eggPrefab, spawnPoint.position, Quaternion.identity);
-                activeEnemies.Add(egg);
+                GameObject egg =  Init(spawnPoint);
                 StartCoroutine(HatchEgg(egg));
             }
         }
@@ -43,6 +43,7 @@ public class EnemyManager : MonoBehaviour
         if (egg != null) // 알이 아직 존재하는지 확인
         {
             Vector3 eggPosition = egg.transform.position;
+            Debug.Log("Egg 부화!");
             Destroy(egg); // 알을 파괴
             GameObject adult = Instantiate(adultEnemyPrefab, eggPosition, Quaternion.identity); // 성체로 부화
             activeEnemies.Add(adult);
@@ -57,6 +58,21 @@ public class EnemyManager : MonoBehaviour
     void SpwanCube()
     {
 
+    }
+
+    GameObject Init(Transform spawnPoint)
+    {
+        GameObject egg = Instantiate(eggPrefab, spawnPoint.position, Quaternion.identity);
+        activeEnemies.Add(egg);
+        Debug.Log("Egg 생성!");
+        Vector3 rayOrigin = egg.transform.position;
+        RaycastHit hit;
+        if(Physics.Raycast(rayOrigin, transform.up * -1, out hit, 10f, SpawnLayer))
+        {
+            egg.transform.position = hit.point;
+        }
+
+        return egg;
     }
 }
 
