@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-
     public static GameManager instance = null;
     public PlayerStatus playerStatus;
     public Player currentPlayer;
@@ -17,13 +16,20 @@ public class GameManager : MonoBehaviour
             instance = this;
         }
     }
+
     private void Start()
     {
         StartCoroutine(CheckGameOver());
     }
+
+    private void GameStart()
+    {
+
+    }
+
     private void Update()
     {
-        UIManager.Instance.UpdateGold(totalGold);
+        UIManager.instance.UpdateGold(totalGold);
     }
     private IEnumerator CheckGameOver()
     {
@@ -31,12 +37,12 @@ public class GameManager : MonoBehaviour
         {
             if(CentralBatterySystem.Instance.totalBatteryLevel <= 0 )
             {
-                UIManager.Instance.gameOverImage.SetActive(true);
+                UIManager.instance.gameOverImage.SetActive(true);
             }
 
             if(playerStatus.CurrentHealth <= 0)
             {
-                UIManager.Instance.gameOverImage.SetActive(true);
+                UIManager.instance.gameOverImage.SetActive(true);
             }
             yield return null;
         }
@@ -47,10 +53,10 @@ public class GameManager : MonoBehaviour
         var temp = totalGold - itemData.BuyPrice;
         if(temp <= 0)
         {
-            Debug.Log("±¸¸ÅºÒ°¡");
+            Debug.Log("ï¿½ï¿½ï¿½ÅºÒ°ï¿½");
             return false;
         }
-        totalGold -= itemData.BuyPrice; ;
+        totalGold -= itemData.BuyPrice;
         return true;
     }
 }

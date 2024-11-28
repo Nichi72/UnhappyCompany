@@ -1,36 +1,43 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public class CCTV : CentralBatteryConsumerItem
 {
     public Camera currentCamera;
     public bool isTurnOn = true;
+    [ReadOnly][SerializeField] public Material cctvMaterial;
 
-    //public float BatteryDrainPerSecond { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
-
+    public GameObject minimapQuad;
     void Start()
     {
-        CCTVManager.instance.cctvs.Add(this);
+        InitCCTV();
+        cctvMaterial = minimapQuad.GetComponent<MeshRenderer>().material;
     }
 
     private void OnDestroy()
     {
         CCTVManager.instance.cctvs.Remove(this);
-        CentralBatterySystem.Instance.UnregisterConsumer(this); // Áß¾Ó ¹èÅÍ¸® ½Ã½ºÅÛ¿¡¼­ µî·Ï ÇØÁ¦
+        CentralBatterySystem.Instance.UnregisterConsumer(this); // ì¤‘ì•™ ë°°í„°ë¦¬ ì‹œìŠ¤í…œì—ì„œ ë“±ë¡ í•´ì œ
     }
     
 
-    // ¹èÅÍ¸® ¼Ò¸ğ ¸Ş¼­µå (±âº» µ¿ÀÛÀ» À¯ÁöÇÏ°Å³ª ¼öÁ¤ °¡´É)
+    // ë°°í„°ë¦¬ ì†Œëª¨ ë©”ì„œë“œ (ê¸°ë³¸ ë™ì‘ì„ ìœ ì§€í•˜ê±°ë‚˜ ìˆ˜ì • ê°€ëŠ¥)
     public override void DrainBattery()
     {
         if(isTurnOn == true)
         {
-            base.DrainBattery(); // ±âº» ¹èÅÍ¸® ¼Ò¸ğ ±â´É »ç¿ë
-                                 // Ãß°¡ÀûÀÎ Çàµ¿ÀÌ ÇÊ¿äÇÏ´Ù¸é ¿©±â¿¡ ÀÛ¼º
+            base.DrainBattery(); // ê¸°ë³¸ ë°°í„°ë¦¬ ì†Œëª¨ ê¸°ëŠ¥ ì‚¬ìš©
+                                 // ì¶”ê°€ì ì¸ í–‰ë™ì´ í•„ìš”í•˜ë‹¤ë©´ ì—¬ê¸°ì— ì‘ì„±
         }
     }
 
     public override void Use()
     {
-        BuildSystem.instance.StartPlacing(itemData.prefab.gameObject); // ¼³Ä¡ ¸ğµå ½ÃÀÛ
+        BuildSystem.instance.StartPlacing(itemData.prefab.gameObject); // ì„¤ì¹˜ ëª¨ë“œ ì‹œì‘
+    }
+
+    private void InitCCTV()
+    {
+        CCTVManager.instance.cctvs.Add(this); // CCTV ë§¤ë‹ˆì €ì— ë“±ë¡
+        UIManager.instance.InitCCTVButton(); // UI ë§¤ë‹ˆì €ì— ë¯¸ë‹ˆë§µ ë²„íŠ¼ ë“±ë¡
     }
 }

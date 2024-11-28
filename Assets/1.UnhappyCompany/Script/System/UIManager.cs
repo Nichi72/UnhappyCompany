@@ -1,30 +1,36 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using System.Collections;
+using System.Collections.Generic;
 
 public class UIManager : MonoBehaviour
 {
-    public static UIManager Instance;
-
-    public TMP_Text consumerInfoText; // °¢ °³Ã¼ÀÇ Àü·Â ¼Ò¸ğ Á¤º¸ (TMP·Î º¯°æ)
-    public TMP_Text totalConsumersText; // ÀüÃ¼ °³Ã¼ ¼ö (TMP·Î º¯°æ)
-    public TMP_Text totalBatteryLevelText; // Áß¾Ó ¹èÅÍ¸®ÀÇ Àü·Â ¼Ò¸ğ·® (TMP·Î º¯°æ)
-
+    public static UIManager instance;
+    [Header("ì†Œë¹„ì UI")]
+    public TMP_Text consumerInfoText; // ì†Œë¹„ì ì •ë³´ í‘œì‹œ í…ìŠ¤íŠ¸ (TMP ì‚¬ìš©)
+    public TMP_Text totalConsumersText; // ì „ì²´ ì†Œë¹„ì ìˆ˜ í…ìŠ¤íŠ¸ (TMP ì‚¬ìš©)
+    public TMP_Text totalBatteryLevelText; // ì´ ë°°í„°ë¦¬ ë ˆë²¨ í‘œì‹œ í…ìŠ¤íŠ¸ (TMP ì‚¬ìš©)
+    public TMP_Text currentTimeText; // í˜„ì¬ ì‹œê°„ í‘œì‹œ í…ìŠ¤íŠ¸ (TMP ì‚¬ìš©)
+    [Header("")]
     public TMP_Text totalGoldText;
     [Header("Player Status UI")]
-    public Slider healthBar; // HP °ÔÀÌÁö ¹Ù
-    public Slider staminaBar; // ½ºÅ×¹Ì³ª °ÔÀÌÁö ¹Ù
-
+    public Slider healthBar; // HP ìƒíƒœë°” ìŠ¬ë¼ì´ë”
+    public Slider staminaBar; // ìŠ¤íƒœë¯¸ë‚˜ ìƒíƒœë°” ìŠ¬ë¼ì´ë”
 
     public GameObject gameOverImage;
-
     public GameObject computerView;
+
+    public GameObject cctvButtonPrefab;
+    [SerializeField] private Transform cctvButtonParent;
+    public List<GameObject> cctvButtons = new List<GameObject>();
+
     private void Awake()
     {
-        // ½Ì±ÛÅæ ÀÎ½ºÅÏ½º ¼³Á¤
-        if (Instance == null)
+        // ì‹±ê¸€í†¤ íŒ¨í„´ ì ìš©
+        if (instance == null)
         {
-            Instance = this;
+            instance = this;
         }
         else
         {
@@ -32,9 +38,18 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    IEnumerator UpdateTimeText()
+    {
+        while(true)
+        {
+            yield return new WaitForSeconds(1f);
+            currentTimeText.text = TimeManager.instance.GetCurrentGameTime();
+        }
+    }
+
     private void Start()
     {
-        // ÃÊ±â »ö»ó ¼³Á¤
+        // ìƒíƒœë°” ì´ˆê¸°í™”
         if (healthBar != null)
         {
             healthBar.fillRect.GetComponent<Image>().color = Color.red;
@@ -43,41 +58,47 @@ public class UIManager : MonoBehaviour
         {
             staminaBar.fillRect.GetComponent<Image>().color = Color.yellow;
         }
+        if(currentTimeText != null)
+        {
+            StartCoroutine(UpdateTimeText());
+        }
     }
+    
     private void Update()
     {
         
-        
     }
+
     public void UpdateGold(int totalGold)
     {
         totalGoldText.text = $"Total Gold: {totalGold}";
     }
-    // ¼ÒºñÀÚ Á¤º¸¸¦ Ãß°¡ÇÏ´Â ¸Ş¼­µå
+
+    // ì†Œë¹„ì ì •ë³´ ì¶”ê°€ ë©”ì„œë“œ
     public void AddConsumerInfo(string info)
     {
         consumerInfoText.text += info + "\n";
     }
 
-    // ¼ÒºñÀÚ Á¤º¸¸¦ ÃÊ±âÈ­ÇÏ´Â ¸Ş¼­µå
+    // ì†Œë¹„ì ì •ë³´ ì´ˆê¸°í™” ë©”ì„œë“œ
     public void ClearConsumerInfo()
     {
         consumerInfoText.text = string.Empty;
     }
 
-    // ÃÑ °³Ã¼ ¼ö¸¦ ¾÷µ¥ÀÌÆ®ÇÏ´Â ¸Ş¼­µå
+    // ì „ì²´ ì†Œë¹„ì ìˆ˜ ì—…ë°ì´íŠ¸ ë©”ì„œë“œ
     public void UpdateTotalConsumers(int count)
     {
         totalConsumersText.text = $"Total Consumers: {count}";
     }
 
-    // Áß¾Ó ¹èÅÍ¸® Àü·Â ·¹º§À» ¾÷µ¥ÀÌÆ®ÇÏ´Â ¸Ş¼­µå
+    // ì´ ë°°í„°ë¦¬ ë ˆë²¨ ì—…ë°ì´íŠ¸ ë©”ì„œë“œ
     public void UpdateTotalBatteryLevel(float level)
     {
         totalBatteryLevelText.text = $"Total Battery Level: {level:F2}";
     }
 
-    // ÇÃ·¹ÀÌ¾îÀÇ HP¸¦ ¾÷µ¥ÀÌÆ®ÇÏ´Â ¸Ş¼­µå
+    // í”Œë ˆì´ì–´ì˜ HP ìƒíƒœë°” ì—…ë°ì´íŠ¸ ë©”ì„œë“œ
     public void UpdateHealthBar(float currentHealth, float maxHealth)
     {
         if (healthBar != null)
@@ -86,12 +107,26 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    // ÇÃ·¹ÀÌ¾îÀÇ ½ºÅ×¹Ì³ª¸¦ ¾÷µ¥ÀÌÆ®ÇÏ´Â ¸Ş¼­µå
+    // í”Œë ˆì´ì–´ì˜ ìŠ¤íƒœë¯¸ë‚˜ ìƒíƒœë°” ì—…ë°ì´íŠ¸ ë©”ì„œë“œ
     public void UpdateStaminaBar(float currentStamina, float maxStamina)
     {
         if (staminaBar != null)
         {
             staminaBar.value = currentStamina / maxStamina;
+        }
+    }
+
+    public void InitCCTVButton()
+    {
+        GameObject tempButton = Instantiate(cctvButtonPrefab, cctvButtonParent);
+        cctvButtons.Add(tempButton);
+    }
+    // ì˜¤ë¸Œì íŠ¸ í™œì„±í™”/ë¹„í™œì„±í™” ë©”ì„œë“œ
+    public void ToggleObject(GameObject obj)
+    {
+        if (obj != null)
+        {
+            obj.SetActive(!obj.activeSelf);
         }
     }
 }

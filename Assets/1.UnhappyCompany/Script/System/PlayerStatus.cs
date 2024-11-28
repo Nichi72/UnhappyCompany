@@ -2,18 +2,18 @@ using UnityEngine;
 
 public class PlayerStatus : MonoBehaviour
 {
-    [Header("Player Status")]
-    [Header("플레이어의 최대 체력")] 
+    [Header("플레이어 상태")]
+    [Header("최대 체력")] 
     public float MaxHealth = 100.0f;
-    [Header("플레이어의 최대 스테미나")] 
+    [Header("최대 스태미나")] 
     public float MaxStamina = 100.0f;
-    [Header("스테미나 회복 속도 (초당 회복량)")] 
+    [Header("스태미나 회복 속도 (초당 회복량)")] 
     public float StaminaRecoveryRate = 5.0f;
-    [Header("달릴 때 소비되는 스테미나")] 
+    [Header("달리기 시 스태미나 감소량")] 
     public float StaminaReduce = 30;
-    [Header("점프할 때 소비되는 스테미나")] 
+    [Header("점프 시 스태미나 감소량")] 
     public float StaminaJumpReduce = 10;
-    [Header("달리기 및 점프를 할 수 있는 최소 스테미나")] 
+    [Header("달리기 또는 점프를 위한 최소 스태미나")] 
     public float StaminaThresholdToRunOrJump = 20.0f;
 
     [ReadOnly] [SerializeField] private float _currentHealth;
@@ -29,9 +29,9 @@ public class PlayerStatus : MonoBehaviour
         _currentStamina = MaxStamina;
         _canRunOrJump = true;
 
-        // 초기 UI 업데이트
-        UIManager.Instance.UpdateHealthBar(_currentHealth, MaxHealth);
-        UIManager.Instance.UpdateStaminaBar(_currentStamina, MaxStamina);
+        // UI 초기화
+        UIManager.instance.UpdateHealthBar(_currentHealth, MaxHealth);
+        UIManager.instance.UpdateStaminaBar(_currentStamina, MaxStamina);
     }
     private void Start()
     {
@@ -53,14 +53,14 @@ public class PlayerStatus : MonoBehaviour
             _canRunOrJump = true;
         }
 
-        UIManager.Instance.UpdateStaminaBar(_currentStamina, MaxStamina);
+        UIManager.instance.UpdateStaminaBar(_currentStamina, MaxStamina);
     }
 
     public void ReduceHealth(float amount)
     {
         _currentHealth -= amount;
         _currentHealth = Mathf.Clamp(_currentHealth, 0, MaxHealth);
-        UIManager.Instance.UpdateHealthBar(_currentHealth, MaxHealth);
+        UIManager.instance.UpdateHealthBar(_currentHealth, MaxHealth);
 
         if (_currentHealth <= 0)
         {
@@ -74,7 +74,7 @@ public class PlayerStatus : MonoBehaviour
         _currentStamina -= amount;
         _currentStamina = Mathf.Clamp(_currentStamina, 0, MaxStamina);
         _isConsumingStamina = true;
-        UIManager.Instance.UpdateStaminaBar(_currentStamina, MaxStamina);
+        UIManager.instance.UpdateStaminaBar(_currentStamina, MaxStamina);
     }
 
     public void StopConsumingStamina()

@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class MapGenerator : MonoBehaviour
 {
-    public GameObject[] terrainPrefabs; // ÁöÇü ÇÁ¸®ÆÕ ¹è¿­
+    public GameObject[] terrainPrefabs; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½è¿­
     public int mapWidth = 10;
     public int mapHeight = 10;
 
@@ -17,13 +17,13 @@ public class MapGenerator : MonoBehaviour
         {
             for (int z = 0; z < mapHeight; z++)
             {
-                // ·£´ýÇÑ ÁöÇü ÇÁ¸®ÆÕÀ» ¼±ÅÃÇÏ¿© ÀÎ½ºÅÏ½ºÈ­
+                // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ ï¿½Î½ï¿½ï¿½Ï½ï¿½È­
                 GameObject terrainTile = Instantiate(
                     terrainPrefabs[Random.Range(0, terrainPrefabs.Length)],
                     new Vector3(x * 1.0f, 0, z * 1.0f),
                     Quaternion.identity
                 );
-                terrainTile.transform.parent = transform; // °èÃþ ±¸Á¶¸¦ À¯ÁöÇÏ±â À§ÇØ ºÎ¸ð ¼³Á¤
+                terrainTile.transform.parent = transform; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Î¸ï¿½ ï¿½ï¿½ï¿½ï¿½
             }
         }
     }

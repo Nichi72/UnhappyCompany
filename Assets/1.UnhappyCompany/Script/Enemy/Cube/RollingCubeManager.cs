@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class RollingCubeManager : MonoBehaviour
+public class RollingCubeManager : MonoBehaviour 
 {
     public Transform target;
     public RollingCubeController rollingCubeController;

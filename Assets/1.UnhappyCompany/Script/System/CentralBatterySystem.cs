@@ -3,15 +3,15 @@ using System.Collections.Generic;
 
 public class CentralBatterySystem : MonoBehaviour
 {
-    public static CentralBatterySystem Instance; // ½Ì±ÛÅæ ÆÐÅÏÀ¸·Î Áß¾Ó ¹èÅÍ¸® ½Ã½ºÅÛ °ü¸®
+    public static CentralBatterySystem Instance; // ï¿½Ì±ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß¾ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½Ã½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
-    public float totalBatteryLevel = 1000.0f; // Áß¾Ó ¹èÅÍ¸®ÀÇ ÃÑ·®
+    public float totalBatteryLevel = 1000.0f; // ï¿½ß¾ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ ï¿½Ñ·ï¿½
     [SerializeField]
     private List<ICentralBatteryConsumer> batteryConsumers = new List<ICentralBatteryConsumer>();
 
     void Awake()
     {
-        // ½Ì±ÛÅæ ÀÎ½ºÅÏ½º ¼³Á¤
+        // ï¿½Ì±ï¿½ï¿½ï¿½ ï¿½Î½ï¿½ï¿½Ï½ï¿½ ï¿½ï¿½ï¿½ï¿½
         if (Instance == null)
         {
             Instance = this;
@@ -24,18 +24,18 @@ public class CentralBatterySystem : MonoBehaviour
 
     void Start()
     {
-        UIManager.Instance.UpdateTotalConsumers(batteryConsumers.Count);
-        UIManager.Instance.UpdateTotalBatteryLevel(totalBatteryLevel);
+        UIManager.instance.UpdateTotalConsumers(batteryConsumers.Count);
+        UIManager.instance.UpdateTotalBatteryLevel(totalBatteryLevel);
     }
 
-    // Áß¾Ó ¹èÅÍ¸®¿¡¼­ Àü·ÂÀ» ¼ÒºñÇÏ´Â ¸Þ¼­µå
+    // ï¿½ß¾ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Òºï¿½ï¿½Ï´ï¿½ ï¿½Þ¼ï¿½ï¿½ï¿½
     public bool DrainBattery(ICentralBatteryConsumer consumer, float amount)
     {
         if (totalBatteryLevel >= amount)
         {
             totalBatteryLevel -= amount;
             UpdateConsumerInfo();
-            UIManager.Instance.UpdateTotalBatteryLevel(totalBatteryLevel);
+            UIManager.instance.UpdateTotalBatteryLevel(totalBatteryLevel);
             return true;
         }
         else
@@ -45,35 +45,35 @@ public class CentralBatterySystem : MonoBehaviour
         }
     }
 
-    // ¼ÒºñÀÚ¸¦ Ãß°¡ÇÏ´Â ¸Þ¼­µå
+    // ï¿½Òºï¿½ï¿½Ú¸ï¿½ ï¿½ß°ï¿½ï¿½Ï´ï¿½ ï¿½Þ¼ï¿½ï¿½ï¿½
     public void RegisterConsumer(ICentralBatteryConsumer consumer)
     {
         if (!batteryConsumers.Contains(consumer))
         {
             batteryConsumers.Add(consumer);
             UpdateConsumerInfo();
-            UIManager.Instance.UpdateTotalConsumers(batteryConsumers.Count);
+            UIManager.instance.UpdateTotalConsumers(batteryConsumers.Count);
         }
     }
 
-    // ¼ÒºñÀÚ¸¦ Á¦°ÅÇÏ´Â ¸Þ¼­µå (°³Ã¼°¡ ÆÄ±«µÉ ¶§ »ç¿ë)
+    // ï¿½Òºï¿½ï¿½Ú¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Þ¼ï¿½ï¿½ï¿½ (ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½Ä±ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½)
     public void UnregisterConsumer(ICentralBatteryConsumer consumer)
     {
         if (batteryConsumers.Contains(consumer))
         {
             batteryConsumers.Remove(consumer);
             UpdateConsumerInfo();
-            UIManager.Instance.UpdateTotalConsumers(batteryConsumers.Count);
+            UIManager.instance.UpdateTotalConsumers(batteryConsumers.Count);
         }
     }
 
     private void UpdateConsumerInfo()
     {
-        UIManager.Instance.ClearConsumerInfo(); // ÀÌÀü ÅØ½ºÆ® ÃÊ±âÈ­
+        UIManager.instance.ClearConsumerInfo(); // ï¿½ï¿½ï¿½ï¿½ ï¿½Ø½ï¿½Æ® ï¿½Ê±ï¿½È­
 
         foreach (var consumer in batteryConsumers)
         {
-            UIManager.Instance.AddConsumerInfo($"{consumer.GetConsumerName()} - Battery drained: {consumer.BatteryDrainPerSecond:F2}");
+            UIManager.instance.AddConsumerInfo($"{consumer.GetConsumerName()} - Battery drained: {consumer.BatteryDrainPerSecond:F2}");
         }
     }
 }

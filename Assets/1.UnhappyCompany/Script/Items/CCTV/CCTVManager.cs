@@ -1,35 +1,52 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class CCTVManager : MonoBehaviour
 {
     public static CCTVManager instance = null;
-    public List<CCTV> cctvs; // √— 3∞≥∂Û∏È ¿Œµ¶Ω∫¥¬ 2±Ó¡ˆ
+    public List<CCTV> cctvs; // Ï¥ù 3Í∞úÎùºÎ©¥ Ïù∏Îç±Ïä§Îäî 2ÍπåÏßÄ
     public int currentIndex;
+    public Coroutine blinkCoroutine;
+    private Color originalColor;
+    public Material cctvMaterial;
+
+    
     private void Awake()
     {
         if(instance == null)
         {
             instance = this;
         }
+        cctvs = new List<CCTV>();
     }
     void Start()
     {
-        cctvs = new List<CCTV>();
         currentIndex = 0;
+        TurnOnOnlyOne();
+        originalColor = cctvMaterial.color;
     }
 
     public void NextCCTV()
     {
         ClampIndex(1);
-        //var tempCctv = cctvs[currentIndex];
+        StopCoroutine(blinkCoroutine);
+        foreach(var cctv in cctvs)
+        {
+            cctv.cctvMaterial.color = originalColor;
+        }
         TurnOnOnlyOne();
+        
     }
 
     public void BeforeCCTV()
     {
         ClampIndex(-1);
-        //var tempCctv = cctvs[currentIndex];
+        StopCoroutine(blinkCoroutine);
+        foreach(var cctv in cctvs)
+        {
+            cctv.cctvMaterial.color = originalColor;
+        }
         TurnOnOnlyOne();
     }
 
@@ -53,6 +70,7 @@ public class CCTVManager : MonoBehaviour
             if(currentIndex == i)
             {
                 cctvs[i].currentCamera.gameObject.SetActive(true);
+                blinkCoroutine = StartCoroutine(BlinkMaterial(cctvs[i].cctvMaterial));
             }
             else
             {
@@ -60,6 +78,22 @@ public class CCTVManager : MonoBehaviour
             }
         }
     }
+    
+    private IEnumerator BlinkMaterial(Material cctvMaterial)
+    {
+        float duration = 0.3f;
+        while(true)
+        {
+            Color originalColor = cctvMaterial.color;
+            Color blinkColor = Color.black;
+            yield return new WaitForSeconds(duration);
 
+            // Debug.Log($"{cctvMaterial.color} BlinkMaterial");
+            cctvMaterial.color = blinkColor;
+            yield return new WaitForSeconds(duration);
+            cctvMaterial.color = originalColor; 
+            // Debug.Log($"{cctvMaterial.color} BlinkMaterial2");
+        }
+    }
    
 }

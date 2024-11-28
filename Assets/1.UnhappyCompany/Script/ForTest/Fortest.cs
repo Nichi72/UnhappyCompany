@@ -2,19 +2,19 @@ using UnityEngine;
 
 public class Fortest : MonoBehaviour
 {
-    public Transform player;  // ÇÃ·¹ÀÌ¾î¸¦ µû¶ó°¡±â À§ÇØ ÇÊ¿ä
-    public float forceStrength = 10f;  // Å¥ºê¸¦ ±¼¸®´Â ÈûÀÇ ¼¼±â
-    public float maxSpeed = 5f;  // Å¥ºêÀÇ ÃÖ´ë ¼Óµµ
-    public float restTime = 1f;  // ±¼¸° ÈÄ ½¬´Â ½Ã°£
-    public float chargeForce = 50f;  // µ¹ÁøÇÒ ¶§ÀÇ Èû
-    public float chargeDelay = 5f;  // µ¹Áø °£°Ý ½Ã°£
-    public float rotationForce = 20f;  // µ¹Áø ½Ã È¸ÀüÇÏ´Â ÈûÀÇ ¼¼±â
-    public AudioClip collisionSound;  // Ãæµ¹ È¿°úÀ½
-    public AudioSource audioSource;  // ¿Àµð¿À ¼Ò½º ÄÄÆ÷³ÍÆ®
-    public float rayLength = 1f;  // ·¹ÀÌÄ³½ºÆ® ±æÀÌ
-    public Vector3 raycastOffset = Vector3.zero;  // ·¹ÀÌÄ³½ºÆ® ½ÃÀÛ À§Ä¡ Á¶Àý¿ë ¿ÀÇÁ¼Â
-    public float minPitch = 0.8f;  // È¿°úÀ½ÀÇ ÃÖ¼Ò ÇÇÄ¡
-    public float maxPitch = 1.2f;  // È¿°úÀ½ÀÇ ÃÖ´ë ÇÇÄ¡
+    public Transform player;  // Ã·Ì¾î¸¦ ó°¡± Ê¿
+    public float forceStrength = 10f;  // Å¥ê¸¦   Óµ
+    public float maxSpeed = 5f;  // Å¥Ö´ Óµ
+    public float restTime = 1f;  //  Ã°
+    public float chargeForce = 50f;  //   Óµ
+    public float chargeDelay = 5f;  //  Ã°
+    public float rotationForce = 20f;  //  È¸Ï´  Óµ
+    public AudioClip collisionSound;  // æµ¹ È¿
+    public AudioSource audioSource;  // Ò½ Æ®
+    public float rayLength = 1f;  // Ä³Æ® 
+    public Vector3 raycastOffset = Vector3.zero;  // Ä³Æ® Ä¡  
+    public float minPitch = 0.8f;  // È¿Ö¼ Ä¡
+    public float maxPitch = 1.2f;  // È¿Ö´ Ä¡ í…ŒìŠ¤íŠ¸
 
     private Rigidbody rb;
     private bool isResting = false;
@@ -25,10 +25,10 @@ public class Fortest : MonoBehaviour
 
     void Start()
     {
-        // Rigidbody ÄÄÆ÷³ÍÆ®¸¦ °¡Á®¿É´Ï´Ù.
+        // Rigidbody Æ®É´Ï´.
         rb = GetComponent<Rigidbody>();
 
-        // ¿Àµð¿À ¼Ò½º ÄÄÆ÷³ÍÆ® È®ÀÎ
+        // Ò½ Æ® È®
         if (audioSource == null)
         {
             audioSource = gameObject.AddComponent<AudioSource>();
@@ -39,34 +39,34 @@ public class Fortest : MonoBehaviour
     {
         if (player != null && !isResting && !isCharging)
         {
-            // ÇÃ·¹ÀÌ¾î À§Ä¡¿Í Å¥ºê À§Ä¡ °£ÀÇ ¹æÇâÀ» °è»êÇÕ´Ï´Ù.
+            // Ã·Ì¾î¸¦ Ä¡ Å¥ Ä¡ Õ´Ï´.
             Vector3 direction = (player.position - transform.position).normalized;
 
-            // ÇöÀç ¼Óµµ Á¦ÇÑÀ» À§ÇØ ¼Óµµ º¤ÅÍ¸¦ È®ÀÎÇÕ´Ï´Ù.
+            // Óµ Óµ Í¸ È®Õ´Ï´.
             if (rb.linearVelocity.magnitude < maxSpeed)
             {
-                // ÈûÀ» Ãß°¡ÇØ Å¥ºê¸¦ ±¼¸³´Ï´Ù.
+                // Å¥ê¸¦ Ï´.
                 rb.AddForce(direction * forceStrength);
             }
             else
             {
-                // ÃÖ´ë ¼Óµµ¿¡ µµ´ÞÇÏ¸é ½¬´Â Å¸ÀÌ¸Ó¸¦ ½ÃÀÛÇÕ´Ï´Ù.
+                // Ö´ ÓµÏ¸ Å¸Ì¸Ó¸ Õ´Ï´.
                 isResting = true;
                 restTimer = restTime;
             }
 
-            // µ¹Áø Å¸ÀÌ¸Ó¸¦ °¨¼Ò½ÃÅµ´Ï´Ù.
+            // Å¸Ì¸Ó¸ Ò½ÅµÏ´.
             chargeTimer -= Time.fixedDeltaTime;
             if (chargeTimer <= 0f)
             {
-                // µ¹Áø ½ÃÀÛ
+                // 
                 isCharging = true;
                 chargeTimer = chargeDelay;
             }
         }
         else if (isResting)
         {
-            // ½¬´Â ½Ã°£À» Ã³¸®ÇÕ´Ï´Ù.
+            // Ã° Ã³Õ´Ï´.
             restTimer -= Time.fixedDeltaTime;
             if (restTimer <= 0f)
             {
@@ -75,14 +75,14 @@ public class Fortest : MonoBehaviour
         }
         else if (isCharging)
         {
-            // ÇÃ·¹ÀÌ¾î¸¦ ÇâÇØ °­ÇÏ°Ô µ¹ÁøÇÕ´Ï´Ù.
+            // Ã·Ì¾î¸¦ Ï° Õ´Ï´.
             Vector3 chargeDirection = (player.position - transform.position).normalized;
             rb.AddForce(chargeDirection * chargeForce, ForceMode.Impulse);
 
-            // È¸Àü È¿°ú Ãß°¡
+            // È¸ È¿ ß°
             rb.AddTorque(Random.onUnitSphere * rotationForce);
 
-            // µ¹Áø ÈÄ ½¬´Â Å¸ÀÌ¸Ó¸¦ ½ÃÀÛÇÕ´Ï´Ù.
+            //  È¸Ì¸Ó¸ Õ´Ï´.
             isCharging = false;
             isResting = true;
             restTimer = restTime;
@@ -96,7 +96,7 @@ public class Fortest : MonoBehaviour
 
     void AudioCheckRaycast()
     {
-        // °¢ ¸é¿¡¼­ ·¹ÀÌÄ³½ºÆ®¸¦ ¹ß»çÇÏ¿© Áö¸é¿¡ ´ê¾Ò´ÂÁö È®ÀÎÇÕ´Ï´Ù.
+        // é¿¡ Ä³Æ®ß»Ï¿ é¿¡ Ò´ È®Õ´Ï´.
         RaycastHit hit;
         Vector3[] rayDirections = { Vector3.down, Vector3.up, Vector3.left, Vector3.right, Vector3.forward, Vector3.back };
 
@@ -107,10 +107,10 @@ public class Fortest : MonoBehaviour
             {
                 if (hit.collider != null && hit.collider.gameObject != gameObject && !rayHits[i])
                 {
-                    // Áö¸é¿¡ ´ê¾ÒÀ» ¶§ È¿°úÀ½À» Àç»ýÇÕ´Ï´Ù.
+                    // é¿¡  È¿ Õ´Ï´.
                     if (collisionSound != null && audioSource != null)
                     {
-                        // ÇÇÄ¡¸¦ ·£´ýÇÏ°Ô ¼³Á¤ÇÏ¿© ¼Ò¸®°¡ Á¶±Ý¾¿ ´Ù¸£°Ô µé¸®µµ·Ï ÇÔ
+                        // Ä¡ Ï° Ï¿ Ò¸ Ý¾ Ù¸ é¸® 
                         audioSource.pitch = Random.Range(minPitch, maxPitch);
                         audioSource.PlayOneShot(collisionSound);
                     }
@@ -126,7 +126,7 @@ public class Fortest : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        // ±âÁî¸ð·Î ·¹ÀÌÄ³½ºÆ®¸¦ ½Ã°¢È­ÇÕ´Ï´Ù.
+        // Ä³Æ®Ã°È­Õ´Ï´.
         DrawGizmosForAudioCheckRaycast();
     }
 
