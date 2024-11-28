@@ -58,7 +58,7 @@ public class RollingCubeManager : MonoBehaviour
             if (target != null)
             {
                 yield return SetPathToPointAsync(target.position);
-                Debug.Log("±æÃ£±â °è»ê ¿Ï·á");
+                Debug.Log("ï¿½ï¿½Ã£ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ï·ï¿½");
                 break;
             }
         }
@@ -108,7 +108,7 @@ public class RollingCubeManager : MonoBehaviour
         {
             Debug.LogWarning("Path calculation failed.");
             pathCorners.Clear();
-            // ³ª -> ÇÃ·¹ÀÌ¾î 
+            // ï¿½ï¿½ -> ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ 
             Vector3 temp = GameManager.instance.currentPlayer.transform.position - transform.position;
             temp.Normalize();
             pathCorners.Add(temp);
@@ -134,7 +134,7 @@ public class RollingCubeManager : MonoBehaviour
 
     private List<Vector3> SimplifyPath(List<Vector3> corners, float tolerance)
     {
-        // Ramer-Douglas-Peucker ¾Ë°í¸®Áò ±â¹Ý ´Ü¼øÈ­
+        // Ramer-Douglas-Peucker ï¿½Ë°ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ü¼ï¿½È­
         if (corners.Count <= 2) return corners;
 
         List<Vector3> simplifiedPath = new List<Vector3>();
@@ -165,7 +165,7 @@ public class RollingCubeManager : MonoBehaviour
 
         foreach (var corner in corners)
         {
-            // ¿¹: Æ¯Á¤ ³ôÀÌ °ªÀ» º¯°æ
+            // ï¿½ï¿½: Æ¯ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             customPath.Add(new Vector3(corner.x, corner.y + 0.5f, corner.z));
         }
 
