@@ -1,46 +1,42 @@
 using UnityEngine;
 
-public class Abstractions
+/// <summary>
+/// í”Œë ˆì´ì–´ì™€ ìƒí˜¸ ì‘ìš©í•  ë•Œ í˜¸ì¶œë˜ëŠ” ë©”ì„œë“œë¥¼ ì •ì˜í•˜ëŠ” ì¸í„°í˜ì´ìŠ¤ì…ë‹ˆë‹¤.
+/// </summary>
+/// <param name="player">ìƒí˜¸ ì‘ìš©í•˜ëŠ” í”Œë ˆì´ì–´</param>
+public interface IInteractable
 {
-    
+    void HitEventInteractionF(Player rayOrigin);
 }
 
 /// <summary>
-/// ¿ÀºêÁ§Æ®°¡ ¿ùµå¿¡ Á¸ÀçÇÏ°í ÀÖÀ» ¶§ ÇÃ·¹ÀÌ¾î¿¡ ÀÇÇØ ·¹ÀÌÄ³½ºÆ®¸¦ ¸Â¾ÒÀ» ¶§ È£ÃâµÇ´Â ÇÔ¼ö
+/// ì¤‘ì•™ ë°°í„°ë¦¬ë¥¼ ì†Œëª¨í•˜ëŠ” ì†Œë¹„ìë¥¼ ì •ì˜í•˜ëŠ” ì¸í„°í˜ì´ìŠ¤ì…ë‹ˆë‹¤.
 /// </summary>
-/// <param name="player">·¹ÀÌÄ³½ºÆ®¸¦ ½ğ ÇÃ·¹ÀÌ¾î</param>
-/// <param name="raycastHit">¸ÂÀº °³Ã¼</param>
-public interface InteractionF
-{
-    public void HitEventInteractionF(Player rayOrigin);
-
-}
-/// <summary>
-/// ¼¾ÅÍÀÇ ¹èÅÍ¸®¸¦ ´â°ÔÇÏ´Â ¾ÆÀÌÅÛ
-/// </summary>
-
 public interface ICentralBatteryConsumer
 {
     float BatteryDrainPerSecond { get; set; }
     void DrainBattery();
     string GetConsumerName();
 }
+
 /// <summary>
-/// µ¥¹ÌÁö¸¦ ¹ŞÀ» ¼ö ÀÖ´Â °³Ã¼ ÀÎÅÍÆäÀÌ½º=
+/// í”¼í•´ë¥¼ ì…ì„ ìˆ˜ ìˆëŠ” ê°ì²´ë¥¼ ì •ì˜í•˜ëŠ” ì¸í„°í˜ì´ìŠ¤ì…ë‹ˆë‹¤.
 /// </summary>
 public interface IDamageable
 {
-    public int hp { get; set; }
+    int hp { get; set; }
     void TakeDamage(int damage);
 }
+
 /// <summary>
-/// µ¥¹ÌÁö¸¦ ÁÙ ¼ö ÀÖ´Â °³Ã¼ ÀÎÅÍÆäÀÌ½º
+/// í”¼í•´ë¥¼ ì¤„ ìˆ˜ ìˆëŠ” ê°ì²´ë¥¼ ì •ì˜í•˜ëŠ” ì¸í„°í˜ì´ìŠ¤ì…ë‹ˆë‹¤.
 /// </summary>
 public interface IDamager
 {
-    public int damage { get; set; }
+    int damage { get; set; }
     void DealDamage(IDamageable target);
 }
+
 
 
 

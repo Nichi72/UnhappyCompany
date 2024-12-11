@@ -4,8 +4,8 @@ using UnityEngine;
 public class InteractionSystem : MonoBehaviour
 {
     public GameObject CenterText;
-    public float raycastMaxDistance = 5f; // Raycast°ú ÃÖ´ë °³¼ö
-    public LayerMask interactionLayer; // ·¹ÀÌ¾î¸¦ º¯¼ö·Î ¼³Á¤
+    public float raycastMaxDistance = 5f; // Raycastï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½
+    public LayerMask interactionLayer; // ï¿½ï¿½ï¿½Ì¾î¸¦ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     private List<GameObject> interactionObjs;
 
     Player player;
@@ -20,16 +20,16 @@ public class InteractionSystem : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // ÃÖ¼Ò ÇÏ³ªÀÇ ¿ÀºêÁ§Æ® ºñÈ°¼ºÈ­
+        // ï¿½Ö¼ï¿½ ï¿½Ï³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½È°ï¿½ï¿½È­
         interactionObjs.ForEach(obj => obj.SetActive(false));
 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
 
-        // ·¹ÀÌ¾î¿¡ µû¶ó Raycast ½ÇÇà
+        // ï¿½ï¿½ï¿½Ì¾î¿¡ ï¿½ï¿½ï¿½ï¿½ Raycast ï¿½ï¿½ï¿½ï¿½
         if (Physics.Raycast(ray, out hit, raycastMaxDistance, interactionLayer))
         {
-            var hitEvent = hit.transform.GetComponent<InteractionF>();
+            var hitEvent = hit.transform.GetComponent<IInteractable>();
             CenterText.SetActive(true);
             if (Input.GetKeyDown(KeyCode.F))
             {
@@ -38,7 +38,7 @@ public class InteractionSystem : MonoBehaviour
         }
         else
         {
-            //Debug.Log("TargetLayer ¿ÀºêÁ§Æ®¸¦ Ã£Áö ¸øÇß½À´Ï´Ù.");
+            //Debug.Log("TargetLayer ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ Ã£ï¿½ï¿½ ï¿½ï¿½ï¿½ß½ï¿½ï¿½Ï´ï¿½.");
         }
 
        

@@ -476,10 +476,10 @@ MonoBehaviour:
       - m_Target: {fileID: 8108429432436749650}
         m_TargetAssemblyTypeName: BtnShop, Assembly-CSharp
         m_MethodName: BtnBuyItem
-        m_Mode: 2
+        m_Mode: 1
         m_Arguments:
-          m_ObjectArgument: {fileID: 11400000, guid: 584412efab6a33c4a876b1860bcf2b84, type: 2}
-          m_ObjectArgumentAssemblyTypeName: ItemData, Assembly-CSharp
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -499,3 +499,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemName: {fileID: 3414614201046286999}
   itemPrice: {fileID: 5466038308673219543}
+  itemData: {fileID: 11400000, guid: 584412efab6a33c4a876b1860bcf2b84, type: 2}
