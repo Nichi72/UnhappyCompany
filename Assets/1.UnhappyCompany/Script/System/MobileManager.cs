@@ -12,7 +12,7 @@ public class MobileManager : MonoBehaviour
 
     void Update()
     {
-        Debug.Log($"Cursor.visible = {Cursor.visible}");
+        // Debug.Log($"Cursor.visible = {Cursor.visible}");
         if(Input.GetKeyDown(KeyCode.Tab))
         {
             uiObjmobile.SetActive(!uiObjmobile.activeSelf);
@@ -30,6 +30,5 @@ public class MobileManager : MonoBehaviour
         {
             CCTVManager.instance.BeforeCCTV();
         }
-
     }
 }

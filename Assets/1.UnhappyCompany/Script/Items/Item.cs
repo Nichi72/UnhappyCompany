@@ -1,8 +1,8 @@
 using UnityEngine;
 
-public abstract class Item : MonoBehaviour , InteractionF
+public abstract class Item : MonoBehaviour , IInteractable
 {
-    public ItemData itemData; // ½ºÅ©¸³ÅÍºí ¿ÀºêÁ§Æ®¸¦ ÅëÇÑ ¾ÆÀÌÅÛ µ¥ÀÌÅÍ
+    public ItemData itemData; // ï¿½ï¿½Å©ï¿½ï¿½ï¿½Íºï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
    
     public virtual void HitEventInteractionF(Player player)
     {
@@ -18,7 +18,7 @@ public abstract class Item : MonoBehaviour , InteractionF
 
     public virtual void PickUp()
     {
-        // ¾ÆÀÌÅÛÀ» ½ÀµæÇÒ ¶§ ¿ùµå¿¡¼­ ¿ÀºêÁ§Æ®¸¦ Á¦°Å
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½å¿¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         Debug.Log($"{itemData.itemName} picked up.");
         Destroy(gameObject);
         QuickSlotSystem.instance.UpdatePlayerSpeed();

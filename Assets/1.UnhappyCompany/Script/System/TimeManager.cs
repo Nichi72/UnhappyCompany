@@ -2,11 +2,18 @@
 using System;
 using System.Collections.Generic;
 
+public enum TimeOfDay
+{
+    Morning,
+    Afternoon
+}
+
 public class TimeManager : MonoBehaviour
 {
     public static TimeManager instance;
-    public TimeSpan GameTime { get => gameTime; }
-    public bool IsDay { get => isDay;}
+    public TimeSpan GameTime { get; private set; }
+    public TimeOfDay CurrentTimeOfDay { get; private set; }
+    public event Action<TimeOfDay> OnTimeOfDayChanged;
 
     [Header("시작 시간")]
     public int startTime;
@@ -15,7 +22,6 @@ public class TimeManager : MonoBehaviour
     [Header("경과 일수")]
     public int days;
 
-    private TimeSpan gameTime; // 게임 내 시간
     private TimeSpan lastGameTime;
     private float timeMultiplier;
     private readonly TimeSpan oneDay = TimeSpan.FromHours(24);
@@ -26,16 +32,35 @@ public class TimeManager : MonoBehaviour
     public Action OnDayStarted;
     public Action OnNightStarted;
 
+    // 새로운 이벤트 추가: 하루가 지났을 때 호출되는 이벤트
+    public event Action OnDayPassed;
+
     private Dictionary<TimeSpan, Action> timeEvents = new Dictionary<TimeSpan, Action>();
 
     private bool isDay;
-    public bool isStop;
+    private bool isStop;
+
+    // 새로운 변수 추가: 하루가 지났는지 여부를 나타내는 플래그
+    public bool HasDayPassed { get; private set; } = false;
+    public bool IsStop 
+    { 
+        get => isStop; 
+        set 
+        {
+            isStop = value;
+            Debug.Log($"isStop: {isStop}");
+        }
+    }
 
     private void Awake()
     {
-        if(instance == null)
+        if (instance == null)
         {
             instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
         }
     }
 
@@ -43,28 +68,41 @@ public class TimeManager : MonoBehaviour
     {
         // 시간 배율 계산: 현실 시간 x배 동안 게임 내 24시간이 흐르도록 설정
         timeMultiplier = (float)(oneDay.TotalSeconds) / (realTimeMinutesPerGameDay * 60f);
-        gameTime = TimeSpan.Zero;
-        gameTime = gameTime.Add(TimeSpan.FromHours(startTime));
-        lastGameTime = gameTime;
+        GameTime = TimeSpan.Zero;
+        GameTime = GameTime.Add(TimeSpan.FromHours(startTime));
+        lastGameTime = GameTime;
         isDay = IsCurrentTimeDay();
+        OnDayPassed += () =>
+        {
+            UIManager.instance.screenDayText.text = $"Day {days}";
+            Debug.Log($"Day {days}");
+        };
     }
 
     void Update()
     {
-        if(!isStop)
+        if (!IsStop)
         {
             // 이전 게임 시간 저장
-            lastGameTime = gameTime;
+            lastGameTime = GameTime;
 
             // 게임 시간 업데이트
             double deltaTimeInSeconds = Time.deltaTime * timeMultiplier;
-            gameTime = gameTime.Add(TimeSpan.FromSeconds(deltaTimeInSeconds));
+            GameTime = GameTime.Add(TimeSpan.FromSeconds(deltaTimeInSeconds));
 
-            if (gameTime >= oneDay)
+            if (GameTime >= oneDay)
             {
-                gameTime = gameTime.Subtract(oneDay); // 하루가 지나면 시간 초기화
+                GameTime = GameTime.Subtract(oneDay); // 하루가 지나면 시간 초기화
                 lastGameTime = TimeSpan.Zero;
                 days++;
+
+                // 하루가 지났음을 표시
+                HasDayPassed = true;
+
+                Debug.Log("하루가 지났습니다.");
+
+                // 하루가 지났을 때 이벤트 호출
+                OnDayPassed?.Invoke();
             }
 
             // 시간 이벤트 체크
@@ -72,10 +110,38 @@ public class TimeManager : MonoBehaviour
 
             // 낮밤 상태 체크
             UpdateDayNightCycle();
+
+            TimeOfDay previousTimeOfDay = CurrentTimeOfDay;
+            CurrentTimeOfDay = GameTime.Hours < 12 ? TimeOfDay.Morning : TimeOfDay.Afternoon;
+
+            if (previousTimeOfDay != CurrentTimeOfDay)
+            {
+                OnTimeOfDayChanged?.Invoke(CurrentTimeOfDay);
+            }
         }
-        // Debug.Log($"gameTime {gameTime.Minutes}");
+        // Debug.Log($"gameTime {GameTime.Minutes}");
     }
 
+    /// <summary>
+    /// 하루가 지났는지 확인한 후 플래그를 리셋하는 메서드입니다.
+    /// 하루가 지났다면 True를 반환하고 플래그를 리셋합니다.
+    /// </summary>
+    /// <returns>하루가 지났다면 True, 아니면 False</returns>
+    public bool CheckAndResetDayPassed()
+    {
+        if (HasDayPassed)
+        {
+            HasDayPassed = false;
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// 시간 이벤트 생성
+    /// </summary>
+    /// <param name="targetTime"></param>
+    /// <param name="callback"></param>
     public void RegisterTimeEvent(TimeSpan targetTime, Action callback)
     {
         if (!timeEvents.ContainsKey(targetTime))
@@ -106,18 +172,18 @@ public class TimeManager : MonoBehaviour
     private bool IsTimeEventTriggered(TimeSpan eventTime)
     {
         // 하루 전환을 고려하여 이벤트 발생 여부를 확인
-        if (lastGameTime <= eventTime && gameTime >= eventTime)
+        if (lastGameTime <= eventTime && GameTime >= eventTime)
         {
             return true;
         }
-        else if (lastGameTime > gameTime) // 하루가 넘어갔을 때
+        else if (lastGameTime > GameTime) // 하루가 넘어갔을 때
         {
             if (lastGameTime <= eventTime && eventTime < oneDay)
             {
                 // 아직 다음 이벤트
                 return false;
             }
-            else if (TimeSpan.Zero <= eventTime && gameTime >= eventTime)
+            else if (TimeSpan.Zero <= eventTime && GameTime >= eventTime)
             {
                 return true;
             }
@@ -148,30 +214,30 @@ public class TimeManager : MonoBehaviour
         if (sunriseTime < sunsetTime)
         {
             // 해 뜨는 시간과 해 지는 시간 사이에 있는지 확인
-            return gameTime >= sunriseTime && gameTime < sunsetTime;
+            return GameTime >= sunriseTime && GameTime < sunsetTime;
         }
         else
         {
             // 해 뜨는 시간이 해 지는 시간보다 늦을 때
-            return gameTime >= sunriseTime || gameTime < sunsetTime;
+            return GameTime >= sunriseTime || GameTime < sunsetTime;
         }
     }
 
     // 게임 시간 저장 (세이브)
     public void SaveGameTime()
     {
-        PlayerPrefs.SetFloat("GameTime", (float)gameTime.TotalSeconds);
+        PlayerPrefs.SetFloat("GameTime", (float)GameTime.TotalSeconds);
     }
 
     // 게임 시간 로드 (로드)
     public void LoadGameTime()
     {
         float savedTimeInSeconds = PlayerPrefs.GetFloat("GameTime", 0f);
-        gameTime = TimeSpan.FromSeconds(savedTimeInSeconds);
+        GameTime = TimeSpan.FromSeconds(savedTimeInSeconds);
     }
 
     public string GetCurrentGameTime()
     {
-        return gameTime.ToString(@"hh\:mm\:ss");
+        return GameTime.ToString(@"hh\:mm\:ss");
     }
 }

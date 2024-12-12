@@ -25,7 +25,13 @@ public enum AIState
     Chase,
     Attack
 }
-
+public enum GameState
+{
+    None,
+    Ready,
+    Playing,
+    End
+}
 public static class CoroutineHelper
 {
     public static IEnumerator WaitForSecondsInFixedUpdate(float waitTime)
@@ -33,8 +39,8 @@ public static class CoroutineHelper
         float elapsedTime = 0f;
         while (elapsedTime < waitTime)
         {
-            yield return new WaitForFixedUpdate(); // FixedUpdate ÁÖ±â ´ë±â
-            elapsedTime += Time.fixedDeltaTime;   // °íÁ¤ ½Ã°£ °£°Ý ´©Àû
+            yield return new WaitForFixedUpdate(); // FixedUpdate ï¿½Ö±ï¿½ ï¿½ï¿½ï¿½
+            elapsedTime += Time.fixedDeltaTime;   // ï¿½ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         }
     }
 }

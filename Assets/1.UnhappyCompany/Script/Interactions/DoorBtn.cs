@@ -1,14 +1,14 @@
 using UnityEngine;
 
-public class DoorBtn : MonoBehaviour , InteractionF
+public class DoorBtn : MonoBehaviour , IInteractable
 {
     public Door door;
     public void HitEventInteractionF(Player rayOrigin)
     {
         Debug.Log("Hit");
-        // È¿°úÀ½
+        // È¿ï¿½ï¿½ï¿½ï¿½
 
-        // ±â´ÉÃ³¸®
+        // ï¿½ï¿½ï¿½Ã³ï¿½ï¿½
         door.OpenCloseDoor();
     }
 }

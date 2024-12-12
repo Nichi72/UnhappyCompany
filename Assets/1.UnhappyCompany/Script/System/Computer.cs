@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Computer : MonoBehaviour , InteractionF
+public class Computer : MonoBehaviour , IInteractable
 {
     public Transform spwanTr;
     public Player currentUsePlayer;
