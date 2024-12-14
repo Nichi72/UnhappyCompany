@@ -25,8 +25,9 @@ public interface ICentralBatteryConsumer
 public interface IDamageable
 {
     int hp { get; set; }
-    void TakeDamage(int damage);
+    void TakeDamage(int damage, DamageType damageType);
 }
+
 
 /// <summary>
 /// 피해를 줄 수 있는 객체를 정의하는 인터페이스입니다.
@@ -36,7 +37,3 @@ public interface IDamager
     int damage { get; set; }
     void DealDamage(IDamageable target);
 }
-
-
-
-

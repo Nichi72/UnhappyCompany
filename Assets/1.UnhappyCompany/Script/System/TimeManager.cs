@@ -17,7 +17,7 @@ public class TimeManager : MonoBehaviour
 
     [Header("시작 시간")]
     public int startTime;
-    [Header("현실 시간의 x배")]
+    [Header("해당 시간 동안 하루가 지남")]
     public float realTimeMinutesPerGameDay = 10f;
     [Header("경과 일수")]
     public int days;
@@ -29,10 +29,19 @@ public class TimeManager : MonoBehaviour
     private TimeSpan sunriseTime = TimeSpan.FromHours(6);  // 해 뜨는 시간
     private TimeSpan sunsetTime = TimeSpan.FromHours(18);  // 해 지는 시간
 
-    public Action OnDayStarted;
+
+    /// <summary>
+    /// 낮 시작 이벤트
+    /// </summary>
+    public Action OnMorningStarted;
+    /// <summary>
+    /// 밤 시작 이벤트
+    /// </summary>
     public Action OnNightStarted;
 
-    // 새로운 이벤트 추가: 하루가 지났을 때 호출되는 이벤트
+    /// <summary>
+    /// 하루가 지났을 때 호출되는 이벤트
+    /// </summary>
     public event Action OnDayPassed;
 
     private Dictionary<TimeSpan, Action> timeEvents = new Dictionary<TimeSpan, Action>();
@@ -72,10 +81,23 @@ public class TimeManager : MonoBehaviour
         GameTime = GameTime.Add(TimeSpan.FromHours(startTime));
         lastGameTime = GameTime;
         isDay = IsCurrentTimeDay();
+
+        // 이벤트 초기화
         OnDayPassed += () =>
         {
             UIManager.instance.screenDayText.text = $"Day {days}";
             Debug.Log($"Day {days}");
+        };
+        OnMorningStarted += () =>
+        {
+            Debug.Log("낮이 시작되었습니다.");
+            days++;
+            HasDayPassed = true;
+            OnDayPassed?.Invoke();
+        };
+        OnNightStarted += () =>
+        {
+            Debug.Log("밤이 시작되었습니다.");
         };
     }
 
@@ -94,15 +116,6 @@ public class TimeManager : MonoBehaviour
             {
                 GameTime = GameTime.Subtract(oneDay); // 하루가 지나면 시간 초기화
                 lastGameTime = TimeSpan.Zero;
-                days++;
-
-                // 하루가 지났음을 표시
-                HasDayPassed = true;
-
-                Debug.Log("하루가 지났습니다.");
-
-                // 하루가 지났을 때 이벤트 호출
-                OnDayPassed?.Invoke();
             }
 
             // 시간 이벤트 체크
@@ -200,7 +213,7 @@ public class TimeManager : MonoBehaviour
             isDay = currentIsDay;
             if (isDay)
             {
-                OnDayStarted?.Invoke(); // 낮 시작
+                OnMorningStarted?.Invoke(); // 낮 시작
             }
             else
             {

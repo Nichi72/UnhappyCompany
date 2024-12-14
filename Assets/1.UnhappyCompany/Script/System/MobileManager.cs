@@ -16,11 +16,12 @@ public class MobileManager : MonoBehaviour
         if(Input.GetKeyDown(KeyCode.Tab))
         {
             uiObjmobile.SetActive(!uiObjmobile.activeSelf);
-            player.firstPersonController._input.cursorLocked = !uiObjmobile.activeSelf;
-            player.firstPersonController._input.cursorInputForLook = !uiObjmobile.activeSelf;
-            Cursor.visible = uiObjmobile.activeSelf;
-            Vector2 screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
-            Mouse.current.WarpCursorPosition(screenCenter);
+            player.firstPersonController._input.SetCursorLock(!uiObjmobile.activeSelf);
+            // player.firstPersonController._input.cursorLocked = !uiObjmobile.activeSelf;
+            // player.firstPersonController._input.cursorInputForLook = !uiObjmobile.activeSelf;
+            // Cursor.visible = uiObjmobile.activeSelf;
+            // Vector2 screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
+            // Mouse.current.WarpCursorPosition(screenCenter);
         }
         if(Input.GetKeyDown(KeyCode.E))
         {

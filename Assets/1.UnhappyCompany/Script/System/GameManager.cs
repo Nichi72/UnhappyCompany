@@ -16,17 +16,19 @@ public class GameManager : MonoBehaviour
         {
             instance = this;
         }
-        GameStart();
-    }
-    private void GameStart()
-    {
-        currentGameState = GameState.None;
-        StartCoroutine(GameStateFSM());
     }
     private void Start()
     {
+        GameStart();
         StartCoroutine(CheckGameOver());
     }
+    private void GameStart()
+    {
+        currentGameState = GameState.Ready;
+        OnChangeReady();
+        StartCoroutine(GameStateFSM());
+    }
+
     
 
     private IEnumerator GameStateFSM()
@@ -44,7 +46,6 @@ public class GameManager : MonoBehaviour
                         // 예를 들어, 플레이어가 준비되면 Playing 상태로 전환
                         if (isPressedStartBtn)
                         {
-                            currentGameState = GameState.Playing;
                             OnChangePlaying();
                             // Debug.Log("게임 준비 완료");
                         }
@@ -56,7 +57,6 @@ public class GameManager : MonoBehaviour
                         // 게임 오버 조건을 체크하여 End 상태로 전환
                         if (TimeManager.instance.HasDayPassed)
                         {
-                            currentGameState = GameState.End;
                             OnChangeEnd();
                         }
                         break;
@@ -68,7 +68,6 @@ public class GameManager : MonoBehaviour
                         // 게임을 재시작하거나 메인 메뉴로 돌아가는 로직 추가 가능
                         if(true)
                         {
-                            currentGameState = GameState.Ready;
                             OnChangeReady();
                         }
                         break;
@@ -80,20 +79,26 @@ public class GameManager : MonoBehaviour
     }
     private void OnChangeReady()
     {
-        
+        currentGameState = GameState.Ready;
+        TimeManager.instance.IsStop = true;
+        CentralBatterySystem.Instance.isStop = true;
     }
 
     private void OnChangePlaying()
     {
+        currentGameState = GameState.Playing;
         Debug.Log("OnChangePlaying");
+        CentralBatterySystem.Instance.isStop = false;
         // Playing 상태에서 호출되는 함수
         isPressedStartBtn = false;
         TimeManager.instance.IsStop = false;
         FadeManager.instance.FadeInThenFadeOut(1f, 1f, 1f);
+        EnemyManager.instance.SpawnEgg();
     }
 
     private void OnChangeEnd()
     {
+        currentGameState = GameState.End;
         // End 상태에서 호출되는 함수
         TimeManager.instance.IsStop = true;
         TimeManager.instance.CheckAndResetDayPassed();
@@ -105,6 +110,7 @@ public class GameManager : MonoBehaviour
     private void Update()
     {
         UIManager.instance.UpdateGold(totalGold);
+      
     }
     private IEnumerator CheckGameOver()
     {

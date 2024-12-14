@@ -27,17 +27,12 @@ public class ComputerSystem : MonoBehaviour
     }
     public void OpenComputer(Player player)
     {
-        // OpenComputer
-        player.firstPersonController._input.cursorInputForLook = false;
-        player.firstPersonController._input.cursorLocked = false;
-        player.firstPersonController._input.SetCursorState(false);
+        player.firstPersonController._input.SetCursorLock(false);
         UIManager.instance.computerView.SetActive(true);
     }
     public void CloseComputer(Player player)
     {
-        player.firstPersonController._input.cursorInputForLook = true;
-        player.firstPersonController._input.cursorLocked = true;
-        player.firstPersonController._input.SetCursorState(true);
+        player.firstPersonController._input.SetCursorLock(true);
         UIManager.instance.computerView.SetActive(false);
         computer.currentUsePlayer = null;
     }

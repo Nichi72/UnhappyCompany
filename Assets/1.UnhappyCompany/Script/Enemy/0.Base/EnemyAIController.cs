@@ -25,6 +25,7 @@ public abstract class EnemyAIController<T> : MonoBehaviour where T : BaseEnemyAI
     public Color attackGizmoRangeColor = Color.red;
 
     public TimeOfDay CurrentTimeOfDay { get; private set; }
+    public UtilityCalculator UtilityCalculator { get => utilityCalculator; set => utilityCalculator = value; }
 
     [Header("Debug Settings")]
     public bool enableDebugUI = true;
@@ -67,10 +68,8 @@ public abstract class EnemyAIController<T> : MonoBehaviour where T : BaseEnemyAI
 
     protected virtual void OnDestroy()
     {
-        if (TimeManager.instance != null)
-        {
-            TimeManager.instance.OnTimeOfDayChanged -= HandleTimeOfDayChanged;
-        }
+        TimeManager.instance.OnTimeOfDayChanged -= HandleTimeOfDayChanged;
+        EnemyManager.instance.activeEnemies.Remove(gameObject);
 
         // 디버그 UI 정리
         if (debugUI != null)

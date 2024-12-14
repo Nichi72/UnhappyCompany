@@ -4,67 +4,58 @@ using System.Collections.Generic;
 
 public class EnemyManager : MonoBehaviour
 {
+    public static EnemyManager instance;
+
     [Header("Enemy Spawning")]
-    [Tooltip("Àû »ı¼º À§Ä¡ ¸®½ºÆ®")] public List<Transform> spawnPoints; // Àû »ı¼º À§Ä¡ ¸®½ºÆ®
-    [Tooltip("¾Ë »óÅÂÀÇ Àû ÇÁ¸®ÆÕ")] public GameObject eggPrefab; // ¾Ë »óÅÂÀÇ Àû ÇÁ¸®ÆÕ
-    [Tooltip("¼ºÃ¼ »óÅÂÀÇ Àû ÇÁ¸®ÆÕ")] public GameObject adultEnemyPrefab; // ¼ºÃ¼ »óÅÂÀÇ Àû ÇÁ¸®ÆÕ
-    [Tooltip("ÀûÀÌ »ı¼ºµÉ È®·ü (0¿¡¼­ 1 »çÀÌÀÇ °ª)")] public float spawnChance = 0.5f; // ÀûÀÌ »ı¼ºµÉ È®·ü (0¿¡¼­ 1 »çÀÌÀÇ °ª)
-    [Tooltip("¾ËÀÌ ¼ºÃ¼·Î ºÎÈ­ÇÏ´Â µ¥ °É¸®´Â ½Ã°£")] public float eggHatchTime = 5.0f; // ¾ËÀÌ ¼ºÃ¼·Î ºÎÈ­ÇÏ´Â µ¥ °É¸®´Â ½Ã°£(ÃÊ)
+    [Tooltip("ì  ìƒì„± ìœ„ì¹˜ ë¦¬ìŠ¤íŠ¸")] public List<Transform> spawnPoints;
+    [Tooltip("ì•Œ ìƒíƒœì˜ ì  í”„ë¦¬íŒ¹")] public GameObject eggPrefab;
+    [Tooltip("ìƒì„± í™•ë¥  (0ë¶€í„° 1 ì‚¬ì´ì˜ ê°’)")] public float spawnChance = 0.5f;
+    [Tooltip("ì•Œì´ ì„±ì²´ë¡œ ë¶€í™”í•˜ëŠ”ë° ê±¸ë¦¬ëŠ” ì‹œê°„")] public float eggHatchTime = 5.0f;
 
     [Header("SO_Enemy")]
-    public List<SO_Enemy> so_Enemies;
-    public LayerMask SpawnLayer; // ·¹ÀÌ¾î¸¦ º¯¼ö·Î ¼³Á¤
+    public List<SO_Enemy> soEnemies;
+    public LayerMask SpawnLayer;
 
-    private List<GameObject> activeEnemies = new List<GameObject>();
+    [Header("Enemy Spawning")]
+    [SerializeField] public List<GameObject> activeEggs = new List<GameObject>();
+    [SerializeField] public List<GameObject> activeEnemies = new List<GameObject>();
+    [SerializeField] private int spawnMaxCount = 10;
 
-    void Start()
+    private void Awake()
     {
-        SpawnEnemies();
+        if (instance == null)
+        {
+            instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
-    void SpawnEnemies()
+    public void SpawnEgg()
     {
-        // °¢ »ı¼º À§Ä¡¿¡ ´ëÇØ ÀûÀ» »ı¼ºÇÒÁö °áÁ¤
+        Debug.Log("SpawnEgg");
         foreach (Transform spawnPoint in spawnPoints)
         {
             if (Random.value <= spawnChance)
             {
-                GameObject egg =  Init(spawnPoint);
-                StartCoroutine(HatchEgg(egg));
+                if(activeEnemies.Count >= spawnMaxCount)
+                {
+                    Debug.Log("ì  ìƒì„± ìµœëŒ€ ìˆ˜ ë„ë‹¬");
+                    return;
+                }
+                Init(spawnPoint);
             }
         }
     }
 
-    IEnumerator HatchEgg(GameObject egg)
-    {
-        // ÀÏÁ¤ ½Ã°£ÀÌ Áö³­ ÈÄ ¾ËÀ» ºÎÈ­½ÃÅ´
-        yield return new WaitForSeconds(eggHatchTime);
-
-        if (egg != null) // ¾ËÀÌ ¾ÆÁ÷ Á¸ÀçÇÏ´ÂÁö È®ÀÎ
-        {
-            Vector3 eggPosition = egg.transform.position;
-            Debug.Log("Egg ºÎÈ­!");
-            Destroy(egg); // ¾ËÀ» ÆÄ±«
-            GameObject adult = Instantiate(adultEnemyPrefab, eggPosition, Quaternion.identity); // ¼ºÃ¼·Î ºÎÈ­
-            activeEnemies.Add(adult);
-            EnemyBehaviorFSM enemyBehavior = adult.GetComponent<EnemyBehaviorFSM>();
-            if (enemyBehavior != null)
-            {
-                enemyBehavior.ChangeState(EnemyState.Patrolling);
-            }
-        }
-    }
-
-    void SpwanCube()
-    {
-
-    }
-
-    GameObject Init(Transform spawnPoint)
+    private GameObject Init(Transform spawnPoint)
     {
         GameObject egg = Instantiate(eggPrefab, spawnPoint.position, Quaternion.identity);
-        activeEnemies.Add(egg);
-        Debug.Log("Egg »ı¼º!");
+        activeEggs.Add(egg);
+        Debug.Log("Egg ìƒì„±!");
+        
         Vector3 rayOrigin = egg.transform.position;
         RaycastHit hit;
         if(Physics.Raycast(rayOrigin, transform.up * -1, out hit, 10f, SpawnLayer))
@@ -74,12 +65,4 @@ public class EnemyManager : MonoBehaviour
 
         return egg;
     }
-}
-
-public enum EnemyState
-{
-    Idle, // ´ë±â »óÅÂ
-    Patrolling, // ¼øÂû »óÅÂ
-    Charging, // µ¹Áø »óÅÂ
-    Dead // Á×À½ »óÅÂ
 }
