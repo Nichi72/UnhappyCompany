@@ -122,6 +122,10 @@ namespace StarterAssets
 
 		private void Update()
 		{
+			if(!_input.cursorInputForLook)
+			{
+				_input.look = Vector2.zero;
+			}
 			JumpAndGravity();
 			GroundedCheck();
 			Move();

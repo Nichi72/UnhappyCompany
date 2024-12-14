@@ -14,7 +14,7 @@ public class ItemsMeleeAttack : Item ,IDamager
     }
     IEnumerator PlayAttackAnimation()
     {
-        yield return new WaitForEndOfFrame(); // È¤Àº WaitForSeconds¸¦ »ç¿ëÇØ Áö¿¬
+        yield return new WaitForEndOfFrame(); // 
         animator.Play("AttackAnimation");
     }
 
@@ -38,7 +38,7 @@ public class ItemsMeleeAttack : Item ,IDamager
 
         var interactionSystemTemp = MyUtility.ComponentUtils.GetAllComponentsInParents<InteractionSystem>(gameObject,true)[0];
 
-        // ·¹ÀÌ¾î¿¡ µû¶ó Raycast ½ÇÇà
+        // ï¿½ï¿½ï¿½Ì¾î¿¡ ï¿½ï¿½ï¿½ï¿½ Raycast ï¿½ï¿½ï¿½ï¿½
         if (Physics.Raycast(ray, out hit, interactionSystemTemp.raycastMaxDistance, interactionSystemTemp.interactionLayer))
         {
             var damageAbleTemp = hit.transform.GetComponent<IDamageable>();
@@ -52,7 +52,7 @@ public class ItemsMeleeAttack : Item ,IDamager
 
     public void DealDamage(IDamageable target)
     {
-        target.TakeDamage(damage);
+        target.TakeDamage(damage, DamageType.Physical);
         Debug.Log($"{target.ToString()} Damage! _ Left HP { target.hp}");
     }
 

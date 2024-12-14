@@ -3,15 +3,16 @@ using System.Collections.Generic;
 
 public class CentralBatterySystem : MonoBehaviour
 {
-    public static CentralBatterySystem Instance; // �̱��� �������� �߾� ���͸� �ý��� ����
+    public static CentralBatterySystem Instance; // 싱글톤 패턴으로 중앙 배터리 시스템 관리
 
-    public float totalBatteryLevel = 1000.0f; // �߾� ���͸��� �ѷ�
+    public float totalBatteryLevel = 1000.0f; // 중앙 배터리의 총량
     [SerializeField]
     private List<ICentralBatteryConsumer> batteryConsumers = new List<ICentralBatteryConsumer>();
 
+    public bool isStop = false;
     void Awake()
     {
-        // �̱��� �ν��Ͻ� ����
+        // 싱글톤 인스턴스 설정
         if (Instance == null)
         {
             Instance = this;
@@ -28,24 +29,27 @@ public class CentralBatterySystem : MonoBehaviour
         UIManager.instance.UpdateTotalBatteryLevel(totalBatteryLevel);
     }
 
-    // �߾� ���͸����� ������ �Һ��ϴ� �޼���
-    public bool DrainBattery(ICentralBatteryConsumer consumer, float amount)
+    // 중앙 배터리에서 전력을 소비하는 메서드
+    public void DrainBattery(ICentralBatteryConsumer consumer, float amount)
     {
+        if(isStop)
+        {
+            return;
+        }
         if (totalBatteryLevel >= amount)
         {
             totalBatteryLevel -= amount;
             UpdateConsumerInfo();
             UIManager.instance.UpdateTotalBatteryLevel(totalBatteryLevel);
-            return true;
+            // return true;
         }
         else
         {
             Debug.Log("Not enough battery in the central system!");
-            return false;
         }
     }
 
-    // �Һ��ڸ� �߰��ϴ� �޼���
+    // 소비자를 추가하는 메서드
     public void RegisterConsumer(ICentralBatteryConsumer consumer)
     {
         if (!batteryConsumers.Contains(consumer))
@@ -56,7 +60,7 @@ public class CentralBatterySystem : MonoBehaviour
         }
     }
 
-    // �Һ��ڸ� �����ϴ� �޼��� (��ü�� �ı��� �� ���)
+    // 소비자를 제거하는 메서드 (객체가 파괴될 때 사용)
     public void UnregisterConsumer(ICentralBatteryConsumer consumer)
     {
         if (batteryConsumers.Contains(consumer))
@@ -69,7 +73,7 @@ public class CentralBatterySystem : MonoBehaviour
 
     private void UpdateConsumerInfo()
     {
-        UIManager.instance.ClearConsumerInfo(); // ���� �ؽ�Ʈ �ʱ�ȭ
+        UIManager.instance.ClearConsumerInfo(); // 기존 텍스트 초기화
 
         foreach (var consumer in batteryConsumers)
         {
