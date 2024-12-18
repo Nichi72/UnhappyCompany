@@ -1,56 +1,41 @@
 using UnityEngine;
-
-public class ConnectionPoint : MonoBehaviour
+    public enum Direction {
+    North,
+    East,
+    South,
+    West,
+    ForTest
+}
+public class ConnectionPoint : MonoBehaviour 
 {
-    public enum Direction { Up, Down, Right, Left }
-    public Direction connectionDirection;
 
-    [HideInInspector]
-    public bool isConnected = false;
+    public Direction currentDirection = Direction.North;
 
-    private void OnDrawGizmos()
-    {
-        float arrowLength = 1f;
-        Vector3 direction = Vector3.zero;
-        
-        switch(connectionDirection)
-        {
-            case Direction.Up:
-                direction = Vector3.forward;
-                break;
-            case Direction.Down:
-                direction = Vector3.back;
-                break;
-            case Direction.Right:
-                direction = Vector3.right;
-                break;
-            case Direction.Left:
-                direction = Vector3.left;
-                break;
+    // 방향 enum을 실제 세계 방향 벡터로 매핑
+    public Vector3 GetDirectionVector(Direction dir) {
+        switch (dir) {
+            case Direction.North: return Vector3.forward; // z+
+            case Direction.East:  return Vector3.right;   // x+
+            case Direction.South: return Vector3.back;    // z-
+            case Direction.West:  return Vector3.left;    // x-
         }
-
-        Gizmos.color = Color.yellow;
-        Vector3 start = transform.position;
-        Vector3 end = start + direction * arrowLength;
-        Gizmos.DrawLine(start, end);
-        Gizmos.DrawWireSphere(end, 0.1f);
+        return Vector3.forward;
     }
 
-    public bool CanExpand()
-    {
-        return !isConnected;
+    // 반대 방향을 반환하는 헬퍼 함수
+    public Direction GetOppositeDirection(Direction dir) {
+        switch (dir) {
+            case Direction.North: return Direction.South;
+            case Direction.South: return Direction.North;
+            case Direction.East:  return Direction.West;
+            case Direction.West:  return Direction.East;
+        }
+        return Direction.North;
     }
 
-    // 반대 방향을 반환하기 위한 헬퍼 함수
-    public static Direction GetOppositeDirection(Direction dir)
-    {
-        switch(dir)
-        {
-            case Direction.Up: return Direction.Down;
-            case Direction.Down: return Direction.Up;
-            case Direction.Right: return Direction.Left;
-            case Direction.Left: return Direction.Right;
-        }
-        return Direction.Up; // 기본값
+    // 디버그용 기즈모 표시(에디터 상에서 문 방향 확인)
+    void OnDrawGizmosSelected() {
+        Gizmos.color = Color.red;
+        Gizmos.DrawRay(transform.position, GetDirectionVector(currentDirection) * 1f);
     }
 }
