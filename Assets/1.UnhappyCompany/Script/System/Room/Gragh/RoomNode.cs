@@ -2,9 +2,6 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
 
-
-
-
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -21,12 +18,9 @@ public class RoomNode : MonoBehaviour
     public RoomType currentRoomType;
     // [ReadOnly] public RoomNode parentRoom;
     [ReadOnly] public DoorEdge connectToParentDoor; // 부모와 연결 할 문
-    // [ReadOnly] public List<RoomNode> childRoomList = new List<RoomNode>();
-    [ReadOnly] public DoorEdge parentDoor;
     // 방이 생 성될 문 선택된 문 리스트 (이미 부모와 연결된 간선은 제외됨.)
     [ReadOnly] public List<DoorEdge> SelectedDoors = new List<DoorEdge>();
     [ReadOnly] [SerializeField] private List<DoorEdge> doorList = new List<DoorEdge>();
-
     public List<OtherGoundChecker> groundList = new List<OtherGoundChecker>();
     public bool isOverlap = false;
     [Header("Door")]
@@ -84,9 +78,6 @@ public class RoomNode : MonoBehaviour
         }
         return null;
     }
-
-   
-   
 
     /// <summary>
     /// 현재 방의 간선을 정렬하여 먼 문을 선택할지 정렬된 문을 선택할지 확률에 의해 결정

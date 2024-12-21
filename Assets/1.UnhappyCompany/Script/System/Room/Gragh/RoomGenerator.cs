@@ -10,6 +10,7 @@ public class RoomGenerator : MonoBehaviour
     public class DoorGeneration {
         public DoorEdge door;
         public bool shouldGenerate = true;
+        public int stair = 0;
     }
     [System.Serializable]
     public class RoomRandomGeneration {
@@ -22,8 +23,6 @@ public class RoomGenerator : MonoBehaviour
         public List<RoomRandomGeneration> roomPrefabList = new List<RoomRandomGeneration>();
     }
     public static RoomGenerator instance;
-
-    
     
     [ReadOnly] public List<RoomNode> roomList = new List<RoomNode>(); // 생성된 방 리스트
     public RoomNode startRoomNode;// 시작 방
@@ -32,6 +31,7 @@ public class RoomGenerator : MonoBehaviour
     [SerializeField] private float createRoomTime = 1f;
 
     public RoomTypeGeneration[] roomTypeGenerationSettingsForSmallRoom;
+    public RoomTypeGeneration[] roomTypeGenerationSettingsForStairRoom;
 
     [Header("==== 밸런스 처리 ====")]
     [Header("각각의 방이 생성 될 확률(!!반드시!!총합이 1이 되어야함)")]
@@ -42,6 +42,9 @@ public class RoomGenerator : MonoBehaviour
     public int roomCountPerDepth = 6; // 깊이를 반복 할 때마다 생성 될 방의 개수
     [Header("더 먼곳에 있는 방을 먼저 생성할 확률을 조절하는 함수")]
     public float farRoomProbability = 0.5f; // 더 먼곳에 있는 방을 먼저 생성할 확률을 조절하는 함수
+    [Header("계단을 생성할 확률을 조절하는 함수")]
+    public float stairProbability = 0.5f; // 계단을 생성할 확률을 조절하는 함수
+
 
     void Awake()
     {
@@ -77,11 +80,20 @@ public class RoomGenerator : MonoBehaviour
                 startRoomNode.ConnectToChildRoom(newRoom);
                 // 두 문을 연결 해줌
                 ConnectRooms(newRoom.gameObject, startDoor.door, newRoom.connectToParentDoor);
-                // if(connectDoor.toRoomNode == )
-                // {
-
-                // }
-                // 이후 방 생성
+                // doorGenerationSettings를 셔플
+                var tempList = new List<DoorGeneration>(doorGenerationSettings);
+                for (int i = tempList.Count - 1; i > 0; i--)
+                {
+                    int randomIndex = Random.Range(0, i + 1);
+                    var temp = tempList[i];
+                    tempList[i] = tempList[randomIndex];
+                    tempList[randomIndex] = temp;
+                }
+                doorGenerationSettings = tempList.ToArray();
+                doorGenerationSettings[0].stair = -1;
+                doorGenerationSettings[1].stair = 0;
+                doorGenerationSettings[2].stair = 1;
+                doorGenerationSettings[3].stair = 2;
                 StartCoroutine(GenerateRoom(newRoom, roomCountFirstTime,RoomNode.RoomType.KoreaRoom));
             }
         }
@@ -120,59 +132,109 @@ public class RoomGenerator : MonoBehaviour
     /// 
     /// 이를 통해 단계별로 새로운 방을 생성하고 연결함으로써 
     /// 확장 가능한 그래프(미로)를 구성할 수 있다.
+    /// 
+
+
+    /// 방을 생성 
+    /// 방에 문에 부모와 연결된 문을 제외한 나머지 문을 큐에 넣어
+    /// 문을 하나 뽑아.
+    /// 그 문을 기준으로 방을 생성하고 연결해.
+    /// 
+    /// 그 방에 문에 부모와 연결된 문을 제외한 나머지 문을 큐에 넣어.
+    /// 문을 하나 뽑아.
+    /// 그 문을 기준으로 방을 생성하고 연결해.
+    /// 계속 반복해
+    /// 
         yield return new WaitForSeconds(2f);
         /// 생성 될 문을 넣어둠
-        Queue<RoomNode> roomQueue = new Queue<RoomNode>();
-        roomQueue.Enqueue(startRoomNode);
-        int roomcount = 0;
-        /// 최대 방 개수를 넘어가면 종료
-        while(0 < roomQueue.Count && roomcount < maxRoomCount)
+        // Queue<RoomNode> roomQueue = new Queue<RoomNode>();
+        Queue<DoorEdge> doorQueue = new Queue<DoorEdge>();
+        foreach(var door in startRoomNode.SelectedDoors)
         {
-            
-            RoomNode room = roomQueue.Dequeue();
-            RoomNode newRoom = null;
-            DoorEdge parentDoor = null;
-            DoorEdge childDoor = null;
-            // 새로운 방을 생성
-            newRoom = Instantiate(GetRoomNodePrefab(roomType)); 
-            parentDoor = newRoom.ConnectToParentRoom(room);
-            childDoor = room.ConnectToChildRoom(newRoom);
-            roomcount++;
-            ConnectRooms(newRoom.gameObject, childDoor, parentDoor);
-            
-            // 문에 맞게끔 기본적인 회전 및 위치를 처리.
-            // 겹치는거 감지하는 처리
-            // 만약 Room에 겹치는것이 감지 되지 않는다면? => 다음 단계로 넘어감
-            yield return new WaitForFixedUpdate();
-            yield return new WaitForSeconds(createRoomTime);
-            if(!newRoom.isOverlap)
+            if(door.toRoomNode == null)
             {
-                roomQueue.Enqueue(newRoom);
+                doorQueue.Enqueue(door);
             }
-            else // 겹치는거 감지 된다면?
+        }
+
+        // roomQueue.Enqueue(startRoomNode);
+        
+        int currentRoomCount = 0;
+        /// 최대 방 개수를 넘어가면 종료
+        while(0 < doorQueue.Count && currentRoomCount < maxRoomCount)
+        {
+            // 현재 방의 룸 개수만큼 처리
+            int currentDoorCount = doorQueue.Count;
+
+            
+            for(int i = 0; i < currentDoorCount; i++)
             {
-                Debug.Log("@@@겹치는거 감지 됨");
-                // 더 작은 방으로 교체 시도
-                RoomNode smallerRoom = Instantiate(GetSmallRoomNodePrefab(roomType));
-                CancelConnectRooms(parentDoor, childDoor); // 연결한것들 취소
-                Destroy(newRoom.gameObject);
+                DoorEdge beforedoor = doorQueue.Dequeue();
+                RoomNode beforeRoom = beforedoor.formRoomNode;
+                DoorEdge childDoor = null;
+                RoomNode newRoom = null;
+                Debug.Log($"currentRoom{beforedoor.formRoomNode.name}");
+                // 새로운 방을 생성
+                newRoom = Instantiate(GetRoomNodePrefab(roomType));
+                newRoom.ConnectToParentRoom(beforeRoom);
+                childDoor = beforeRoom.ConnectToChildRoom(newRoom);
+                currentRoomCount++;
+                ConnectRooms(newRoom.gameObject,childDoor ,newRoom.connectToParentDoor);
 
-                newRoom = smallerRoom;
-                parentDoor = newRoom.ConnectToParentRoom(room);
-                childDoor = room.ConnectToChildRoom(newRoom);
-                ConnectRooms(newRoom.gameObject, childDoor, parentDoor);
-                // 작은 방도 겹치면 연결 취소
+                
+                // 문에 맞게끔 기본적인 회전 및 위치를 처리.
+                // 겹치는거 감지하는 처리
+                // 만약 Room에 겹치는것이 감지 되지 않는다면? => 다음 단계로 넘어감
                 yield return new WaitForFixedUpdate();
                 yield return new WaitForSeconds(createRoomTime);
-
-                if(newRoom.isOverlap)
+                if(!newRoom.isOverlap)
                 {
-                    CancelConnectRooms(parentDoor, childDoor);
-                    Destroy(newRoom.gameObject);
-                    roomcount--;
+                    var temp = newRoom.SelectedDoors;
+                    foreach(var door in temp)
+                    {
+                        if(door.toRoomNode == null)
+                        {
+                            doorQueue.Enqueue(door);
+                        }
+                    }
                 }
-                yield return new WaitForFixedUpdate();
-                yield return new WaitForSeconds(createRoomTime);
+                else // 겹치는거 감지 된다면?
+                {
+                    Debug.Log("@@@겹치는거 감지 됨");
+                    CancelConnectRooms(beforedoor,childDoor); // 연결한것들 취소
+                    Destroy(newRoom.gameObject);
+                    RoomNode replacementRoom = null;
+                    if(Random.value < stairProbability)
+                    {
+                        Debug.Log("@@@계단 생성");
+                        // 계단 생성
+                    }
+                    else
+                    {
+                        // 더 작은 방으로 교체 시도
+                        replacementRoom = Instantiate(GetSmallRoomNodePrefab(roomType));
+                    }
+
+
+
+                    newRoom = replacementRoom;
+                    newRoom.ConnectToParentRoom(beforeRoom);
+                    childDoor = beforeRoom.ConnectToChildRoom(newRoom);
+                    ConnectRooms(newRoom.gameObject,childDoor ,newRoom.connectToParentDoor);
+
+                    // 작은 방도 겹치면 연결 취소
+                    yield return new WaitForFixedUpdate();
+                    yield return new WaitForSeconds(createRoomTime);
+
+                    if(newRoom.isOverlap)
+                    {
+                        CancelConnectRooms(beforedoor, childDoor);
+                        Destroy(newRoom.gameObject);
+                        currentRoomCount--;
+                    }
+                    yield return new WaitForFixedUpdate();
+                    yield return new WaitForSeconds(createRoomTime);
+                }
             }
             yield return new WaitForSeconds(createRoomTime);
         }
@@ -240,6 +302,10 @@ public class RoomGenerator : MonoBehaviour
             Vector3 offset = new Vector3(dir.x,roomB.transform.position.y,dir.z);
             roomB.transform.position += offset;
         }
+    }
+    private RoomNode GetStairRoomNodePrefab(RoomNode.RoomType roomType)
+    {
+        return null;
     }
     private RoomNode GetSmallRoomNodePrefab(RoomNode.RoomType roomType)
     {
