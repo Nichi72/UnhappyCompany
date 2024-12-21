@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
-
 public class Room : MonoBehaviour
 {
     public List<OtherGoundChecker> groundList = new List<OtherGoundChecker>();
@@ -60,7 +60,7 @@ public class Room : MonoBehaviour
     [ContextMenu("Generate New Map")]
     public void SetGround()
     {
-         foreach (Transform child in transform)
+        foreach (Transform child in transform)
         {
             if (child.gameObject.layer == LayerMask.NameToLayer("Ground"))
             {
