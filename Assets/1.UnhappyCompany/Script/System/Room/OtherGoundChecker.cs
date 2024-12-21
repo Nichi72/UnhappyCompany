@@ -18,7 +18,7 @@ public class OtherGoundChecker : MonoBehaviour
     }
     void FixedUpdate()
     {
-        if(rb == null   )
+        if(rb == null)
         {
             rb = GetComponent<Rigidbody>();
         }
