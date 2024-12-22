@@ -21,15 +21,16 @@ public class RoomNode : MonoBehaviour
     // 방이 생 성될 문 선택된 문 리스트 (이미 부모와 연결된 간선은 제외됨.)
     [ReadOnly] public List<DoorEdge> SelectedDoors = new List<DoorEdge>();
     [ReadOnly] [SerializeField] private List<DoorEdge> doorList = new List<DoorEdge>();
-    public List<OtherGoundChecker> groundList = new List<OtherGoundChecker>();
+    public List<OtherGoundChecker> roomGeneratorZones = new List<OtherGoundChecker>();
     public bool isOverlap = false;
     [Header("Door")]
     [Tooltip("여러개의 문이 선택 될 확률")]
     public float multipleDoorProbability = 0.6f;
+    public int depth; // 방의 깊이를 저장하는 변수
     
     void Awake()
     {
-        if(groundList.Count != 0)
+        if(roomGeneratorZones.Count != 0)
         {
             StartCoroutine(CheckOverlap());
         }
@@ -39,10 +40,10 @@ public class RoomNode : MonoBehaviour
         while(true)
         {
             isOverlap = false;
-            foreach (var ground in groundList)
+            foreach (var zone in roomGeneratorZones)
             {
                 // 하나라도 오버랩이 있으면 오버랩임
-                if (ground.isOverlap)
+                if (zone.isOverlap)
                 {
                     isOverlap = true;
                     break;
@@ -54,12 +55,13 @@ public class RoomNode : MonoBehaviour
 
     public DoorEdge ConnectToParentRoom(RoomNode otherRoom)
     {
-        // 현재 방의 모든 문중 랜덤으로 하나를 선택
-        var randomIndex = Random.Range(0,doorList.Count);
+        var randomIndex = Random.Range(0, doorList.Count);
         connectToParentDoor = doorList[randomIndex];
         connectToParentDoor.toRoomNode = otherRoom;
+        depth = otherRoom.depth + 1; // 부모 방의 깊이 + 1
         InitSelectedDoors();
-        return connectToParentDoor; // 연결된 문을 반환
+        connectToParentDoor.gameObject.SetActive(false);
+        return connectToParentDoor;
     }
 
     public DoorEdge ConnectToChildRoom(RoomNode otherRoom)
@@ -80,7 +82,7 @@ public class RoomNode : MonoBehaviour
     }
 
     /// <summary>
-    /// 현재 방의 간선을 정렬하여 먼 문을 선택할지 정렬된 문을 선택할지 확률에 의해 결정
+    /// 방의 간선을 정렬하여 먼 문을 선택할지 정렬된 문을 선택할지 확률에 의해 결정
     /// </summary>
     public void InitSelectedDoors()
     {
@@ -161,10 +163,7 @@ public class RoomNode : MonoBehaviour
 
         
     }
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-
    
-
 
    // 이후 Todo
    // 예외 검사
@@ -173,7 +172,7 @@ public class RoomNode : MonoBehaviour
    // 자동화
    // 현재 하위에 있는 자식 노드들을 할당 해주는 함수
    [ContextMenu("InitChildRoomList")]
-   public void InitChildRoomList()
+    public void InitChildRoomList()
    {
         // 기존 리스트 초기화
         doorList.Clear();
@@ -192,31 +191,27 @@ public class RoomNode : MonoBehaviour
         EditorUtility.SetDirty(this);
 #endif
    }
-    [ContextMenu("AddGround")]
-    public void AddGround()
-    {
-        foreach (Transform child in transform)
+
+   [ContextMenu("SetRoomGeneratorZones")]
+   public void SetRoomGeneratorZones()
+   {
+        var temp = GetComponent<OtherGoundChecker>();
+        if(temp != null)
         {
-            if (child.gameObject.layer == LayerMask.NameToLayer("Ground"))
+            roomGeneratorZones.Add(temp);
+        }
+   }
+
+    public List<DoorEdge> GetUnconnectedDoors()
+    {
+        List<DoorEdge> unconnectedDoors = new List<DoorEdge>();
+        foreach (var door in SelectedDoors)
+        {
+            if (door.toRoomNode == null)
             {
-                OtherGoundChecker otherGoundCheckerTemp = child.gameObject.GetComponent<OtherGoundChecker>();
-                Rigidbody rb = child.gameObject.GetComponent<Rigidbody>();
-                if(otherGoundCheckerTemp == null)
-                {
-                    otherGoundCheckerTemp = child.gameObject.AddComponent<OtherGoundChecker>();
-                }
-                if(rb == null)
-                {
-                    rb = child.gameObject.AddComponent<Rigidbody>(); 
-                }
-                rb.useGravity = false;
-                rb.constraints = RigidbodyConstraints.FreezeAll;
-                rb.isKinematic = false;
-                groundList.Add(otherGoundCheckerTemp);
+                unconnectedDoors.Add(door);
             }
         }
-#if UNITY_EDITOR
-        EditorUtility.SetDirty(this);
-#endif
+        return unconnectedDoors;
     }
 }
