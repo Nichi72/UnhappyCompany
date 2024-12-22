@@ -1,4 +1,4 @@
-using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 
 public class OtherGoundChecker : MonoBehaviour
@@ -29,7 +29,7 @@ public class OtherGoundChecker : MonoBehaviour
     void OnCollisionStay(Collision other)
     {
         // Debug.Log("OnCollisionEnter");
-        if (other.gameObject.layer == LayerMask.NameToLayer("Ground"))
+        if (other.gameObject.layer == LayerMask.NameToLayer("Ground") || other.gameObject.layer == LayerMask.NameToLayer("RoomGeneratorZone"))
         {
             // Debug.Log("OnTriggerEnter");
  
@@ -62,5 +62,38 @@ public class OtherGoundChecker : MonoBehaviour
             return true;
         }
         return false;
+    }
+    public void AddGround()
+    {
+        // foreach (Transform child in transform)
+        // {
+        //     if (child.gameObject.layer == LayerMask.NameToLayer("Ground"))
+        //     {
+        //         Add(child);
+        //     }
+        // }
+
+        Add(transform);
+
+        void Add(Transform tr)
+        {
+            OtherGoundChecker otherGoundCheckerTemp = tr.gameObject.GetComponent<OtherGoundChecker>();
+            Rigidbody rb = tr.gameObject.GetComponent<Rigidbody>();
+            if(otherGoundCheckerTemp == null)
+            {
+                otherGoundCheckerTemp = tr.gameObject.AddComponent<OtherGoundChecker>();
+            }
+            if(rb == null)
+            {
+                rb = tr.gameObject.AddComponent<Rigidbody>(); 
+            }
+            rb.useGravity = false;
+            rb.constraints = RigidbodyConstraints.FreezeAll;
+            rb.isKinematic = false;
+            // groundList.Add(otherGoundCheckerTemp);
+        }
+#if UNITY_EDITOR
+        EditorUtility.SetDirty(this);
+#endif
     }
 }

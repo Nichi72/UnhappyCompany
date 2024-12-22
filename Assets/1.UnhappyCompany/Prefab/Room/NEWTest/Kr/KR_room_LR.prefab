@@ -257,7 +257,11 @@ GameObject:
   m_Component:
   - component: {fileID: 8243737989077585605}
   - component: {fileID: 141058243981405397}
-  m_Layer: 9
+  - component: {fileID: 6583097521070546816}
+  - component: {fileID: -5417085543080362220}
+  - component: {fileID: -6333460202815063769}
+  - component: {fileID: 5930143645094576400}
+  m_Layer: 12
   m_Name: KR_room_LR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -300,15 +304,89 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentRoomType: 0
   connectToParentDoor: {fileID: 0}
-  parentDoor: {fileID: 0}
   SelectedDoors: []
   doorList:
   - {fileID: 858770373714059385}
   - {fileID: 3313985279895182952}
-  groundList:
-  - {fileID: 3010164632867047752}
+  roomGeneratorZones:
+  - {fileID: -6333460202815063769}
   isOverlap: 0
   multipleDoorProbability: 0.6
+  depth: 0
+--- !u!114 &6583097521070546816
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2740441207238540419}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b812eb2845276c47af5b31b85abc69a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!65 &-5417085543080362220
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2740441207238540419}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 11.000003, y: 2, z: 11.000001}
+  m_Center: {x: 0.00000047683716, y: 0.75, z: 0.00000047683716}
+--- !u!114 &-6333460202815063769
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2740441207238540419}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e299e46c052b404b8bca151015478ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  flagCheck: 0
+  isOverlap: 0
+--- !u!54 &5930143645094576400
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2740441207238540419}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 126
+  m_CollisionDetection: 0
 --- !u!1 &3429313418860529477
 GameObject:
   m_ObjectHideFlags: 0
@@ -723,6 +801,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   formRoomNode: {fileID: 0}
   toRoomNode: {fileID: 0}
+  currentDoorType: 0
 --- !u!1 &7039089784241372010
 GameObject:
   m_ObjectHideFlags: 0
@@ -955,3 +1034,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   formRoomNode: {fileID: 0}
   toRoomNode: {fileID: 0}
+  currentDoorType: 0
