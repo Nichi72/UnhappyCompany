@@ -27,6 +27,7 @@ public class RoomGenerator : MonoBehaviour
     public RoomNode startRoomNode;// 시작 방
     public DoorGeneration[] doorGenerationSettings; // 시작방에서 시작 문 선택
     [SerializeField] private float createRoomTime = 1f;
+    public bool isGenerating = false;
 
     public RoomTypeGeneration[] roomTypeGenerationSettingsForSmallRoom;
     public RoomTypeGeneration[] roomTypeGenerationSettingsForStairRoom;
@@ -36,6 +37,8 @@ public class RoomGenerator : MonoBehaviour
     public RoomTypeGeneration[] roomTypeGenerationSettings;
     [Header("생성 할 방의 개수")]
     public int roomCountFirstTime = 10; // 처음에 생성 될 방의 개수
+    [Header("깊이를 반복 할 횟수")]
+    public int depthCount = 10; // 깊이를 반복 할 횟수
     [Header("깊이를 반복 할 때마다 생성 될 방의 개수")]
     public int roomCountPerDepth = 6; // 깊이를 반복 할 때마다 생성 될 방의 개수
     [Header("더 먼곳에 있는 방을 먼저 생성할 확률을 조절하는 함수")]
@@ -91,6 +94,7 @@ public class RoomGenerator : MonoBehaviour
                     tempList[i] = tempList[randomIndex];
                     tempList[randomIndex] = temp;
                 }
+
                 doorGenerationSettings = tempList.ToArray();
                 doorGenerationSettings[0].stair = -1;
                 doorGenerationSettings[1].stair = 0;
@@ -103,19 +107,30 @@ public class RoomGenerator : MonoBehaviour
     }
     private void ExpandRoom()
     {
-        if (roomList.Count > 0)
+        List<int> tempRoomList = new List<int>();
+      
+        for(int i = 0; i < depthCount; i++)
         {
-            // roomList에서 랜덤으로 방을 선택
-            int randomIndex = Random.Range(0, roomList.Count);
-            RoomNode roomToExpand = roomList[randomIndex];
-
-            // 선택된 방을 기준으로 확장
-            StartCoroutine(GenerateRoom(roomToExpand, roomCountPerDepth, roomToExpand.currentRoomType));
+            if (roomList.Count > 0)
+            {
+                // roomList에서 랜덤으로 방을 선택
+                int randomIndex = Random.Range(0, roomList.Count);
+                if(tempRoomList.Contains(randomIndex))
+                {
+                    continue;
+                }
+                RoomNode roomToExpand = roomList[randomIndex];
+                tempRoomList.Add(randomIndex);
+                
+                // 선택된 방을 기준으로 확장
+                StartCoroutine(GenerateRoom(roomToExpand, roomCountPerDepth, roomToExpand.currentRoomType));
+            }
         }
     }
 
     private IEnumerator GenerateRoom(RoomNode startRoomNode, int maxRoomCount, RoomNode.RoomType roomType)
     {
+        isGenerating = true;
         yield return new WaitForSeconds(2f);
 
         Queue<DoorEdge> doorQueue = new Queue<DoorEdge>();
@@ -180,7 +195,13 @@ public class RoomGenerator : MonoBehaviour
             {
                 roomList.Add(room);
             }
+            else
+            {
+                // 문이 없는 방은 roomList에서 제거
+                roomList.Remove(room);
+            }
         }
+        isGenerating = false;
     }
     private void CancelConnectRooms(DoorEdge parentDoor, DoorEdge childDoor)
     {

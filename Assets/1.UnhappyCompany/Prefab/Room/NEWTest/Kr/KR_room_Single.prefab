@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 4156346801161315357}
   - component: {fileID: 7766902711533234240}
   - component: {fileID: 3944192006877490865}
-  m_Layer: 9
+  m_Layer: 13
   m_Name: RoomDoor (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -29,7 +29,7 @@ Transform:
   m_GameObject: {fileID: 317199469602454102}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: -0.7071068}
-  m_LocalPosition: {x: -5, y: 1.16, z: 0}
+  m_LocalPosition: {x: -5.73, y: 1.16, z: -0}
   m_LocalScale: {x: 2.3534164, y: 3.3097205, z: 0.25943}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -394,7 +394,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2175344831106719062}
   - component: {fileID: 8917710339883780576}
-  - component: {fileID: -5226096390024006865}
   - component: {fileID: 3215263777582359029}
   - component: {fileID: 1484343586242365345}
   - component: {fileID: 5731477552842292025}
@@ -450,18 +449,6 @@ MonoBehaviour:
   isOverlap: 0
   multipleDoorProbability: 0.6
   depth: 0
---- !u!114 &-5226096390024006865
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1907900325678675606}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9b812eb2845276c47af5b31b85abc69a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!65 &3215263777582359029
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -888,7 +875,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5252866803330849281}
-  m_Layer: 9
+  m_Layer: 13
   m_Name: GameObject
   m_TagString: Untagged
   m_Icon: {fileID: 0}
