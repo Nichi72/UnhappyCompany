@@ -28,6 +28,10 @@ public class OtherGoundChecker : MonoBehaviour
     }
     void OnCollisionStay(Collision other)
     {
+        if(!RoomGenerator.instance.isGenerating) // 방 생성 중이 아니면 체크 안함
+        {
+            return;
+        }
         // Debug.Log("OnCollisionEnter");
         if (other.gameObject.layer == LayerMask.NameToLayer("Ground") || other.gameObject.layer == LayerMask.NameToLayer("RoomGeneratorZone"))
         {

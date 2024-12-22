@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1425164597734044676}
-  m_Layer: 9
+  m_Layer: 13
   m_Name: GameObject
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -41,7 +41,6 @@ GameObject:
   m_Component:
   - component: {fileID: 6286017680160102824}
   - component: {fileID: 6536119250582464493}
-  - component: {fileID: -594221335292333203}
   - component: {fileID: -4798656278309889461}
   - component: {fileID: -2846312437355096206}
   - component: {fileID: -8459505718807477364}
@@ -99,18 +98,6 @@ MonoBehaviour:
   isOverlap: 0
   multipleDoorProbability: 0.6
   depth: 0
---- !u!114 &-594221335292333203
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 465054317898738715}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9b812eb2845276c47af5b31b85abc69a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!65 &-4798656278309889461
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -445,7 +432,7 @@ GameObject:
   - component: {fileID: 5674594667596048515}
   - component: {fileID: 803881511925174257}
   - component: {fileID: 1760008835168115275}
-  m_Layer: 9
+  m_Layer: 13
   m_Name: Door1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -461,7 +448,7 @@ Transform:
   m_GameObject: {fileID: 2907458259437328539}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 11.12, z: 5.1800003}
+  m_LocalPosition: {x: 0, y: 11.12, z: 5.69}
   m_LocalScale: {x: 2.3534164, y: 3.3097205, z: 0.25943}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -678,7 +665,7 @@ GameObject:
   - component: {fileID: 29856461273259094}
   - component: {fileID: 7592240312654234249}
   - component: {fileID: 1549423183168390439}
-  m_Layer: 9
+  m_Layer: 13
   m_Name: Door2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -694,7 +681,7 @@ Transform:
   m_GameObject: {fileID: 5710673255954791163}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.12, z: 5.33}
+  m_LocalPosition: {x: 0, y: 1.12, z: 5.69}
   m_LocalScale: {x: 2.3534164, y: 3.3097205, z: 0.25943}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1058,7 +1045,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2192883015806026296}
-  m_Layer: 9
+  m_Layer: 13
   m_Name: GameObject
   m_TagString: Untagged
   m_Icon: {fileID: 0}
