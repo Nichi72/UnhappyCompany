@@ -6,11 +6,11 @@ public class QuickSlotSystem : MonoBehaviour
 {
     public static QuickSlotSystem instance = null;
     [Header("Quick Slot UI")]
-    public Transform quickSlotContainer; // 퀵슬롯 UI의 부모 오브젝트
-    public GameObject quickSlotPrefab; // 퀵슬롯 UI 프리팹
-    public int maxQuickSlots = 9; // 최대 퀵슬롯 개수
+    public Transform quickSlotContainer; 
+    public GameObject quickSlotPrefab; 
+    public int maxQuickSlots = 9;
 
-    [SerializeField] private int currentQuickSlotCount = 5; // 현재 퀵슬롯 개수
+    [SerializeField] private int currentQuickSlotCount = 5; 
 
     [SerializeField] private List<QuickSlot> quickSlots = new List<QuickSlot>();
     [ReadOnly][SerializeField] private int selectedSlotIndex = -1;
@@ -19,7 +19,7 @@ public class QuickSlotSystem : MonoBehaviour
     [SerializeField] private Player player;
 
     [Header("Player Settings")]
-    public PlayerStatus playerStatus; // 플레이어 상태 (예: 스피드 등)
+    public PlayerStatus playerStatus; 
 
     private void Awake()
     {
@@ -41,7 +41,6 @@ public class QuickSlotSystem : MonoBehaviour
 
     void InitializeQuickSlots()
     {
-        // 퀵슬롯 초기화
         for (int i = 0; i < currentQuickSlotCount; i++)
         {
             AddQuickSlot();
@@ -61,7 +60,6 @@ public class QuickSlotSystem : MonoBehaviour
 
     void HandleQuickSlotInput()
     {
-        // 1번부터 9번 키 입력 처리하여 슬롯 선택
         for (int i = 0; i < maxQuickSlots; i++)
         {
             if (Input.GetKeyDown((KeyCode)(KeyCode.Alpha1 + i)))
@@ -83,7 +81,7 @@ public class QuickSlotSystem : MonoBehaviour
             selectedSlotIndex = slotIndex;
             quickSlots[selectedSlotIndex].Select();
             //UseItemInSlot(selectedSlotIndex);
-            if(mountingItem != null) Destroy(mountingItem); // 들기전에 파괴
+            if(mountingItem != null) Destroy(mountingItem); 
             currentItem = GetCurrentItemInSlot();
 
             if (currentItem == null)
@@ -97,7 +95,6 @@ public class QuickSlotSystem : MonoBehaviour
 
     public void AddItemToQuickSlot(Item item)
     {
-        // 빈 슬롯에 아이템 추가
         foreach (QuickSlot slot in quickSlots)
         {
             if (slot.IsEmpty())
@@ -113,15 +110,23 @@ public class QuickSlotSystem : MonoBehaviour
     {
         mountingItem = Instantiate(itemData.prefab);
         mountingItem.transform.SetParent(player.rightHandPos);
+        mountingItem.GetComponent<Item>().Mount();
         mountingItem.transform.localPosition = Vector3.zero;
+        
     }
 
     public void DropItem()
     {
         //var tempQuickSlot = GetCurrentQuickSlot();
-        if(mountingItem != null)
+        var rigidbody = mountingItem.GetComponent<Rigidbody>();
+        if(rigidbody != null)   
         {
-            mountingItem.AddComponent<Rigidbody>();
+            rigidbody.isKinematic = false;
+        }
+        var animator = mountingItem.GetComponent<Animator>();
+        if(animator != null)
+        {
+            animator.enabled = false;   
         }
         RemoveCurrentItem();
     }
@@ -187,7 +192,6 @@ public class QuickSlotSystem : MonoBehaviour
     public float totalWeight = 0;
     public void UpdatePlayerSpeed()
     {
-        // 아이템 무게에 따른 플레이어 스피드 업데이트
         float totalWeightTemp = 0;
         foreach (QuickSlot slot in quickSlots)
         {

@@ -3,6 +3,7 @@ using UnityEngine;
 public class Computer : MonoBehaviour , IInteractable
 {
     public Transform spwanTr;
+    public Transform cameraTarget;
     public Player currentUsePlayer;
     public void HitEventInteractionF(Player player)
     {
@@ -10,7 +11,7 @@ public class Computer : MonoBehaviour , IInteractable
         ComputerSystem.instance.OpenComputer(player);
     }
 
-   
+    
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()

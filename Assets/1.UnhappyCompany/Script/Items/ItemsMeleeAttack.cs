@@ -10,6 +10,7 @@ public class ItemsMeleeAttack : Item ,IDamager
     public override void Use()
     {
         base.Use();
+        
         StartCoroutine(PlayAttackAnimation());
     }
     IEnumerator PlayAttackAnimation()
@@ -24,6 +25,8 @@ public class ItemsMeleeAttack : Item ,IDamager
         //{
         //    animator.Play("AttackAnimation");
         //}
+        // Vector3 attackDirection = Camera.main.transform.forward;
+        // transform.forward = attackDirection;
     }
 
     public void AniEvt_Attack()
@@ -38,7 +41,6 @@ public class ItemsMeleeAttack : Item ,IDamager
 
         var interactionSystemTemp = MyUtility.ComponentUtils.GetAllComponentsInParents<InteractionSystem>(gameObject,true)[0];
 
-        // ���̾ ���� Raycast ����
         if (Physics.Raycast(ray, out hit, interactionSystemTemp.raycastMaxDistance, interactionSystemTemp.interactionLayer))
         {
             var damageAbleTemp = hit.transform.GetComponent<IDamageable>();

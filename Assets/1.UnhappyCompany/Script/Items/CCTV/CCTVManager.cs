@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CCTVManager : MonoBehaviour
 {
@@ -23,7 +24,7 @@ public class CCTVManager : MonoBehaviour
     void Start()
     {
         currentIndex = 0;
-        TurnOnOnlyOne();
+        TurnOnOnlyOneByCurrentIndex();
         originalColor = cctvMaterial.color;
     }
 
@@ -33,9 +34,9 @@ public class CCTVManager : MonoBehaviour
         StopCoroutine(blinkCoroutine);
         foreach(var cctv in cctvs)
         {
-            cctv.cctvMaterial.color = originalColor;
+            cctv.CCTVIcon.img.color = originalColor;
         }
-        TurnOnOnlyOne();
+        TurnOnOnlyOneByCurrentIndex();
         
     }
 
@@ -45,9 +46,18 @@ public class CCTVManager : MonoBehaviour
         StopCoroutine(blinkCoroutine);
         foreach(var cctv in cctvs)
         {
-            cctv.cctvMaterial.color = originalColor;
+            cctv.CCTVIcon.img.color = originalColor;
         }
-        TurnOnOnlyOne();
+        TurnOnOnlyOneByCurrentIndex();
+    }
+    public void PressedCCTV(CCTV cctv)
+    {
+        StopCoroutine(blinkCoroutine);
+        foreach(var cctvTemp in cctvs)
+        {
+            cctvTemp.CCTVIcon.img.color = originalColor;
+        }
+        TurnOnOnlyOneByCCTV(cctv);
     }
 
     public void ClampIndex(int amount)
@@ -63,14 +73,30 @@ public class CCTVManager : MonoBehaviour
         }
     }
 
-    public void TurnOnOnlyOne()
+    public void TurnOnOnlyOneByCurrentIndex()
     {
         for (int i = 0; i < cctvs.Count; i++)
         {
             if(currentIndex == i)
             {
                 cctvs[i].currentCamera.gameObject.SetActive(true);
-                blinkCoroutine = StartCoroutine(BlinkMaterial(cctvs[i].cctvMaterial));
+                blinkCoroutine = StartCoroutine(BlinkMaterial(cctvs[i].CCTVIcon.img));
+            }
+            else
+            {
+                cctvs[i].currentCamera.gameObject.SetActive(false);
+            }
+        }
+    }
+    public void TurnOnOnlyOneByCCTV(CCTV cctv)
+    {
+        for (int i = 0; i < cctvs.Count; i++)
+        {
+            if(cctv == cctvs[i])
+            {
+                cctvs[i].currentCamera.gameObject.SetActive(true);
+                currentIndex = i;
+                blinkCoroutine = StartCoroutine(BlinkMaterial(cctvs[i].CCTVIcon.img));
             }
             else
             {
@@ -79,7 +105,7 @@ public class CCTVManager : MonoBehaviour
         }
     }
     
-    private IEnumerator BlinkMaterial(Material cctvMaterial)
+    private IEnumerator BlinkMaterial(Image cctvMaterial)
     {
         float duration = 0.3f;
         while(true)

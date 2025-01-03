@@ -214,44 +214,38 @@ public class RoomGenerator : MonoBehaviour
         {
             doorA.GetComponent<MeshRenderer>().material.color = Color.red;
             doorB.GetComponent<MeshRenderer>().material.color = Color.blue;
-
-            Debug.Log($"디버그 roomB {roomB.name}");
-            Debug.Log($"디버그 doorA {doorA.name}");
-            Debug.Log($"디버그 doorB {doorB.name}");
             
             // 문 A와 문 B의 방향 벡터
             Vector3 doorADir = doorA.transform.rotation.eulerAngles;
             Vector3 doorBDir = doorB.transform.rotation.eulerAngles;
-            Debug.Log($"문 A의 방향: {doorADir}, 문 B의 방향: {doorBDir}");
+            // Debug.Log($"문 A의 방향: {doorADir}, 문 B의 방향: {doorBDir}");
             
             // 두 문의 Y축 회전 차이 계산
             float rotationDifference = Mathf.DeltaAngle(doorADir.y, doorBDir.y);
-            Debug.Log($"두 문의 회전 차이: {rotationDifference}도");
+            // Debug.Log($"두 문의 회전 차이: {rotationDifference}도");
             if((int)rotationDifference == 0)
             {
-                Debug.Log("회전값이 같은 경우");
+                // Debug.Log("회전값이 같은 경우");
                 roomB.transform.Rotate(0, 180, 0);
                 SetRoom();
             }
             else if ((int)rotationDifference == 180)
             {
-                Debug.Log("회전값이 180도 차이나는 경우");
+                // Debug.Log("회전값이 180도 차이나는 경우");
                 SetRoom();
             }
             else if ((int)rotationDifference == 90)
             {
-                Debug.Log("회전값이 90도 차이나는 경우");
+                // Debug.Log("회전값이 90도 차이나는 경우");
                 roomB.transform.Rotate(0, 90, 0);
                 SetRoom();
             }
             else if ((int)rotationDifference == -90)
             {
-                Debug.Log("회전값이 -90도 차이나는 경우");
+                // Debug.Log("회전값이 -90도 차이나는 경우");
                 roomB.transform.Rotate(0, -90, 0);
                 SetRoom();
             }
-
-
             Debug.Log("방 연결 완료: " + roomB.name + "가 연결되었습니다.");
         }
         catch(Exception e)

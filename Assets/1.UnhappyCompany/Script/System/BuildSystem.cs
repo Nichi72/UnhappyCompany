@@ -4,13 +4,13 @@ using System.Collections.Generic;
 public class BuildSystem : MonoBehaviour
 {
     public static BuildSystem instance = null;
-    public GameObject objectToPlace; // ¼³Ä¡ÇÒ °´Ã¼
-    public LayerMask groundLayer; // ¼³Ä¡ °¡´ÉÇÑ ·¹ÀÌ¾î
-    public Material previewMaterial; // ¼³Ä¡ ¹Ì¸®º¸±â¿ë ¹İÅõ¸í ÀçÁú
+    public GameObject objectToPlace; // ë°°ì¹˜í•  ê°ì²´
+    public LayerMask groundLayer; // ë°°ì¹˜ ê°€ëŠ¥í•œ ë ˆì´ì–´
+    public Material previewMaterial; // ë°°ì¹˜ ë¯¸ë¦¬ë³´ê¸°ìš© ì¬ì§ˆ
 
-    private GameObject currentObject; // ÇöÀç ¼³Ä¡ ÁßÀÎ °´Ã¼
-    private bool isPlacing = false; // ¼³Ä¡ ¸ğµå ¿©ºÎ
-    private Dictionary<Renderer, Material> originalMaterials = new Dictionary<Renderer, Material>(); // ¿ø·¡ ÀçÁú ¹é¾÷¿ë
+    private GameObject currentObject; // í˜„ì¬ ë°°ì¹˜ ì¤‘ì¸ ê°ì²´
+    private bool isPlacing = false; // ë°°ì¹˜ ëª¨ë“œ ì—¬ë¶€
+    private Dictionary<Renderer, Material> originalMaterials = new Dictionary<Renderer, Material>(); // ì›ë˜ ì¬ì§ˆ ì €ì¥ì†Œ
     private void Awake()
     {
         if(instance == null)
@@ -22,33 +22,29 @@ public class BuildSystem : MonoBehaviour
     {
         if (isPlacing)
         {
-            MoveObjectToMouse(); // ¸¶¿ì½º¸¦ µû¶ó °´Ã¼ ÀÌµ¿
-            RotateObject(); // °´Ã¼ È¸Àü
+            MoveObjectToMouse(); // ë§ˆìš°ìŠ¤ë¡œ ê°ì²´ ì´ë™
+            RotateObject(); // ê°ì²´ íšŒì „
 
             if (Input.GetMouseButtonDown(0))
             {
-                PlaceObject(); // ¼³Ä¡ È®Á¤
+                PlaceObject(); // ë°°ì¹˜ í™•ì •
             }
             else if (Input.GetKeyDown(KeyCode.Escape))
             {
-                CancelPlacement(); // ¼³Ä¡ Ãë¼Ò
+                CancelPlacement(); // ë°°ì¹˜ ì·¨ì†Œ
             }
-        }
-        else if (Input.GetKeyDown(KeyCode.B))
-        {
-            //StartPlacing(); // ¼³Ä¡ ¸ğµå ½ÃÀÛ
         }
     }
 
-    // ¼³Ä¡ ¸ğµå ½ÃÀÛ - °´Ã¼¸¦ »ı¼ºÇÏ°í ¹Ì¸®º¸±â ÀçÁú Àû¿ë
+    // ë°°ì¹˜ ëª¨ë“œ ì‹œì‘ - ê°ì²´ë¥¼ ìƒì„±í•˜ê³  ë¯¸ë¦¬ë³´ê¸° ì¬ì§ˆ ì ìš©
     public void StartPlacing(GameObject objectToPlace)
     {
         if (objectToPlace != null)
         {
-            currentObject = Instantiate(objectToPlace); // ¼³Ä¡ÇÒ °´Ã¼ ÀÎ½ºÅÏ½ºÈ­
-            SetPreviewMaterial(currentObject); // ¹Ì¸®º¸±â ÀçÁú Àû¿ë
+            currentObject = Instantiate(objectToPlace); // ë°°ì¹˜í•  ê°ì²´ ì¸ìŠ¤í„´ìŠ¤í™”
+            SetPreviewMaterial(currentObject); // ë¯¸ë¦¬ë³´ê¸° ì¬ì§ˆ ì ìš©
 
-            // °´Ã¼ÀÇ Rigidbody°¡ ÀÖ´Ù¸é ¼³Ä¡ ¸ğµå µ¿¾È ºñÈ°¼ºÈ­
+            // ê°ì²´ì— Rigidbodyê°€ ìˆë‹¤ë©´ ë°°ì¹˜ ëª¨ë“œ ë™ì•ˆ ë¹„í™œì„±í™”
             Rigidbody rb = currentObject.GetComponent<Rigidbody>();
             if (rb != null)
             {
@@ -56,77 +52,77 @@ public class BuildSystem : MonoBehaviour
                 rb.useGravity = false;
             }
 
-            isPlacing = true; // ¼³Ä¡ ¸ğµå È°¼ºÈ­
+            isPlacing = true; // ë°°ì¹˜ ëª¨ë“œ í™œì„±í™”
         }
     }
 
-    // ¸¶¿ì½º¸¦ µû¶ó °´Ã¼ ÀÌµ¿ - Raycast¸¦ »ç¿ëÇÏ¿© Áö¸é À§Ä¡ °è»ê
+    // ë§ˆìš°ìŠ¤ë¡œ ê°ì²´ ì´ë™ - Raycastë¥¼ ì‚¬ìš©í•˜ì—¬ ìœ„ì¹˜ ê²°ì •
     void MoveObjectToMouse()
     {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition); // ¸¶¿ì½º À§Ä¡¿¡¼­ Ray »ı¼º
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition); // ë§ˆìš°ìŠ¤ ìœ„ì¹˜ì—ì„œ Ray ìƒì„±
         RaycastHit hit;
 
         if (Physics.Raycast(ray, out hit, Mathf.Infinity, groundLayer))
         {
-            currentObject.transform.position = hit.point; // °´Ã¼ À§Ä¡¸¦ Ray Ãæµ¹ ÁöÁ¡À¸·Î ¼³Á¤
+            currentObject.transform.position = hit.point; // ê°ì²´ ìœ„ì¹˜ë¥¼ Ray ì¶©ëŒ ì§€ì ìœ¼ë¡œ ì„¤ì •
         }
     }
 
-    // °´Ã¼ È¸Àü - R Å°¸¦ ´­·¯ °´Ã¼¸¦ È¸Àü½ÃÅ´
+    // ê°ì²´ íšŒì „ - R í‚¤ë¥¼ ëˆŒëŸ¬ ê°ì²´ë¥¼ íšŒì „ì‹œí‚´
     void RotateObject()
     {
         if (Input.GetKey(KeyCode.R))
         {
-            currentObject.transform.Rotate(Vector3.up, 100 * Time.deltaTime); // YÃà ±âÁØÀ¸·Î È¸Àü
+            currentObject.transform.Rotate(Vector3.up, 100 * Time.deltaTime); // Yì¶• ê¸°ì¤€ìœ¼ë¡œ íšŒì „
         }
     }
 
-    // °´Ã¼ ¼³Ä¡ È®Á¤ - ¹Ì¸®º¸±â ÀçÁú Á¦°Å ¹× Rigidbody ¼³Á¤
+    // ê°ì²´ ë°°ì¹˜ í™•ì • - ë¯¸ë¦¬ë³´ê¸° ì¬ì§ˆ ì œê±° ë° Rigidbody ì„¤ì •
     void PlaceObject()
     {
         if (currentObject.GetComponent<Rigidbody>() != null)
         {
             Rigidbody rb = currentObject.GetComponent<Rigidbody>();
-            rb.isKinematic = false; // Rigidbody ¹°¸® È°¼ºÈ­
-            rb.useGravity = true; // Áß·Â È°¼ºÈ­
+            rb.isKinematic = true; // Rigidbody ì„¤ì • í™œì„±í™”
+            rb.useGravity = false; // ì¤‘ë ¥ í™œì„±í™”
         }
-        RemovePreviewMaterial(currentObject); // ¹Ì¸®º¸±â ÀçÁú Á¦°Å
+        RemovePreviewMaterial(currentObject); // ë¯¸ë¦¬ë³´ê¸° ì¬ì§ˆ ì œê±°
         currentObject = null;
-        isPlacing = false; // ¼³Ä¡ ¸ğµå ºñÈ°¼ºÈ­
+        isPlacing = false; // ë°°ì¹˜ ëª¨ë“œ ë¹„í™œì„±í™”
         QuickSlotSystem.instance.DestroyCurrentItem();
     }
 
-    // ¼³Ä¡ Ãë¼Ò - ÇöÀç °´Ã¼ »èÁ¦
+    // ë°°ì¹˜ ì·¨ì†Œ - í˜„ì¬ ê°ì²´ ì œê±°
     void CancelPlacement()
     {
-        Destroy(currentObject); // ÇöÀç ¼³Ä¡ ÁßÀÎ °´Ã¼ »èÁ¦
+        Destroy(currentObject); // í˜„ì¬ ë°°ì¹˜ ì¤‘ì¸ ê°ì²´ ì œê±°
         currentObject = null;
-        isPlacing = false; // ¼³Ä¡ ¸ğµå ºñÈ°¼ºÈ­
+        isPlacing = false; // ë°°ì¹˜ ëª¨ë“œ ë¹„í™œì„±í™”
     }
 
-    // ¹Ì¸®º¸±â ÀçÁú ¼³Á¤ - ¼³Ä¡ÇÒ °´Ã¼¿¡ ¹İÅõ¸í ÀçÁú Àû¿ë
+    // ë¯¸ë¦¬ë³´ê¸° ì¬ì§ˆ ì ìš© - ë°°ì¹˜í•  ê°ì²´ì— ì¬ì§ˆ ì ìš©
     void SetPreviewMaterial(GameObject obj)
     {
-        Renderer[] renderers = obj.GetComponentsInChildren<Renderer>(); // °´Ã¼ÀÇ ¸ğµç Renderer °¡Á®¿À±â
+        Renderer[] renderers = obj.GetComponentsInChildren<Renderer>(); // ê°ì²´ì˜ ëª¨ë“  Renderer ê°€ì ¸ì˜¤ê¸°
         foreach (Renderer renderer in renderers)
         {
-            originalMaterials[renderer] = renderer.material; // ¿ø·¡ ÀçÁú ¹é¾÷
-            renderer.material = previewMaterial; // °¢ Renderer¿¡ ¹Ì¸®º¸±â ÀçÁú Àû¿ë
+            originalMaterials[renderer] = renderer.material; // ì›ë˜ ì¬ì§ˆ ì €ì¥
+            renderer.material = previewMaterial; // ê° Rendererì— ë¯¸ë¦¬ë³´ê¸° ì¬ì§ˆ ì ìš©
         }
     }
 
-    // ¹Ì¸®º¸±â ÀçÁú Á¦°Å - ¼³Ä¡ È®Á¤ ½Ã ¿ø·¡ ÀçÁú·Î º¹¿ø
+    // ë¯¸ë¦¬ë³´ê¸° ì¬ì§ˆ ì œê±° - ë°°ì¹˜ í™•ì • í›„ ì›ë˜ ì¬ì§ˆë¡œ ë³µì›
     void RemovePreviewMaterial(GameObject obj)
     {
-        Renderer[] renderers = obj.GetComponentsInChildren<Renderer>(); // °´Ã¼ÀÇ ¸ğµç Renderer °¡Á®¿À±â
+        Renderer[] renderers = obj.GetComponentsInChildren<Renderer>(); // ê°ì²´ì˜ ëª¨ë“  Renderer ê°€ì ¸ì˜¤ê¸°
         foreach (Renderer renderer in renderers)
         {
             if (originalMaterials.ContainsKey(renderer))
             {
-                renderer.material = originalMaterials[renderer]; // ¿ø·¡ ÀçÁú·Î º¹¿ø
+                renderer.material = originalMaterials[renderer]; // ì›ë˜ ì¬ì§ˆë¡œ ë³µì›
             }
         }
-        originalMaterials.Clear(); // ¹é¾÷ ÀçÁú Á¤º¸ »èÁ¦
+        originalMaterials.Clear(); // ì¬ì§ˆ ì €ì¥ì†Œ ì´ˆê¸°í™”
     }
 
     GameObject GetBuildObject()

@@ -13,7 +13,8 @@ GameObject:
   - component: {fileID: 8601830855118146510}
   - component: {fileID: 3673487262787971782}
   - component: {fileID: 8469789243094023776}
-  m_Layer: 7
+  - component: {fileID: -1209418207218165230}
+  m_Layer: 6
   m_Name: EggShatter
   m_TagString: Item
   m_Icon: {fileID: 0}
@@ -123,6 +124,33 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemData: {fileID: 11400000, guid: cad031aa79ddc8445a8ac895eb4015cc, type: 2}
+--- !u!54 &-1209418207218165230
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2825052150204304101}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1001 &7479583504718522817
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -131,6 +159,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 6636834425254188127}
     m_Modifications:
+    - target: {fileID: 1436135576638311106, guid: 10c9b4806255b254ba594837ec230726, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 3347963849712375602, guid: 10c9b4806255b254ba594837ec230726, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 4303404551342204381, guid: 10c9b4806255b254ba594837ec230726, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.1880418
@@ -189,7 +225,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5732554775016434836, guid: 10c9b4806255b254ba594837ec230726, type: 3}
       propertyPath: m_Layer
-      value: 7
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 8693195736578663644, guid: 10c9b4806255b254ba594837ec230726, type: 3}
       propertyPath: m_Enabled

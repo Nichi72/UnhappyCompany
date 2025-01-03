@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Cinemachine;
+using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
@@ -46,6 +47,8 @@ namespace StarterAssets
 		[Header("Cinemachine")]
 		[Tooltip("The follow target set in the Cinemachine Virtual Camera that the camera will follow")]
 		public GameObject CinemachineCameraTarget;
+		// public GameObject PlayerCameraRoot;
+
 		[Tooltip("How far in degrees can you move the camera up")]
 		public float TopClamp = 90.0f;
 		[Tooltip("How far in degrees can you move the camera down")]
@@ -71,6 +74,7 @@ namespace StarterAssets
 		// 
 		float weightSpeedAmount = 0.01f;
 		float weightSpeed = 1f;
+		public CinemachineVirtualCamera cinemachineVirtualCamera;
 
 
 #if ENABLE_INPUT_SYSTEM
@@ -282,6 +286,43 @@ namespace StarterAssets
 			if (_playerStatus != null)
 			{
 				_playerStatus.ReduceHealth(damage);
+			}
+		}
+
+		/// <summary>
+		/// Changes the target that the Cinemachine camera follows with smooth transition.
+		/// </summary>
+		/// <param name="newTarget">The new GameObject for the camera to follow.</param>
+		public void SmoothChangeCinemachineCameraTarget(GameObject newTarget)
+		{
+			if (newTarget != null)
+			{
+				// Get the Cinemachine3rdPersonFollow component
+				var thirdPersonFollow = cinemachineVirtualCamera.GetCinemachineComponent<Cinemachine3rdPersonFollow>();
+				if (thirdPersonFollow != null)
+				{
+					// Set damping for smooth transition
+					thirdPersonFollow.Damping.x = 1.0f;
+					thirdPersonFollow.Damping.y  = 1.0f;
+					thirdPersonFollow.Damping.z  = 1.0f;
+				}
+
+				// Change the follow target
+				cinemachineVirtualCamera.Follow = newTarget.transform;
+			}
+			else
+			{
+				Debug.LogWarning("New target is null. CinemachineCameraTarget not changed.");
+			}
+		}
+		public void ResetCinemachineCameraDamping()
+		{
+			var thirdPersonFollow = cinemachineVirtualCamera.GetCinemachineComponent<Cinemachine3rdPersonFollow>();
+			if (thirdPersonFollow != null)
+			{
+				thirdPersonFollow.Damping.x = 0f;
+				thirdPersonFollow.Damping.y  = 0f;
+				thirdPersonFollow.Damping.z  = 0f;
 			}
 		}
 	}

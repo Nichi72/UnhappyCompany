@@ -6,11 +6,11 @@ public class CentralBatteryConsumerItem : Item , ICentralBatteryConsumer
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        CentralBatterySystem.Instance.RegisterConsumer(this); // 중앙 배터리 시스템에 등록
+        CentralBatterySystem.Instance.RegisterConsumer(this); 
     }
     private void OnDestroy()
     {
-        CentralBatterySystem.Instance.UnregisterConsumer(this); // 중앙 배터리 시스템에서 등록 해제
+        CentralBatterySystem.Instance.UnregisterConsumer(this); 
     }
     // Update is called once per frame
  

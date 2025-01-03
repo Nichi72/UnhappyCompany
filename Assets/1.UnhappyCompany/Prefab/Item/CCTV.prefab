@@ -12,7 +12,8 @@ GameObject:
   - component: {fileID: 863398577849189309}
   - component: {fileID: 8771066830154851919}
   - component: {fileID: 4741266835065993615}
-  m_Layer: 7
+  - component: {fileID: 5851725929216995274}
+  m_Layer: 6
   m_Name: CCTV
   m_TagString: Item
   m_Icon: {fileID: 0}
@@ -54,6 +55,7 @@ MonoBehaviour:
   isTurnOn: 1
   cctvMaterial: {fileID: 0}
   minimapQuad: {fileID: 7292919777368949809}
+  iconPrefab: {fileID: 4899178591105833824, guid: df6651fed95ff6f479f1654c00b813a7, type: 3}
 --- !u!114 &8771066830154851919
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -61,7 +63,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1171272523200725250}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 25a82487bb4eaea449569614b716fce7, type: 3}
   m_Name: 
@@ -90,6 +92,33 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.4326528, y: 0.42621064, z: 1}
   m_Center: {x: 0.033065513, y: -0.28689468, z: 0}
+--- !u!54 &5851725929216995274
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1171272523200725250}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &3417928629011638532
 GameObject:
   m_ObjectHideFlags: 0
@@ -101,7 +130,7 @@ GameObject:
   - component: {fileID: 8052529460698704293}
   - component: {fileID: 4087420655534184756}
   - component: {fileID: 8196447003807445964}
-  m_Layer: 2
+  m_Layer: 6
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -187,7 +216,7 @@ GameObject:
   - component: {fileID: 2222984576350701999}
   - component: {fileID: 786044818676043288}
   - component: {fileID: 4699287230327865966}
-  m_Layer: 10
+  m_Layer: 6
   m_Name: Quad (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -274,7 +303,7 @@ GameObject:
   - component: {fileID: 8320892790198259913}
   - component: {fileID: 3425371871861543418}
   - component: {fileID: 1428904764546810363}
-  m_Layer: 2
+  m_Layer: 6
   m_Name: Cube (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -382,7 +411,7 @@ GameObject:
   - component: {fileID: 4479350271951906025}
   - component: {fileID: 3529905682830142054}
   - component: {fileID: 6605273424014789598}
-  m_Layer: 10
+  m_Layer: 6
   m_Name: Quad
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -471,7 +500,7 @@ GameObject:
   - component: {fileID: 1445031000475935146}
   - component: {fileID: 8422843430339979390}
   - component: {fileID: 8424560651844271612}
-  m_Layer: 2
+  m_Layer: 15
   m_Name: CCTV
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -535,7 +564,7 @@ Camera:
     m_Bits: 4294967295
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 8400000, guid: 5e2141df87dbea5469afbecf0aa8c3e2, type: 2}
-  m_TargetDisplay: 0
+  m_TargetDisplay: 1
   m_TargetEye: 3
   m_HDR: 0
   m_AllowMSAA: 0
@@ -561,7 +590,7 @@ MonoBehaviour:
   clearDepth: 1
   volumeLayerMask:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 32768
   volumeAnchorOverride: {fileID: 0}
   antialiasing: 0
   SMAAQuality: 2
@@ -694,7 +723,7 @@ GameObject:
   - component: {fileID: 5973081940447450256}
   - component: {fileID: 3917868642500162845}
   - component: {fileID: 4574915876429894123}
-  m_Layer: 10
+  m_Layer: 6
   m_Name: Text (TMP)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -870,7 +899,7 @@ GameObject:
   - component: {fileID: 8169723081708421732}
   - component: {fileID: 4758004820433198491}
   - component: {fileID: 3309634485048558012}
-  m_Layer: 10
+  m_Layer: 6
   m_Name: Quad (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}

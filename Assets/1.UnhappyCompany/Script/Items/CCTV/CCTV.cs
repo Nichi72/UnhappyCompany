@@ -1,22 +1,30 @@
 ﻿using UnityEngine;
 
-public class CCTV : CentralBatteryConsumerItem
+public class CCTV : CentralBatteryConsumerItem, IMinimapTrackable
 {
     public Camera currentCamera;
     public bool isTurnOn = true;
-    [ReadOnly][SerializeField] public Material cctvMaterial;
+    // [ReadOnly][SerializeField] public Material cctvMaterial;
 
     public GameObject minimapQuad;
+
+    [SerializeField] private GameObject iconPrefab; // UI 아이콘 프리팹
+
+    public GameObject CCTVIconPrefab => iconPrefab;
+    [ReadOnly]public MinimapUIBtnCCTV CCTVIcon;
+
     void Start()
     {
         InitCCTV();
-        cctvMaterial = minimapQuad.GetComponent<MeshRenderer>().material;
+        // cctvMaterial = minimapQuad.GetComponent<MeshRenderer>().material;
+        OnMinimapAdd();
     }
 
     private void OnDestroy()
     {
         CCTVManager.instance.cctvs.Remove(this);
         CentralBatterySystem.Instance.UnregisterConsumer(this); // 중앙 배터리 시스템에서 등록 해제
+        OnMinimapRemove();
     }
     
 
@@ -39,5 +47,21 @@ public class CCTV : CentralBatteryConsumerItem
     {
         CCTVManager.instance.cctvs.Add(this); // CCTV 매니저에 등록
         UIManager.instance.InitCCTVButton(); // UI 매니저에 미니맵 버튼 등록
+    }
+
+    public void OnMinimapAdd()
+    {
+        if (CCTVIconPrefab != null)
+        {
+            // IconPrefab.GetComponent<MinimapUIBtnCCTV>().cctv = this;
+            var icon = MinimapController.instance.AddMinimapIcon(transform, CCTVIconPrefab);
+            icon.GetComponent<MinimapUIBtnCCTV>().cctv = this;
+            CCTVIcon = icon.GetComponent<MinimapUIBtnCCTV>();
+        }
+    }
+
+    public void OnMinimapRemove()
+    {
+        MinimapController.instance.RemoveMinimapIcon(transform);
     }
 }

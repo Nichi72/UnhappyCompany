@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class ComputerSystem : MonoBehaviour
@@ -27,18 +28,28 @@ public class ComputerSystem : MonoBehaviour
     }
     public void OpenComputer(Player player)
     {
+        Debug.Log("OpenComputer");
         player.firstPersonController._input.SetCursorLock(false);
+        player.firstPersonController.SmoothChangeCinemachineCameraTarget(computer.cameraTarget.gameObject);
         UIManager.instance.computerView.SetActive(true);
     }
     public void CloseComputer(Player player)
     {
+        Debug.Log("CloseComputer");
         player.firstPersonController._input.SetCursorLock(true);
         UIManager.instance.computerView.SetActive(false);
+        player.firstPersonController.SmoothChangeCinemachineCameraTarget(player.firstPersonController.CinemachineCameraTarget.gameObject);
+        StartCoroutine(ResetCinemachineCameraDamping(player, 0.7f));
         computer.currentUsePlayer = null;
     }
     public void BtnEvtCloseComputer()
     {
         CloseComputer(computer.currentUsePlayer);
+    }
+    public IEnumerator ResetCinemachineCameraDamping(Player player, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        player.firstPersonController.ResetCinemachineCameraDamping();
     }
 
     private void BuyItem(ItemData itemData)

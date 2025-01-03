@@ -1,16 +1,82 @@
 using UnityEngine;
+using UnityEditor;
+using System.IO;
 
 [CreateAssetMenu(fileName = "ItemData", menuName = "Scriptable Objects/ItemData")]
 public class ItemData : ScriptableObject
 {
-    //Game Data
-    public string itemName; // ¾ÆÀÌÅÛ ÀÌ¸§
-    public float weight; // ¾ÆÀÌÅÛ ¹«°Ô
+    [SerializeField, ReadOnly]
+    private int itemID;
+    public int ItemID => itemID; // ì™¸ë¶€ì—ì„œ ì½ê¸°ë§Œ ê°€ëŠ¥
+
+    public string itemName; 
+    public float weight; 
     public int SellPrice;
     public int BuyPrice;
 
     //Game Obj Data
-    public Sprite icon; // ¾ÆÀÌÅÛ ¾ÆÀÌÄÜ
+    public Sprite icon; 
     public GameObject prefab;
-   
+
+    private void OnEnable()
+    {
+        if (itemID == 0)
+        {
+            string assetPath = AssetDatabase.GetAssetPath(this);
+            string fileName = Path.GetFileNameWithoutExtension(assetPath);
+
+            // íŒŒì¼ ì´ë¦„ì—ì„œ ID ì¶”ì¶œ
+            int extractedID = ExtractIDFromFileName(fileName);
+
+            if (extractedID > 0)
+            {
+                itemID = extractedID;
+            }
+            else
+            {
+                // ìƒˆë¡œìš´ ID í• ë‹¹
+                itemID = GenerateNewID();
+                // íŒŒì¼ ì´ë¦„ì— ID ì¶”ê°€
+                RenameAssetWithID(assetPath, itemID);
+            }
+        }
+    }
+
+    private int ExtractIDFromFileName(string fileName)
+    {
+        string[] parts = fileName.Split('_');
+        if (parts.Length > 2 && parts[0] == "ItemData" && int.TryParse(parts[1], out int id))
+        {
+            return id;
+        }
+        return 0;
+    }
+
+    private int GenerateNewID()
+    {
+        // ëª¨ë“  ItemData íŒŒì¼ì„ ê²€ìƒ‰í•˜ì—¬ ê°€ìž¥ í° IDë¥¼ ì°¾ìŒ
+        string[] guids = AssetDatabase.FindAssets("t:ItemData");
+        int maxID = 0;
+
+        foreach (string guid in guids)
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            string name = Path.GetFileNameWithoutExtension(path);
+            int id = ExtractIDFromFileName(name);
+            if (id > maxID)
+            {
+                maxID = id;
+            }
+        }
+
+        return maxID + 1;
+    }
+
+    private void RenameAssetWithID(string assetPath, int id)
+    {
+        string newFileName = $"ItemData_{id}_{itemName}";
+        string newPath = Path.Combine(Path.GetDirectoryName(assetPath), newFileName);
+        AssetDatabase.RenameAsset(assetPath, newFileName);
+        AssetDatabase.SaveAssets();
+    }
 }

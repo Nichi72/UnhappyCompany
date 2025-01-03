@@ -7,8 +7,9 @@ using UnityEngine.InputSystem;
 
 public class UIManager : MonoBehaviour
 {
-    public static UIManager instance; // 싱글톤 인스턴스
 
+    public static UIManager instance; // 싱글톤 인스턴스
+    public List<GameObject> unActiveObjects = new List<GameObject>();
     [Header("소비자 UI")]
     public TMP_Text consumerInfoText; // 소비자 정보 표시 텍스트 (TMP 사용)
     public TMP_Text totalConsumersText; // 전체 소비자 수 텍스트 (TMP 사용)
@@ -28,7 +29,8 @@ public class UIManager : MonoBehaviour
     public GameObject cctvButtonPrefab; // CCTV 버튼 프리팹
     [SerializeField] private Transform cctvButtonParent; // CCTV 버튼 부모 트랜스폼
     public List<GameObject> cctvButtons = new List<GameObject>(); // 생성된 CCTV 버튼 리스트
-    public TMP_Text screenDayText; // 
+    public TMP_Text screenDayText;
+
 
     private void Awake()
     {
@@ -67,6 +69,10 @@ public class UIManager : MonoBehaviour
         if(currentTimeText != null)
         {
             StartCoroutine(UpdateTimeText()); // 시간 업데이트 코루틴 시작
+        }
+        foreach(var obj in unActiveObjects)
+        {
+            obj.SetActive(false);
         }
     }
     
