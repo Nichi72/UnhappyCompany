@@ -10,8 +10,6 @@ public class Computer : MonoBehaviour , IInteractable
         currentUsePlayer = player;
         ComputerSystem.instance.OpenComputer(player);
     }
-
-    
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()

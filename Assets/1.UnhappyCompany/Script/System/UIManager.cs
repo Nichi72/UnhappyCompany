@@ -84,7 +84,7 @@ public class UIManager : MonoBehaviour
     // 총 골드 텍스트 업데이트 메서드
     public void UpdateGold(int totalGold)
     {
-        totalGoldText.text = $"Total Gold: {totalGold}";
+        // totalGoldText.text = $"Total Gold: {totalGold}";
     }
 
     // 소비자 정보 추가 메서드
