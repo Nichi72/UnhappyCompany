@@ -5253,7 +5253,7 @@ Transform:
   m_GameObject: {fileID: 591557474}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -7.081, y: 1.6500001, z: 0.64}
+  m_LocalPosition: {x: -14.45, y: 1.6500001, z: 0.64}
   m_LocalScale: {x: 2.3534164, y: 3.3097205, z: 0.25943}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -15729,99 +15729,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1850736244}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1604625983
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1604625985}
-  - component: {fileID: 1604625984}
-  m_Layer: 0
-  m_Name: NewRoomGenerator
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1604625984
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1604625983}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e5283bd6c51cbef4e8d1d05256b92869, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  roomList: []
-  startRoomNode: {fileID: 968364714}
-  doorGenerationSettings:
-  - door: {fileID: 591557476}
-    shouldGenerate: 1
-    stair: 0
-  - door: {fileID: 1141221273}
-    shouldGenerate: 1
-    stair: 0
-  - door: {fileID: 541697744}
-    shouldGenerate: 1
-    stair: 0
-  - door: {fileID: 1085695962}
-    shouldGenerate: 1
-    stair: 0
-  createRoomTime: 0.3
-  isGenerating: 0
-  roomTypeGenerationSettingsForSmallRoom:
-  - roomType: 0
-    roomPrefabList:
-    - room: {fileID: 8917710339883780576, guid: d52a4bab1f005c5408cd0a2c00a90852, type: 3}
-      probability: 1
-  roomTypeGenerationSettingsForStairRoom:
-  - roomType: 0
-    roomPrefabList:
-    - room: {fileID: 6536119250582464493, guid: d1108cdc6bf97484caf59604dc0626d7, type: 3}
-      probability: 1
-  roomTypeGenerationSettings:
-  - roomType: 0
-    roomPrefabList:
-    - room: {fileID: -1364818538518375867, guid: 050f61c56341e5b4ca5c364704188746, type: 3}
-      probability: 0.15
-    - room: {fileID: 4081072585556518259, guid: fe35060d9e629d44fab17ba4cfb70c1b, type: 3}
-      probability: 0.4
-    - room: {fileID: 141058243981405397, guid: 1b4512d83a8c7cf44ab319695bf94e0e, type: 3}
-      probability: 0.3
-    - room: {fileID: 6536119250582464493, guid: d1108cdc6bf97484caf59604dc0626d7, type: 3}
-      probability: 0.15
-  - roomType: 1
-    roomPrefabList:
-    - room: {fileID: -1364818538518375867, guid: 21d4e1a87ab852646997ed6cb77d7caa, type: 3}
-      probability: 0.3
-    - room: {fileID: 141058243981405397, guid: 98f60bba3e2d42c41854a4d65e23880e, type: 3}
-      probability: 0.7
-  roomCountFirstTime: 20
-  depthCount: 10
-  roomCountPerDepth: 6
-  farRoomProbability: 0.5
-  stairProbability: 0.5
---- !u!4 &1604625985
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1604625983}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.60282475, y: 1.0895627, z: 4.5788865}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1606276117
 GameObject:
   m_ObjectHideFlags: 0
@@ -23065,5 +22972,4 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 292016971}
-  - {fileID: 1604625985}
   - {fileID: 968364713}

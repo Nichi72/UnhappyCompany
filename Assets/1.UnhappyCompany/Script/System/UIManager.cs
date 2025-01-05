@@ -74,6 +74,7 @@ public class UIManager : MonoBehaviour
         {
             obj.SetActive(false);
         }
+        computerView.SetActive(false);
     }
     
     private void Update()
