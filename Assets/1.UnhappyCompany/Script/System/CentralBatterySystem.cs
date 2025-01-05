@@ -4,8 +4,8 @@ using System.Collections.Generic;
 public class CentralBatterySystem : MonoBehaviour
 {
     public static CentralBatterySystem Instance; // 싱글톤 패턴으로 중앙 배터리 시스템 관리
-
-    public float totalBatteryLevel = 1000.0f; // 중앙 배터리의 총량
+    public float MaxBatteryLevel = 1000.0f; // 중앙 배터리의 총량
+    [ReadOnly] public float currentBatteryLevel = 1000.0f; // 중앙 배터리의 총량
     [SerializeField]
     private List<ICentralBatteryConsumer> batteryConsumers = new List<ICentralBatteryConsumer>();
 
@@ -25,8 +25,9 @@ public class CentralBatterySystem : MonoBehaviour
 
     void Start()
     {
+        currentBatteryLevel = MaxBatteryLevel;
         UIManager.instance.UpdateTotalConsumers(batteryConsumers.Count);
-        UIManager.instance.UpdateTotalBatteryLevel(totalBatteryLevel);
+        UIManager.instance.UpdateTotalBatteryLevel(currentBatteryLevel);
     }
 
     // 중앙 배터리에서 전력을 소비하는 메서드
@@ -36,11 +37,11 @@ public class CentralBatterySystem : MonoBehaviour
         {
             return;
         }
-        if (totalBatteryLevel >= amount)
+        if (currentBatteryLevel >= amount)
         {
-            totalBatteryLevel -= amount;
+            currentBatteryLevel -= amount;
             UpdateConsumerInfo();
-            UIManager.instance.UpdateTotalBatteryLevel(totalBatteryLevel);
+            UIManager.instance.UpdateTotalBatteryLevel(currentBatteryLevel);
             // return true;
         }
         else

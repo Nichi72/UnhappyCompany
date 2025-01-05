@@ -30,8 +30,9 @@ public class ComputerSystem : MonoBehaviour
     {
         Debug.Log("OpenComputer");
         player.firstPersonController._input.SetCursorLock(false);
-        player.firstPersonController.SmoothChangeCinemachineCameraTarget(computer.cameraTarget.gameObject);
         UIManager.instance.computerView.SetActive(true);
+        player.firstPersonController.SmoothChangeCinemachineCameraTarget(computer.cameraTarget.gameObject);
+        
     }
     public void CloseComputer(Player player)
     {

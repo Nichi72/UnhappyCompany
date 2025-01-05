@@ -2,7 +2,6 @@ using UnityEngine;
 
 public class SellPoint : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         
@@ -23,7 +22,7 @@ public class SellPoint : MonoBehaviour
         var temp = other.GetComponent<Item>();
         if (temp == null)
         {
-            Debug.LogError("ItemÀÌ Á¸ÀçÇÏÁö¾Ê½À´Ï´Ù.");
+            Debug.LogError("Itemï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê½ï¿½ï¿½Ï´ï¿½.");
             return;
         }
 

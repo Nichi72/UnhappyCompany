@@ -116,7 +116,7 @@ public class GameManager : MonoBehaviour
     {
         while (true)
         {
-            if(CentralBatterySystem.Instance.totalBatteryLevel <= 0 )
+            if(CentralBatterySystem.Instance.currentBatteryLevel <= 0 )
             {
                 UIManager.instance.gameOverImage.SetActive(true);
             }

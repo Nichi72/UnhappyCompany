@@ -212,8 +212,8 @@ public class RoomGenerator : MonoBehaviour
     {
         try
         {
-            doorA.GetComponent<MeshRenderer>().material.color = Color.red;
-            doorB.GetComponent<MeshRenderer>().material.color = Color.blue;
+            // doorA.GetComponent<MeshRenderer>().material.color = Color.red;
+            // doorB.GetComponent<MeshRenderer>().material.color = Color.blue;
             
             // 문 A와 문 B의 방향 벡터
             Vector3 doorADir = doorA.transform.rotation.eulerAngles;
