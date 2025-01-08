@@ -1,0 +1,73 @@
+using System.Collections;
+using UnityEngine;
+
+public class NormalDoor : MonoBehaviour , IInteractable
+{
+    [SerializeField] private Transform doorPivot;
+    [SerializeField] private float openSpeed = 90f; // 문이 열리는 속도
+    [SerializeField] private float closeSpeed = 90f; // 문이 닫히는 속도
+    
+    private bool isOpen = false;
+    private bool isMoving = false; // 문이 움직이는 중인지 체크하는 변수
+
+    public void HitEventInteractionF(Player rayOrigin)
+    {
+        if (isMoving) return; // 문이 움직이는 중이면 실행하지 않음
+        
+        if (!isOpen)
+        {
+            StartCoroutine(DoorCoroutine(true));
+        }
+        else
+        {
+            StartCoroutine(DoorCoroutine(false));
+        }
+    }
+
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    void Start()
+    {
+        
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+
+    private void OpenDoor()
+    {
+        if (!isMoving) // 문이 움직이는 중이 아닐 때만 실행
+        {
+            StartCoroutine(DoorCoroutine(true));
+        }
+    }
+
+    private IEnumerator DoorCoroutine(bool open)
+    {
+        isMoving = true; // 문 움직임 시작
+        float currentRotation = 0f;
+        float targetRotation = 120f;
+        float rotationSpeed = open ? openSpeed : closeSpeed; // 열고 닫는 속도를 다르게 설정
+        
+        if (!open)
+        {
+            rotationSpeed = -rotationSpeed;
+            targetRotation = -targetRotation;
+        }
+
+        while (open ? currentRotation < targetRotation : currentRotation > targetRotation)
+        {
+            float rotationThisFrame = rotationSpeed * Time.deltaTime;
+            currentRotation += rotationThisFrame;
+            
+            doorPivot.Rotate(Vector3.up, rotationThisFrame);
+            
+            yield return null;
+        }
+
+        isOpen = open;
+        isMoving = false; // 문 움직임 종료
+    }
+}

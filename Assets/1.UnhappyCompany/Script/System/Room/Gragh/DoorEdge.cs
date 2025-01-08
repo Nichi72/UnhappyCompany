@@ -21,18 +21,4 @@ public class DoorEdge : MonoBehaviour
     {
         formRoomNode = GetComponentInParent<RoomNode>();
     }
-    
-    // Update is called once per frame
-    void Update()
-    {
-        // if(formRoomNode == nu)
-        // {
-
-        // }
-
-        if(toRoomNode == formRoomNode)
-        {
-            Debug.Break();
-        }
-    }
 }
