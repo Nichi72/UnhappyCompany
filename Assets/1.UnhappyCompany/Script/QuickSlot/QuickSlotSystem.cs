@@ -14,7 +14,7 @@ public class QuickSlotSystem : MonoBehaviour
 
     [SerializeField] private List<QuickSlot> quickSlots = new List<QuickSlot>();
     [ReadOnly][SerializeField] private int selectedSlotIndex = -1;
-    [ReadOnly] public GameObject mountingItem = null;
+    [ReadOnly] public GameObject currentItemObject = null;
     [ReadOnly] [SerializeField] private Item currentItem;
     [SerializeField] private Player player;
 
@@ -81,7 +81,7 @@ public class QuickSlotSystem : MonoBehaviour
             selectedSlotIndex = slotIndex;
             quickSlots[selectedSlotIndex].Select();
             //UseItemInSlot(selectedSlotIndex);
-            if(mountingItem != null) Destroy(mountingItem); 
+            if(currentItemObject != null) Destroy(currentItemObject); 
             currentItem = GetCurrentItemInSlot();
 
             if (currentItem == null)
@@ -100,7 +100,6 @@ public class QuickSlotSystem : MonoBehaviour
             if (slot.IsEmpty())
             {
                 slot.SetItem(item);
-                
                 break;
             }
         }
@@ -108,45 +107,46 @@ public class QuickSlotSystem : MonoBehaviour
 
     public void MountItem(ItemData itemData)
     {
-        mountingItem = Instantiate(itemData.prefab);
-        mountingItem.transform.SetParent(player.rightHandPos);
-        mountingItem.GetComponent<Item>().Mount();
-        mountingItem.transform.localPosition = Vector3.zero;
-        
+        currentItemObject = Instantiate(itemData.prefab);
+        currentItemObject.transform.SetParent(player.rightHandPos);
+        currentItemObject.GetComponent<Item>().Mount();
+        currentItemObject.transform.localPosition = Vector3.zero;
     }
 
-    public void DropItem()
+    public GameObject DropItem()
     {
-        //var tempQuickSlot = GetCurrentQuickSlot();
-        var rigidbody = mountingItem.GetComponent<Rigidbody>();
-        if(rigidbody != null)   
+        var temp = currentItemObject;
+        var rigidbody = currentItemObject.GetComponent<Rigidbody>();
+        if(rigidbody != null)
         {
             rigidbody.isKinematic = false;
         }
-        var animator = mountingItem.GetComponent<Animator>();
+        var animator = currentItemObject.GetComponent<Animator>();
         if(animator != null)
         {
-            animator.enabled = false;   
+            animator.enabled = false;
         }
-        RemoveCurrentItem();
+        ClearCurrentItemSlot();
+        Debug.Log($"DropItem {temp.name}");
+        return temp;
     }
 
     public void DestroyCurrentItem()
     {
-        if (mountingItem != null)
+        if (currentItemObject != null)
         {
-            Destroy(mountingItem);
+            Destroy(currentItemObject);
         }
-        RemoveCurrentItem();
+        ClearCurrentItemSlot();
     }
-    public void RemoveCurrentItem()
+    public void ClearCurrentItemSlot()
     {
         var tempQuickSlot = GetCurrentQuickSlot();
-        if (mountingItem != null)
+        if (currentItemObject != null)
         {
-            mountingItem.transform.SetParent(null);
-            mountingItem = null;
-            Destroy(mountingItem);
+            currentItemObject.transform.SetParent(null);
+            currentItemObject = null;
+            // Destroy(mountingItem);
         }
         if (currentItem != null)
         {

@@ -61,7 +61,7 @@ public class SellPoint : MonoBehaviour , IInteractable
 
     public void HitEventInteractionF(Player rayOrigin)
     {
-        StartCoroutine(ToggleDoor());
+        // StartCoroutine(ToggleDoor());
     }
     
     private void OnTriggerEnter(Collider other)
