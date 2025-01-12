@@ -5,6 +5,8 @@ public class Player : MonoBehaviour
     public Transform rightHandPos;
     public StarterAssets.FirstPersonController firstPersonController;
     public InteractionSystem interactionSystem;
+    public QuickSlotSystem quickSlotSystem;
+    public BuildSystem buildSystem;
     void Start()
     {
         
@@ -15,20 +17,20 @@ public class Player : MonoBehaviour
     {
         if(Input.GetKeyDown(KeyCode.G))
         {
-            QuickSlotSystem.instance.DropItem();
+            quickSlotSystem.DropItem();
         }
 
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
-            if(QuickSlotSystem.instance.currentItemObject == null)
+            if(quickSlotSystem.currentItemObject == null)
             {
                 return;
             }
             //playt
-            var tempItem = QuickSlotSystem.instance.currentItemObject.GetComponent<Item>();
+            var tempItem = quickSlotSystem.currentItemObject.GetComponent<Item>();
             if (tempItem == null) return;
 
-            tempItem.Use();
+            tempItem.Use(this);
         }
     }
 }

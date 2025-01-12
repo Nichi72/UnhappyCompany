@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class QuickSlotSystem : MonoBehaviour
 {
-    public static QuickSlotSystem instance = null;
+    // public static QuickSlotSystem instance = null;
     [Header("Quick Slot UI")]
     public Transform quickSlotContainer; 
     public GameObject quickSlotPrefab; 
@@ -23,10 +23,10 @@ public class QuickSlotSystem : MonoBehaviour
 
     private void Awake()
     {
-        if(instance == null)
-        {
-            instance = this;
-        }
+        // if(instance == null)
+        // {
+        //     instance = this;
+        // }
     }
 
     private void Start()

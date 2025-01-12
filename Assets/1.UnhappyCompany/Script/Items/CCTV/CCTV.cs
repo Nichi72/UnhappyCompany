@@ -38,9 +38,9 @@ public class CCTV : CentralBatteryConsumerItem, IMinimapTrackable
         }
     }
 
-    public override void Use()
+    public override void Use(Player player) 
     {
-        BuildSystem.instance.StartPlacing(itemData.prefab.gameObject); // 설치 모드 시작
+        player.buildSystem.StartPlacing(itemData.prefab.gameObject); // 설치 모드 시작
     }
 
     private void InitCCTV()

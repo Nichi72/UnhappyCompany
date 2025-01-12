@@ -7,10 +7,9 @@ public class ItemsMeleeAttack : Item ,IDamager
     
     public int damage { get; set; } = 20;
 
-    public override void Use()
+    public override void Use(Player player)
     {
-        base.Use();
-        
+        base.Use(player);
         StartCoroutine(PlayAttackAnimation());
     }
     IEnumerator PlayAttackAnimation()
@@ -58,8 +57,8 @@ public class ItemsMeleeAttack : Item ,IDamager
         Debug.Log($"{target.ToString()} Damage! _ Left HP { target.hp}");
     }
 
-    public override void PickUp()
+    public override void PickUp(Player player)
     {
-        base.PickUp();
+        base.PickUp(player);    
     }
 }
