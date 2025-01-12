@@ -7,11 +7,11 @@ public abstract class Item : MonoBehaviour , IInteractable
     public virtual void HitEventInteractionF(Player player)
     {
         Debug.Log("HitEvent!");
-        QuickSlotSystem.instance.AddItemToQuickSlot(itemData.prefab.GetComponent<Item>());
-        PickUp();
+        player.quickSlotSystem.AddItemToQuickSlot(itemData.prefab.GetComponent<Item>());
+        PickUp(player);
     }
 
-    public virtual void Use()
+    public virtual void Use(Player player)
     {
         Debug.Log($"{itemData.itemName} USE");
         var animator = GetComponent<Animator>();
@@ -21,11 +21,11 @@ public abstract class Item : MonoBehaviour , IInteractable
         }
     }
 
-    public virtual void PickUp()
+    public virtual void PickUp(Player player)
     {
         Debug.Log($"{itemData.itemName} picked up.");
         Destroy(gameObject);
-        QuickSlotSystem.instance.UpdatePlayerSpeed();
+        player.quickSlotSystem.UpdatePlayerSpeed();
     }
 
     public virtual void Mount()

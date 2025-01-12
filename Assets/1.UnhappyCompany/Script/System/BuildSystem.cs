@@ -3,20 +3,21 @@ using System.Collections.Generic;
 
 public class BuildSystem : MonoBehaviour
 {
-    public static BuildSystem instance = null;
+    // public static BuildSystem instance = null;
     public GameObject objectToPlace; // 배치할 객체
     public LayerMask groundLayer; // 배치 가능한 레이어
     public Material previewMaterial; // 배치 미리보기용 재질
+    public Player currentPlayer;
 
     private GameObject currentObject; // 현재 배치 중인 객체
     private bool isPlacing = false; // 배치 모드 여부
     private Dictionary<Renderer, Material> originalMaterials = new Dictionary<Renderer, Material>(); // 원래 재질 저장소
     private void Awake()
     {
-        if(instance == null)
-        {
-            instance = this;
-        }
+        // if(instance == null)
+        // {
+        //     instance = this;
+        // }
     }
     void Update()
     {
@@ -89,7 +90,7 @@ public class BuildSystem : MonoBehaviour
         RemovePreviewMaterial(currentObject); // 미리보기 재질 제거
         currentObject = null;
         isPlacing = false; // 배치 모드 비활성화
-        QuickSlotSystem.instance.DestroyCurrentItem();
+        currentPlayer.quickSlotSystem.DestroyCurrentItem();
     }
 
     // 배치 취소 - 현재 객체 제거

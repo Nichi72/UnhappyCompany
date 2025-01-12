@@ -1078,7 +1078,7 @@ MonoBehaviour:
   currentQuickSlotCount: 5
   quickSlots: []
   selectedSlotIndex: -1
-  mountingItem: {fileID: 0}
+  currentItemObject: {fileID: 0}
   currentItem: {fileID: 0}
   player: {fileID: 4949439154224767991}
   playerStatus: {fileID: 6421594790593824509}
@@ -4909,6 +4909,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 563
   previewMaterial: {fileID: 2100000, guid: 66de79af0e245f444811593385aeb648, type: 2}
+  currentPlayer: {fileID: 0}
 --- !u!114 &1070121363
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5206,6 +5207,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f987c1f35a81abe45875cc98363c173f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  slider: {fileID: 0}
+  isOpen: 0
+  targetPosition: {x: 0, y: 0, z: 0}
 --- !u!54 &1149297104
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -9679,6 +9683,8 @@ MonoBehaviour:
   rightHandPos: {fileID: 605219064705728508}
   firstPersonController: {fileID: 4416926083347132228}
   interactionSystem: {fileID: 8153465871830975899}
+  quickSlotSystem: {fileID: 285654100}
+  buildSystem: {fileID: 1070121360}
 --- !u!1 &5411438496857467328
 GameObject:
   m_ObjectHideFlags: 0
