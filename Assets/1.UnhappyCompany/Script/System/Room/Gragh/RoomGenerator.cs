@@ -62,11 +62,7 @@ public class RoomGenerator : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // test code 
-        if(Input.GetKeyDown(KeyCode.F3))
-        {
-            ExpandRoom();
-        }
+       
     }
    
     private void GenerateRoomFirstTime()

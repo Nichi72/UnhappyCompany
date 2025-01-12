@@ -9,7 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 779912343086545062}
-  m_Layer: 0
+  - component: {fileID: 1906046243817801073}
+  - component: {fileID: 1685534782847220203}
+  m_Layer: 7
   m_Name: DoorButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -33,6 +35,40 @@ Transform:
   - {fileID: 4178829516502043196}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &1906046243817801073
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7456405986240393025}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.043343544, y: 0.24936904, z: 0.13801076}
+  m_Center: {x: -0.011797904, y: 0.0011112929, z: -0.0014656816}
+--- !u!114 &1685534782847220203
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7456405986240393025}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c55c9aa9d5ff4da4f89ab521a8d19d2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  door: {fileID: 0}
 --- !u!1001 &74698051543163065
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -44,6 +80,10 @@ PrefabInstance:
     - target: {fileID: 3728028975768875071, guid: 8db82e5364f8fba43846aff730abba9b, type: 3}
       propertyPath: m_Name
       value: DooorButtonBase
+      objectReference: {fileID: 0}
+    - target: {fileID: 3728028975768875071, guid: 8db82e5364f8fba43846aff730abba9b, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 4104835576650361477, guid: 8db82e5364f8fba43846aff730abba9b, type: 3}
       propertyPath: m_LocalPosition.x
@@ -146,6 +186,10 @@ PrefabInstance:
     - target: {fileID: 6749704608834181740, guid: 92c0126bb604aa84187f7ca568ae9a3f, type: 3}
       propertyPath: m_Name
       value: DooorButton
+      objectReference: {fileID: 0}
+    - target: {fileID: 6749704608834181740, guid: 92c0126bb604aa84187f7ca568ae9a3f, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
