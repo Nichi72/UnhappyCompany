@@ -47,26 +47,27 @@ public class NormalDoor : MonoBehaviour , IInteractable
     private IEnumerator DoorCoroutine(bool open)
     {
         isMoving = true; // 문 움직임 시작
-        float currentRotation = 0f;
-        float targetRotation = 120f;
-        float rotationSpeed = open ? openSpeed : closeSpeed; // 열고 닫는 속도를 다르게 설정
-        
-        if (!open)
-        {
-            rotationSpeed = -rotationSpeed;
-            targetRotation = -targetRotation;
-        }
+        float targetRotation = open ? 90f : 0f;
+        float currentRotation = doorPivot.localEulerAngles.y;
+        float rotationSpeed = open ? openSpeed : -closeSpeed;
 
-        while (open ? currentRotation < targetRotation : currentRotation > targetRotation)
+        // 현재 회전값을 0-360에서 -180~180 범위로 변환
+        if (currentRotation > 180f)
+            currentRotation -= 360f;
+
+        while (Mathf.Abs(Mathf.DeltaAngle(currentRotation, targetRotation)) > 0.1f)
         {
-            float rotationThisFrame = rotationSpeed * Time.deltaTime;
-            currentRotation += rotationThisFrame;
+            float step = rotationSpeed * Time.deltaTime;
+            currentRotation = Mathf.MoveTowards(currentRotation, targetRotation, Mathf.Abs(step));
             
-            doorPivot.Rotate(Vector3.up, rotationThisFrame);
+            doorPivot.localEulerAngles = new Vector3(0, currentRotation, 0);
             
             yield return null;
         }
 
+        // 정확한 목표 각도로 설정
+        doorPivot.localEulerAngles = new Vector3(0, targetRotation, 0);
+        
         isOpen = open;
         isMoving = false; // 문 움직임 종료
     }

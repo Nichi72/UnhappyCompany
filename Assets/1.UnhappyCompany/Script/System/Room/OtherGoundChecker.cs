@@ -23,8 +23,8 @@ public class OtherGoundChecker : MonoBehaviour
             rb = GetComponent<Rigidbody>();
         }
         // 물리 업데이트마다 속도를 0으로 리셋
-        rb.linearVelocity = Vector3.zero;
-        rb.angularVelocity = Vector3.zero;
+        // rb.linearVelocity = Vector3.zero;
+        // rb.angularVelocity = Vector3.zero;
     }
     void OnCollisionStay(Collision other)
     {
