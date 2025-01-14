@@ -4,6 +4,7 @@ using UnityEngine;
 public class ComputerSystem : MonoBehaviour
 {
     public Computer computer;
+    public GameObject computerView;
     public static ComputerSystem instance = null;
 
 
@@ -18,7 +19,7 @@ public class ComputerSystem : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+        // UIManager.instance.computerView = computerView;
     }
 
     // Update is called once per frame
@@ -30,7 +31,7 @@ public class ComputerSystem : MonoBehaviour
     {
         Debug.Log("OpenComputer");
         player.firstPersonController._input.SetCursorLock(false);
-        UIManager.instance.computerView.SetActive(true);
+        computerView.SetActive(true);
         player.firstPersonController.SmoothChangeCinemachineCameraTarget(computer.cameraTarget.gameObject);
         
     }
@@ -38,14 +39,16 @@ public class ComputerSystem : MonoBehaviour
     {
         Debug.Log("CloseComputer");
         player.firstPersonController._input.SetCursorLock(true);
-        UIManager.instance.computerView.SetActive(false);
+        computerView.SetActive(false);
         player.firstPersonController.SmoothChangeCinemachineCameraTarget(player.firstPersonController.CinemachineCameraTarget.gameObject);
         StartCoroutine(ResetCinemachineCameraDamping(player, 0.7f));
         computer.currentUsePlayer = null;
     }
+    
     public void BtnEvtCloseComputer()
     {
         CloseComputer(computer.currentUsePlayer);
+        UIManager.instance.ToggleObject(computerView);
     }
     public IEnumerator ResetCinemachineCameraDamping(Player player, float delay)
     {
@@ -59,9 +62,11 @@ public class ComputerSystem : MonoBehaviour
         {
             var itemObj = Instantiate(itemData.prefab);
             itemObj.transform.position = computer.spwanTr.position;
-            itemObj.AddComponent<Rigidbody>();
+            var rigidbody = itemObj.GetComponent<Rigidbody>();
+            rigidbody.AddForce(computer.spwanTr.transform.right * 250f);
         }
     }
+
     public void BtnEvtBuyItem(ItemData itemData)
     {
         BuyItem(itemData);

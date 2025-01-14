@@ -17,6 +17,9 @@ public class ItemData : ScriptableObject
     //Game Obj Data
     public Sprite icon; 
     public GameObject prefab;
+    public Vector3 HandPosition;
+    public Vector3 HandRotation;
+
 
     private void OnEnable()
     {

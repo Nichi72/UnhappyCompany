@@ -24,7 +24,7 @@ public class UIManager : MonoBehaviour
     public Slider staminaBar; // 스태미나 상태바 슬라이더
 
     public GameObject gameOverImage; // 게임 오버 이미지 오브젝트
-    public GameObject computerView; // 컴퓨터 뷰 오브젝트
+    // public GameObject computerView; // 컴퓨터 뷰 오브젝트
 
     public GameObject cctvButtonPrefab; // CCTV 버튼 프리팹
     [SerializeField] private Transform cctvButtonParent; // CCTV 버튼 부모 트랜스폼
@@ -74,7 +74,7 @@ public class UIManager : MonoBehaviour
         {
             obj.SetActive(false);
         }
-        computerView.SetActive(false);
+        // computerView.SetActive(false);
     }
     
     private void Update()
