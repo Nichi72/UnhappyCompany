@@ -8,6 +8,7 @@ public class MobileManager : MonoBehaviour
     void Start()
     {
         player = GameManager.instance.currentPlayer;
+        CCTVManager.instance.mobileManager = this;
     }
 
     void Update()
