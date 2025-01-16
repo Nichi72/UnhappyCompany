@@ -12,15 +12,26 @@ public class BuildSystem : MonoBehaviour
     private GameObject currentObject; // 현재 배치 중인 객체
     private bool isPlacing = false; // 배치 모드 여부
     private Dictionary<Renderer, Material> originalMaterials = new Dictionary<Renderer, Material>(); // 원래 재질 저장소
+    [SerializeField] [ReadOnly] private GameObject currentItem;
     private void Awake()
     {
-        // if(instance == null)
-        // {
-        //     instance = this;
-        // }
+        currentPlayer = GameManager.instance.currentPlayer;
     }
     void Update()
     {
+        if(currentItem != null)
+        {
+            if(currentItem != GameManager.instance.currentPlayer.quickSlotSystem.currentItemObject)
+            {
+                // 빌드 시스템을 시작한 아이템과 현재 들고 있는 오브젝트의 정보가 다름. 즉 다른 오브젝트로 변경한것임.
+                CancelPlacement(); // 배치 취소
+            }
+        }
+        else
+        {
+            CancelPlacement();
+        }
+        
         if (isPlacing)
         {
             MoveObjectToMouse(); // 마우스로 객체 이동
@@ -38,8 +49,9 @@ public class BuildSystem : MonoBehaviour
     }
 
     // 배치 모드 시작 - 객체를 생성하고 미리보기 재질 적용
-    public void StartPlacing(GameObject objectToPlace)
+    public void StartPlacing(GameObject objectToPlace, GameObject currentItem)
     {
+        this.currentItem = currentItem;
         if (objectToPlace != null)
         {
             currentObject = Instantiate(objectToPlace); // 배치할 객체 인스턴스화
@@ -52,6 +64,7 @@ public class BuildSystem : MonoBehaviour
                 rb.isKinematic = true;
                 rb.useGravity = false;
             }
+            // currentObject.layer = LayerMask.NameToLayer("Default");
 
             isPlacing = true; // 배치 모드 활성화
         }
@@ -87,6 +100,7 @@ public class BuildSystem : MonoBehaviour
             rb.isKinematic = true; // Rigidbody 설정 활성화
             rb.useGravity = false; // 중력 활성화
         }
+        currentObject.layer = LayerMask.NameToLayer(Tag.Item.ToString());
         RemovePreviewMaterial(currentObject); // 미리보기 재질 제거
         currentObject = null;
         isPlacing = false; // 배치 모드 비활성화

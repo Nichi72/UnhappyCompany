@@ -6,11 +6,12 @@ using UnityEngine.UI;
 public class CCTVManager : MonoBehaviour
 {
     public static CCTVManager instance = null;
-    public List<CCTV> cctvs; // 총 3개라면 인덱스는 2까지
+    public List<CCTV> cctvs; 
     public int currentIndex;
     public Coroutine blinkCoroutine;
     private Color originalColor;
     public Material cctvMaterial;
+    [ReadOnly] public MobileManager mobileManager;
 
     
     private void Awake()
@@ -110,6 +111,11 @@ public class CCTVManager : MonoBehaviour
         float duration = 0.3f;
         while(true)
         {
+            if(mobileManager.uiObjmobile.activeSelf == false)
+            {
+                yield return null;
+                continue;
+            }
             Color originalColor = cctvMaterial.color;
             Color blinkColor = Color.black;
             yield return new WaitForSeconds(duration);
@@ -120,6 +126,11 @@ public class CCTVManager : MonoBehaviour
             cctvMaterial.color = originalColor; 
             // Debug.Log($"{cctvMaterial.color} BlinkMaterial2");
         }
+    }
+
+    void OnDestroy()
+    {
+        StopAllCoroutines();
     }
    
 }

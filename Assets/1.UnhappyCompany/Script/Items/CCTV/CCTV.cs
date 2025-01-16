@@ -4,7 +4,6 @@ public class CCTV : CentralBatteryConsumerItem, IMinimapTrackable
 {
     public Camera currentCamera;
     public bool isTurnOn = true;
-    // [ReadOnly][SerializeField] public Material cctvMaterial;
 
     public GameObject minimapQuad;
 
@@ -16,7 +15,6 @@ public class CCTV : CentralBatteryConsumerItem, IMinimapTrackable
     void Start()
     {
         InitCCTV();
-        // cctvMaterial = minimapQuad.GetComponent<MeshRenderer>().material;
         OnMinimapAdd();
     }
 
@@ -40,7 +38,7 @@ public class CCTV : CentralBatteryConsumerItem, IMinimapTrackable
 
     public override void Use(Player player) 
     {
-        player.buildSystem.StartPlacing(itemData.prefab.gameObject); // 설치 모드 시작
+        player.buildSystem.StartPlacing(itemData.prefab.gameObject, this.gameObject); // 설치 모드 시작
     }
 
     private void InitCCTV()
