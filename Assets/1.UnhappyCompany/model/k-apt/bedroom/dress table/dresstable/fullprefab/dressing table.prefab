@@ -9,6 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6080907297239926181}
+  - component: {fileID: 3627899704433997517}
+  - component: {fileID: 6293222688696432660}
   m_Layer: 0
   m_Name: dressing table
   m_TagString: Untagged
@@ -26,13 +28,55 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 70.302, y: 2.281, z: -7.3028517}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.08715, y: 0.9329999, z: 1.0052}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8902480643603939181}
   - {fileID: 6068443082278221489}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &3627899704433997517
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4843555393448604770}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 3, y: 1.3485069, z: 0.9555783}
+  m_Center: {x: -0.0019989014, y: -1.011065, z: -0.03630519}
+--- !u!65 &6293222688696432660
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4843555393448604770}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.5689538, y: 1.9961944, z: 0.58316755}
+  m_Center: {x: 0, y: 0.49809718, z: 0.20841622}
 --- !u!1001 &603774994772834564
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -85,7 +129,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: dressing table
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 3224428077621195521, guid: cc2b9ed469899ac4384a043836e7739d, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -108,16 +153,28 @@ PrefabInstance:
       value: mirror
       objectReference: {fileID: 0}
     - target: {fileID: 7687988819867186456, guid: ffceefa46e2ac3d47b61248fceb9944d, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.099
+      objectReference: {fileID: 0}
+    - target: {fileID: 7687988819867186456, guid: ffceefa46e2ac3d47b61248fceb9944d, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.099
+      objectReference: {fileID: 0}
+    - target: {fileID: 7687988819867186456, guid: ffceefa46e2ac3d47b61248fceb9944d, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.099
+      objectReference: {fileID: 0}
+    - target: {fileID: 7687988819867186456, guid: ffceefa46e2ac3d47b61248fceb9944d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -0.0000000074424
       objectReference: {fileID: 0}
     - target: {fileID: 7687988819867186456, guid: ffceefa46e2ac3d47b61248fceb9944d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0.032208
       objectReference: {fileID: 0}
     - target: {fileID: 7687988819867186456, guid: ffceefa46e2ac3d47b61248fceb9944d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 0.0084743
       objectReference: {fileID: 0}
     - target: {fileID: 7687988819867186456, guid: ffceefa46e2ac3d47b61248fceb9944d, type: 3}
       propertyPath: m_LocalRotation.w
