@@ -38,7 +38,6 @@ public class CCTVManager : MonoBehaviour
             cctv.CCTVIcon.img.color = originalColor;
         }
         TurnOnOnlyOneByCurrentIndex();
-        
     }
 
     public void BeforeCCTV()
