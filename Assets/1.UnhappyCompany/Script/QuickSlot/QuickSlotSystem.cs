@@ -110,11 +110,16 @@ public class QuickSlotSystem : MonoBehaviour
         currentItemObject = Instantiate(itemData.prefab);
         currentItemObject.transform.SetParent(player.rightHandPos);
         currentItemObject.GetComponent<Item>().Mount();
-        currentItemObject.transform.localPosition = Vector3.zero;
+        currentItemObject.transform.localPosition = itemData.HandPosition;
+        currentItemObject.transform.localRotation = Quaternion.Euler(itemData.HandRotation);
     }
 
     public GameObject DropItem()
     {
+        if(currentItemObject == null)
+        {
+            return null;
+        }
         var temp = currentItemObject;
         var rigidbody = currentItemObject.GetComponent<Rigidbody>();
         if(rigidbody != null)

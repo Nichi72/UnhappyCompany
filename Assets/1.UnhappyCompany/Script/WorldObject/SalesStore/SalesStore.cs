@@ -1,16 +1,19 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class SalesStore : MonoBehaviour
 {
 
     public TMPro.TextMeshPro textMeshPro;
+    public List<GameObject> sellObjects;
+    public SalesStoreSellPoint salesStoreSellPoint;
 
     public void ChangeText(string newText)
     {
         if (textMeshPro != null)
         {
-            string text = $"$ {newText} 원";
-            textMeshPro.text = newText;
+            string text = $"$ {newText}";
+            textMeshPro.text = text;
         }
         else
         {
@@ -28,6 +31,25 @@ public class SalesStore : MonoBehaviour
     {
         // ChangeText(GameManager.instance.totalGold.ToString());
     }
+    int totalPrice = 0;
+    public void SellObject()
+    {
+        foreach(var sellObject in sellObjects)
+        {
+            Destroy(sellObject);
+        }
+        totalPrice = 0;
+        ChangeText(totalPrice.ToString());
+    }
+
+    public void AddSellObject(GameObject sellObject)
+    {
+        sellObjects.Add(sellObject);
+        totalPrice += sellObject.GetComponent<Item>().itemData.SellPrice;
+        sellObject.layer = LayerMask.NameToLayer("Default");
+        ChangeText(totalPrice.ToString());
+    }
 
     
 }
+

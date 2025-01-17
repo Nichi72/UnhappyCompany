@@ -1,11 +1,12 @@
 using System.Collections;
 using UnityEngine;
 
-public class SellPoint : MonoBehaviour , IInteractable
+public class SalesStoreSellPoint : MonoBehaviour , IInteractable
 {
     [SerializeField] private GameObject slider;
     [SerializeField] private bool isOpen = false;
     [SerializeField] private Vector3 targetPosition;
+    [SerializeField] private SalesStore salesStore;
 
     void Start()
     {
@@ -62,23 +63,39 @@ public class SellPoint : MonoBehaviour , IInteractable
     public void HitEventInteractionF(Player rayOrigin)
     {
         // StartCoroutine(ToggleDoor());
+        var temp = rayOrigin.quickSlotSystem.DropItem();
+        if (temp != null)
+        {
+            Vector3 randomPosition = new Vector3(
+                Random.Range(-slider.transform.localScale.x / 2, slider.transform.localScale.x / 2),
+                Random.Range(-slider.transform.localScale.y / 2, slider.transform.localScale.y / 2),
+                Random.Range(-slider.transform.localScale.z / 2, slider.transform.localScale.z / 2)
+            );
+
+            temp.transform.SetParent(slider.transform);
+            temp.transform.localPosition = randomPosition;
+            salesStore.AddSellObject(temp);
+            
+            
+        }
+       
     }
     
-    private void OnTriggerEnter(Collider other)
-    {
-        if(other.tag != Tag.Item.ToString())
-        {
-            Debug.Log($"OnTriggerEnter {other.name} ");
-            return;
-        }
-        var temp = other.GetComponent<Item>();
-        if (temp == null)
-        {
-            Debug.LogError("Item�� ���������ʽ��ϴ�.");
-            return;
-        }
+    // private void OnTriggerEnter(Collider other)
+    // {
+    //     if(other.tag != Tag.Item.ToString())
+    //     {
+    //         Debug.Log($"OnTriggerEnter {other.name} ");
+    //         return;
+    //     }
+    //     var temp = other.GetComponent<Item>();
+    //     if (temp == null)
+    //     {
+    //         Debug.LogError("Item�� ���������ʽ��ϴ�.");
+    //         return;
+    //     }
 
-        GameManager.instance.totalGold += temp.itemData.SellPrice;
-        Destroy(other.gameObject);
-    }
+    //     GameManager.instance.totalGold += temp.itemData.SellPrice;
+    //     Destroy(other.gameObject);
+    // }
 }
