@@ -4,7 +4,9 @@ using UnityEngine.InputSystem;
 public class MobileManager : MonoBehaviour
 {
     public GameObject uiObjmobile;
+    public GameObject scanObj;
     private Player player;
+    public Camera mobileCamera;
     void Start()
     {
         player = GameManager.instance.currentPlayer;
@@ -13,7 +15,19 @@ public class MobileManager : MonoBehaviour
 
     void Update()
     {
-        // Debug.Log($"Cursor.visible = {Cursor.visible}");
+        if(scanObj.activeSelf == true)
+        {
+            player.firstPersonController._input.SetCursorLock(true,false);
+            Cursor.visible = false;
+            mobileCamera.enabled = true;
+        }
+        else
+        {
+            if(mobileCamera.enabled == true)
+            {
+                mobileCamera.enabled = false;
+            }
+        }
         if(Input.GetKeyDown(KeyCode.Tab))
         {
             uiObjmobile.SetActive(!uiObjmobile.activeSelf);
