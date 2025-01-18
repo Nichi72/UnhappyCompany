@@ -75,14 +75,17 @@ namespace StarterAssets
 		{
 			Cursor.lockState = newState ? CursorLockMode.Locked : CursorLockMode.None;
 		}
-		public void SetCursorLock(bool newState)
+		public void SetCursorLock(bool newState, bool isCursorCenter = true)
 		{
 			cursorLocked = newState;
 			cursorInputForLook = newState;
 			SetCursorState(newState);
 			Cursor.visible = !newState;
-			Vector2 screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
-			Mouse.current.WarpCursorPosition(screenCenter);
+			if(isCursorCenter)
+			{
+				Vector2 screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
+				Mouse.current.WarpCursorPosition(screenCenter);
+			}
 		}
 	}
 	
