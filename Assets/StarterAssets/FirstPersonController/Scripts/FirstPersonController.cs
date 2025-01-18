@@ -87,6 +87,10 @@ namespace StarterAssets
 
 		private PlayerStatus _playerStatus;
 
+		[Header("Hand Follow")]
+		public Transform handTransform;   // 손 오브젝트의 Transform
+		public float handSmoothSpeed = 5.0f;  // 손 회전의 부드러움 정도
+
 		private bool IsCurrentDeviceMouse
 		{
 			get
@@ -138,6 +142,7 @@ namespace StarterAssets
 		private void LateUpdate()
 		{
 			CameraRotation();
+			HandFollowCamera(); // 손 회전 업데이트
 		}
 
 		private void GroundedCheck()
@@ -323,6 +328,19 @@ namespace StarterAssets
 				thirdPersonFollow.Damping.x = 0f;
 				thirdPersonFollow.Damping.y  = 0f;
 				thirdPersonFollow.Damping.z  = 0f;
+			}
+		}
+
+		private void HandFollowCamera()
+		{
+			if (handTransform != null && _mainCamera != null)
+			{
+				//
+				// Quaternion targetRotation = _mainCamera.transform.rotation * Quaternion.Euler(new Vector3(0f, -34.203f, 0f));
+				Quaternion targetRotation = _mainCamera.transform.rotation;
+				
+				
+				handTransform.rotation = Quaternion.Slerp(handTransform.rotation, targetRotation, handSmoothSpeed * Time.deltaTime);
 			}
 		}
 	}
