@@ -26,16 +26,15 @@ public class MultiRaycastOcclusionCheck : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // 스캔을 트리거하는 입력을 감지합니다. (예: 스페이스바)
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            ScanForEnemies();
-            // Debug.Break();
-        }
+        // // 스캔을 트리거하는 입력을 감지합니다. (예: 스페이스바)
+        // if (Input.GetKeyDown(KeyCode.Space))
+        // {
+        //     ScanForEnemies();
+        // }
     }
 
     // 카메라 뷰에 "Enemy"가 있는지 스캔하는 메서드
-    void ScanForEnemies()
+    public void ScanForEnemies()
     {
         if (targetCamera == null)
             return;
@@ -43,8 +42,9 @@ public class MultiRaycastOcclusionCheck : MonoBehaviour
         // (1) N×M 샘플링하여 레이캐스트
         int totalRays = horizontalSamples * verticalSamples;
         int hitCount = 0;
-        HashSet<Transform> detectedEnemies = new HashSet<Transform>();
 
+        Dictionary<Transform, EnemyAIData> detectedEnemies = new Dictionary<Transform, EnemyAIData>();
+        Dictionary<Transform, Egg> detectedEggs = new Dictionary<Transform, Egg>();
         for (int i = 0; i < horizontalSamples; i++)
         {
             for (int j = 0; j < verticalSamples; j++)
@@ -65,8 +65,21 @@ public class MultiRaycastOcclusionCheck : MonoBehaviour
                     // 맞은 것이 "Enemy" 태그를 가진 오브젝트인지 확인
                     if (hitInfo.transform.CompareTag("Enemy"))
                     {
-                        if (detectedEnemies.Add(hitInfo.transform))
+
+                        // 적 데이터 가져오기 
+                        Egg egg = hitInfo.transform.GetComponent<Egg>();
+                        EnemyAIData enemyData = hitInfo.transform.GetComponent<EnemyAIData>();
+                        // Egg 타입일때 처리
+                        if(egg != null && !detectedEggs.ContainsKey(hitInfo.transform))
                         {
+                            detectedEggs.Add(hitInfo.transform, egg);
+                            hitCount++;
+                            Debug.Log($"Egg detected: {hitInfo.transform.name}");
+                        }
+                        // 일반 오브젝트 처리
+                        else if (enemyData != null && !detectedEnemies.ContainsKey(hitInfo.transform))
+                        {
+                            detectedEnemies.Add(hitInfo.transform, enemyData);
                             hitCount++;
                             Debug.Log($"Enemy detected: {hitInfo.transform.name}");
                         }
@@ -79,14 +92,20 @@ public class MultiRaycastOcclusionCheck : MonoBehaviour
         if (hitCount > 0)
         {
             Debug.Log($"Total enemies detected: {hitCount}");
-            foreach (var enemy in detectedEnemies)
-            {
-                Debug.Log($"Enemy: {enemy.name}");
-            }
+            MobileManager.instance.ReceiveEnemyData(detectedEnemies, detectedEggs);
         }
         else
         {
             Debug.Log("No enemy detected in view.");
         }
     }
+
+    // private void SendEnemyData(Dictionary<Transform, EnemyAIData> detectedEnemies)
+    // {
+    //     foreach (var enemy in detectedEnemies)
+    //     {
+    //         Debug.Log($"Enemy: {enemy.Key.name}, Data: {enemy.Value}");
+    //     }
+    // }
 }
+
