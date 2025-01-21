@@ -46,7 +46,6 @@ public class Egg : MonoBehaviour, IDamageable
 
     private void Start()
     {
-        
         InitializeVisuals();
         StartCoroutine(EggStageProgression());
     }
@@ -58,7 +57,6 @@ public class Egg : MonoBehaviour, IDamageable
         // 모든 비주얼을 비활성화
         stage1Visual.SetActive(false);
         stage2Visual.SetActive(false);
-
         // Stage 1 비주얼만 활성화
         UpdateVisuals(EggStage.Stage1);
     }
