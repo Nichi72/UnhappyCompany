@@ -970,7 +970,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &267698338
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1997,7 +1997,6 @@ GameObject:
   m_Component:
   - component: {fileID: 520661329}
   - component: {fileID: 520661332}
-  - component: {fileID: 520661331}
   m_Layer: 0
   m_Name: Items
   m_TagString: Untagged
@@ -2020,21 +2019,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1070121358}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &520661331
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 520661328}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 016c26a3d8bb7dd4796676b8d9ea60c6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  uiObjmobile: {fileID: 2038594135}
-  scanObj: {fileID: 0}
-  mobileCamera: {fileID: 0}
 --- !u!114 &520661332
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2320,6 +2304,7 @@ GameObject:
   - component: {fileID: 566644235}
   - component: {fileID: 566644234}
   - component: {fileID: 566644233}
+  - component: {fileID: 566644236}
   m_Layer: 15
   m_Name: MobileCamera
   m_TagString: Untagged
@@ -2540,6 +2525,25 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+--- !u!114 &566644236
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 566644231}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e734483cb75381f4f9ea150e8f7b2320, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetCamera: {fileID: 566644235}
+  obstacleLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  horizontalSamples: 20
+  verticalSamples: 20
+  visibilityThreshold: 0.5
 --- !u!1 &574970529
 GameObject:
   m_ObjectHideFlags: 0
@@ -2940,7 +2944,7 @@ PrefabInstance:
     - target: {fileID: 341069994008532466, guid: b027913c47b49f14bb47fd2860f883c8, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgument
       value: 
-      objectReference: {fileID: 878489547}
+      objectReference: {fileID: 267698337}
     - target: {fileID: 341069994008532466, guid: b027913c47b49f14bb47fd2860f883c8, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.GameObject, UnityEngine
@@ -8915,6 +8919,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1860834451}
+  - component: {fileID: 1860834452}
   m_Layer: 0
   m_Name: GameCore
   m_TagString: Untagged
@@ -8937,6 +8942,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1070121358}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1860834452
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1860834450}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 016c26a3d8bb7dd4796676b8d9ea60c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uiObjmobile: {fileID: 2038594135}
+  scanObj: {fileID: 267698337}
+  mobileCamera: {fileID: 566644235}
+  multiRaycastOcclusionCheck: {fileID: 566644236}
 --- !u!1 &1861195507
 GameObject:
   m_ObjectHideFlags: 0
@@ -9859,7 +9880,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &2038594136
 RectTransform:
   m_ObjectHideFlags: 0
