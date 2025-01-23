@@ -2,6 +2,13 @@ using UnityEngine;
 
 public abstract class BaseEnemyAIData : ScriptableObject
 {
+    [Header("Notification Category")]
+    public ENotificationCategory category = ENotificationCategory.Normal;
+    [Header("Enemy Type")]
+    public EnemyType enemyType;
+    [Header("Enemy Cost")]
+    public float enemyCost;
+
     [Header("Base Range Settings")]
     [Tooltip("순찰 반경")]
     public float patrolRadius = 10f;

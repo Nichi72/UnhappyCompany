@@ -6,7 +6,7 @@ using UnityEngine;
 public class RollingCubeFllower : MonoBehaviour
 {
     // 상태 관련 변수
-    [ReadOnly] [SerializeField] private AIState currentState = AIState.Idle;
+    [ReadOnly] [SerializeField] private EAIState currentState = EAIState.Idle;
     [ReadOnly] [SerializeField] private float stateTimer = 0f;
 
     // 이동 및 공격 관련 변수
@@ -47,16 +47,16 @@ public class RollingCubeFllower : MonoBehaviour
     {
         switch (currentState)
         {
-            case AIState.Idle:
+            case EAIState.Idle:
                 HandleIdleState();
                 break;
-            case AIState.Patrol:
+            case EAIState.Patrol:
                 HandlePatrolState();
                 break;
-            case AIState.Chase:
+            case EAIState.Chase:
                 HandleChaseState();
                 break;
-            case AIState.Attack:
+            case EAIState.Attack:
                 HandleAttackState();
                 break;
         }
@@ -69,13 +69,13 @@ public class RollingCubeFllower : MonoBehaviour
         if (stateTimer >= 2f)
         {
             stateTimer = 0f;
-            currentState = AIState.Patrol;
+            currentState = EAIState.Patrol;
         }
 
         // 플레이어 감지 시 추적 상태로 전환
         if (IsPlayerInDetectionRange())
         {
-            currentState = AIState.Chase;
+            currentState = EAIState.Chase;
         }
     }
 
@@ -83,7 +83,7 @@ public class RollingCubeFllower : MonoBehaviour
     {
         if (patrolPoints.Length == 0)
         {
-            currentState = AIState.Idle;
+            currentState = EAIState.Idle;
             return;
         }
 
@@ -131,7 +131,7 @@ public class RollingCubeFllower : MonoBehaviour
         // 플레이어 감지 시 추적 상태로 전환
         if (IsPlayerInDetectionRange())
         {
-            currentState = AIState.Chase;
+            currentState = EAIState.Chase;
         }
     }
 
@@ -139,7 +139,7 @@ public class RollingCubeFllower : MonoBehaviour
     {
         if (player == null)
         {
-            currentState = AIState.Patrol;
+            currentState = EAIState.Patrol;
             return;
         }
 
@@ -151,7 +151,7 @@ public class RollingCubeFllower : MonoBehaviour
             // 공격 범위에 들어오면 공격 상태로 전환
             if (IsPlayerInAttackRange())
             {
-                currentState = AIState.Attack;
+                currentState = EAIState.Attack;
             }
 
             // 돌진 타이머 감소
@@ -184,7 +184,7 @@ public class RollingCubeFllower : MonoBehaviour
         // 플레이어를 잃어버리면 순찰 상태로 전환
         if (!IsPlayerInDetectionRange())
         {
-            currentState = AIState.Patrol;
+            currentState = EAIState.Patrol;
         }
     }
 
@@ -192,7 +192,7 @@ public class RollingCubeFllower : MonoBehaviour
     {
         if (player == null)
         {
-            currentState = AIState.Patrol;
+            currentState = EAIState.Patrol;
             return;
         }
 
@@ -203,7 +203,7 @@ public class RollingCubeFllower : MonoBehaviour
         Attack();
 
         // 공격 후 추적 상태로 전환
-        currentState = AIState.Chase;
+        currentState = EAIState.Chase;
     }
 
     private void MoveTowards(Vector3 targetPosition)

@@ -11,7 +11,7 @@ public class CCTVManager : MonoBehaviour
     public Coroutine blinkCoroutine;
     private Color originalColor;
     public Material cctvMaterial;
-    [ReadOnly] public MobileManager mobileManager;
+    public MobileManager mobileManager;
 
     
     private void Awake()

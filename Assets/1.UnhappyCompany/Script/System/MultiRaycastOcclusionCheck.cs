@@ -13,26 +13,6 @@ public class MultiRaycastOcclusionCheck : MonoBehaviour
     [Range(1, 100)]
     public int verticalSamples = 50;
 
-    // 가시율(0.0~1.0) 중 몇 % 이상이면 "보인다"고 판정할지
-    [Range(0f, 1f)]
-    public float visibilityThreshold = 0.5f;
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        // // 스캔을 트리거하는 입력을 감지합니다. (예: 스페이스바)
-        // if (Input.GetKeyDown(KeyCode.Space))
-        // {
-        //     ScanForEnemies();
-        // }
-    }
-
     // 카메라 뷰에 "Enemy"가 있는지 스캔하는 메서드
     public void ScanForEnemies()
     {
@@ -68,7 +48,13 @@ public class MultiRaycastOcclusionCheck : MonoBehaviour
 
                         // 적 데이터 가져오기 
                         Egg egg = hitInfo.transform.GetComponent<Egg>();
-                        EnemyAIData enemyData = hitInfo.transform.GetComponent<EnemyAIData>();
+                        if (egg == null)
+                        {
+                            // Debug.LogWarning($"Egg component not found on {hitInfo.transform.name}");
+                        }
+                        // var enemyAIController = hitInfo.transform.GetComponent<EnemyAIController<BaseEnemyAIData>>();
+                        // var enemyData = enemyAIController.enemyData;
+                       
                         // Egg 타입일때 처리
                         if(egg != null && !detectedEggs.ContainsKey(hitInfo.transform))
                         {
@@ -77,12 +63,12 @@ public class MultiRaycastOcclusionCheck : MonoBehaviour
                             Debug.Log($"Egg detected: {hitInfo.transform.name}");
                         }
                         // 일반 오브젝트 처리
-                        else if (enemyData != null && !detectedEnemies.ContainsKey(hitInfo.transform))
-                        {
-                            detectedEnemies.Add(hitInfo.transform, enemyData);
-                            hitCount++;
-                            Debug.Log($"Enemy detected: {hitInfo.transform.name}");
-                        }
+                        // else if (enemyData != null && !detectedEnemies.ContainsKey(hitInfo.transform))
+                        // {
+                        //     detectedEnemies.Add(hitInfo.transform, enemyData);
+                        //     hitCount++;
+                        //     Debug.Log($"Enemy detected: {hitInfo.transform.name}");
+                        // }
                     }
                 }
             }
@@ -92,7 +78,7 @@ public class MultiRaycastOcclusionCheck : MonoBehaviour
         if (hitCount > 0)
         {
             Debug.Log($"Total enemies detected: {hitCount}");
-            MobileManager.instance.ReceiveEnemyData(detectedEnemies, detectedEggs);
+            NotificationSystem.instance.ReceiveEnemyData(detectedEnemies, detectedEggs);
         }
         else
         {

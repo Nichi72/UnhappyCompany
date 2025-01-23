@@ -7,7 +7,7 @@ public class Structures
     
 }
 
-public enum Tag
+public enum ETag
 {
     RaycastHit,
     Item
@@ -18,14 +18,14 @@ public enum EItem
     CCTV
 }
 
-public enum AIState
+public enum EAIState
 {
     Idle,
     Patrol,
     Chase,
     Attack
 }
-public enum GameState
+public enum EGameState
 {
     None,
     Ready,
@@ -43,4 +43,18 @@ public static class CoroutineHelper
             elapsedTime += Time.fixedDeltaTime;   // ���� �ð� ���� ����
         }
     }
+}
+
+public enum ENotificationCategory
+{
+    Normal,
+    Warning,
+    Error,
+    Danger
+}
+public enum EnemyType
+{
+    Machine,    // 기계형 (물 속성)
+    Human,      // 인간형 (불 속성)
+    Animal      // 동물형 (물리 속성)
 }
