@@ -100,7 +100,7 @@ public class BuildSystem : MonoBehaviour
             rb.isKinematic = true; // Rigidbody 설정 활성화
             rb.useGravity = false; // 중력 활성화
         }
-        currentObject.layer = LayerMask.NameToLayer(Tag.Item.ToString());
+        currentObject.layer = LayerMask.NameToLayer(ETag.Item.ToString());
         RemovePreviewMaterial(currentObject); // 미리보기 재질 제거
         currentObject = null;
         isPlacing = false; // 배치 모드 비활성화

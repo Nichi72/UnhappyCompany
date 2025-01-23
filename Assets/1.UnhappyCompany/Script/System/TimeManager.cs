@@ -11,6 +11,9 @@ public enum TimeOfDay
 public class TimeManager : MonoBehaviour
 {
     public static TimeManager instance;
+    private NotificationSystem notificationSystem;
+
+
     public TimeSpan GameTime { get; private set; }
     public TimeOfDay CurrentTimeOfDay { get; private set; }
     public event Action<TimeOfDay> OnTimeOfDayChanged;
@@ -61,6 +64,7 @@ public class TimeManager : MonoBehaviour
         }
     }
 
+
     private void Awake()
     {
         if (instance == null)
@@ -82,11 +86,22 @@ public class TimeManager : MonoBehaviour
         lastGameTime = GameTime;
         isDay = IsCurrentTimeDay();
 
+        notificationSystem = FindObjectOfType<NotificationSystem>();
+
         // 이벤트 초기화
         OnDayPassed += () =>
         {
             UIManager.instance.screenDayText.text = $"Day {days}";
             Debug.Log($"Day {days}");
+
+            // 알림 시스템에서 알림을 꺼내 디버그 출력
+            if (notificationSystem != null)
+            {
+                while (notificationSystem.delayedNotificationQueue.Count > 0)
+                {
+                    notificationSystem.delayedNotificationQueue.Dequeue();
+                }
+            }
         };
         OnMorningStarted += () =>
         {

@@ -2,12 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public enum EggType
-{
-    Machine,    // 기계형 (물 속성)
-    Human,      // 인간형 (불 속성)
-    Animal      // 동물형 (물리 속성)
-}
+
 
 public enum EggStage
 {
@@ -18,14 +13,14 @@ public enum EggStage
 
 public class Egg : MonoBehaviour, IDamageable
 {
+    public BaseEnemyAIData enemyAIData;
     [Header("Basic Settings")]
     [Tooltip("알이 부서졌을 때 생성할 파편 프리팹")] 
     public GameObject eggShatterItemPrefab;
     
     [Header("Egg Type Settings")]
     [Tooltip("알의 타입 (기계형/인간형/동물형)")]
-    public EggType eggType;
-
+    public EnemyType eggType;
     [Header("Stage Settings")]
     [Tooltip("각 단계별 지속 시간(초)")]
     [ReadOnly] public float stage1Duration = 60 * 10f;
@@ -43,9 +38,13 @@ public class Egg : MonoBehaviour, IDamageable
     
     private EggStage currentStage = EggStage.Stage1;
     public int hp { get; set; } = 100;
+    public int id;
+
 
     private void Start()
     {
+        id = EnemyManager.instance.EggID;
+        EnemyManager.instance.EggID++;
         InitializeVisuals();
         StartCoroutine(EggStageProgression());
     }
@@ -173,9 +172,9 @@ public class Egg : MonoBehaviour, IDamageable
     {
         return (eggType, damageType) switch
         {
-            (EggType.Machine, DamageType.Water) => true,     // 기계형은 물 속성에만 취약
-            (EggType.Human, DamageType.Fire) => true,        // 인간형은 불 속성에만 취약
-            (EggType.Animal, DamageType.Physical) => true,   // 동물형은 물리 속성에만 취약
+            (EnemyType.Machine, DamageType.Water) => true,     // 기계형은 물 속성에만 취약
+            (EnemyType.Human, DamageType.Fire) => true,        // 인간형은 불 속성에만 취약
+            (EnemyType.Animal, DamageType.Physical) => true,   // 동물형은 물리 속성에만 취약
             _ => false                                       // 그 외의 모든 조합은 면역
         };
     }
@@ -188,13 +187,13 @@ public class Egg : MonoBehaviour, IDamageable
         // 파괴 시 타입에 따른 특수 효과 발생
         switch (eggType)
         {
-            case EggType.Machine:
+            case EnemyType.Machine:
                 Debug.Log("기계형 알 파괴 - 전기 스파크 발생!");
                 break;
-            case EggType.Human:
+            case EnemyType.Human:
                 Debug.Log("인간형 알 파괴 - 화염 폭발 발생!");
                 break;
-            case EggType.Animal:
+            case EnemyType.Animal:
                 Debug.Log("동물형 알 파괴 - 물리 파편 발생!");
                 break;
         }

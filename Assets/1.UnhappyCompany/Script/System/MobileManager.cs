@@ -40,7 +40,6 @@ public class MobileManager : MonoBehaviour
             uiObjmobile.SetActive(!uiObjmobile.activeSelf);
             player.firstPersonController._input.SetCursorLock(!uiObjmobile.activeSelf);
         }
-
         if(Input.GetKeyDown(KeyCode.Q) && scanObj.activeSelf == true)
         {
             multiRaycastOcclusionCheck.ScanForEnemies();
@@ -51,6 +50,7 @@ public class MobileManager : MonoBehaviour
             player.firstPersonController._input.SetCursorLock(false,true);
             Cursor.visible = true;
             mobileCamera.enabled = false;
+            scanObj.SetActive(false);
         }
     
 
@@ -64,16 +64,5 @@ public class MobileManager : MonoBehaviour
         }
     }
 
-    public void ReceiveEnemyData(Dictionary<Transform, EnemyAIData> detectedEnemies, Dictionary<Transform, Egg> detectedEggs)
-    {
-        foreach (var enemy in detectedEnemies)
-        {
-            Debug.Log($"Enemy: {enemy.Key.name}, Data: {enemy.Value}");
-        }
-        
-        foreach (var egg in detectedEggs)
-        {
-            Debug.Log($"Egg: {egg.Key.name}, Data: {egg.Value}");
-        }
-    }
+    
 }

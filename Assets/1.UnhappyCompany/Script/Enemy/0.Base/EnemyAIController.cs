@@ -12,7 +12,7 @@ public abstract class EnemyAIController<T> : MonoBehaviour where T : BaseEnemyAI
     public Transform player; // 플레이어의 Transform 참조
     
     [Header("AI Settings")]
-    [SerializeField] protected T enemyData;
+    [SerializeField] public T enemyData;
     
     // 공통 프로퍼티
     public float PatrolRadius => enemyData.patrolRadius;

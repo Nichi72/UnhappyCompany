@@ -1,32 +1,95 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class NotificationSystem : MonoBehaviour
 {
-    private Queue<string> notificationQueue = new Queue<string>();
+    public static NotificationSystem instance;
+    // 하루 뒤에 보여주는 큐
+    public Queue<string> delayedNotificationQueue = new Queue<string>();
+    // 즉시 보여주는 큐
+    public Queue<string> immediateNotificationQueue = new Queue<string>();
+    public Queue<string> consoleQueue = new Queue<string>();
     public GameObject notificationUIPrefab;
     public Transform notificationUIParent;
 
+    private void Awake()
+    {
+        instance = this;
+    }
+    private void Start()
+    {
+        StartCoroutine(ShowNotification());
+    }
+
     void Update()
     {
-        if (notificationQueue.Count > 0)
+        
+    }
+
+    public void AddNotification(string message, string doneMessage)
+    {
+        delayedNotificationQueue.Enqueue(doneMessage);
+        immediateNotificationQueue.Enqueue(message);
+    }
+
+    
+    public void ReceiveEnemyData(Dictionary<Transform, EnemyAIData> detectedEnemies, Dictionary<Transform, Egg> detectedEggs)
+    {
+        // foreach (var enemy in detectedEnemies)
+        // {
+        //     Debug.Log($"Enemy: {enemy.Key.name}, Data: {enemy.Value}");
+        // }
+        
+        foreach (var egg in detectedEggs)
         {
-            DisplayNotification(notificationQueue.Dequeue());
+            Egg eggData = egg.Value;
+            Debug.Log($"Egg: {egg.Key.name}, Data: {egg.Value}");
+            // [Category] Time : <Time> Egg ID : <EGG.ID> Egg Scanning…
+            string scaningMessage = $"[{eggData.enemyAIData.category}] [{TimeManager.instance.GameTime}] Egg ID : {eggData.id} Egg Scanning…";
+            string doneMessage = $"[{eggData.enemyAIData.category}] [{TimeManager.instance.GameTime}] Egg ID : {eggData.id} Egg Scanning…";
+
+            Debug.Log(scaningMessage);
+            AddNotification(scaningMessage,doneMessage);
+        }
+    }
+    
+    IEnumerator ShowNotification()
+    {
+        while (true)
+        {
+            if (immediateNotificationQueue.Count > 0)
+            {
+                string message = immediateNotificationQueue.Dequeue();
+                Debug.Log(message);
+                InitNotification(message);
+
+            }
+            yield return new WaitForSeconds(UnityEngine.Random.Range(0.1f, 0.45f));
         }
     }
 
-    public void AddNotification(string message)
+    // 알림창에 보여주는 함수
+    public void InitNotification(string message)
     {
-        notificationQueue.Enqueue(message);
+        Debug.Log(message);
+        // GameObject notification = Instantiate(notificationUIPrefab, notificationUIParent);
     }
+}
 
-    private void DisplayNotification(string message)
+[System.Serializable]
+public class Notification
+{
+    public string Message;
+    public DateTime Time;
+    public ENotificationCategory Category;
+
+    public Notification(string message, DateTime time, ENotificationCategory category)
     {
-        GameObject notificationUI = Instantiate(notificationUIPrefab, notificationUIParent);
-        notificationUI.GetComponentInChildren<UnityEngine.UI.Text>().text = message;
-        Destroy(notificationUI, 5f); // 5초 후에 알림 UI를 제거
-
-        // if(message == "알 획득")
-
+        Message = message;
+        Time = time;
+        Category = category;
     }
 }

@@ -5,6 +5,8 @@ using System.Collections.Generic;
 public class EnemyManager : MonoBehaviour
 {
     public static EnemyManager instance;
+    public int EggID = 0;
+
 
     [Header("Enemy Spawning")]
     [Tooltip("적 생성 위치 리스트")] public List<Transform> spawnPoints;
