@@ -20,17 +20,11 @@ public class ComputerSystem : MonoBehaviour
         LoadShopItems();
 
     }
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        // UIManager.instance.computerView = computerView;
+        computerView.SetActive(false);
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
     public void OpenComputer(Player player)
     {
         Debug.Log("OpenComputer");
@@ -85,7 +79,10 @@ public class ComputerSystem : MonoBehaviour
             GameObject shopItemBuyItem = Instantiate(shopSystem.shopUIPrefab, shopSystem.shopUIParent);
             shopItemBuyItem.GetComponent<ShopItemBuyItem>().Init(item);
         }
-        
+    }
+    public void BtnEvtPressed(GameObject view)
+    {
+        UIManager.instance.ToggleObject(view);
     }
 }
 

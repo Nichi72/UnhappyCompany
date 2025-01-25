@@ -52,9 +52,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0933d70fa22a924499e4c66f94b6d1b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemImage: {fileID: 0}
-  itemName: {fileID: 0}
-  itemPrice: {fileID: 0}
+  itemName: {fileID: 3901670059652378018}
+  itemData: {fileID: 0}
 --- !u!114 &5381329566578176091
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -98,7 +97,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 6864081903913026748}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: -1228818420232859287}
+        m_TargetAssemblyTypeName: ShopItemBuyItem, Assembly-CSharp
+        m_MethodName: BtnPressed
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!222 &1032812618421617139
 CanvasRenderer:
   m_ObjectHideFlags: 0

@@ -493,7 +493,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -4639522926039606018, guid: 87294fe8ca6960b4999482f1ff5c9f18, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -1.56
+      value: -1.6
       objectReference: {fileID: 0}
     - target: {fileID: -4519620648689758818, guid: 87294fe8ca6960b4999482f1ff5c9f18, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -662,7 +662,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   slider: {fileID: 2055223171003492698}
-  isOpen: 0
+  isOpen: 1
   targetPosition: {x: 0, y: 0, z: -1.38}
   salesStore: {fileID: 5642788041334638413}
 --- !u!65 &5140601939354277695
@@ -851,6 +851,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   textMeshPro: {fileID: 5873738335100664286}
   sellObjects: []
+  salesStoreSellPoint: {fileID: 3033408649618026562}
 --- !u!95 &6189733581842295006
 Animator:
   serializedVersion: 7

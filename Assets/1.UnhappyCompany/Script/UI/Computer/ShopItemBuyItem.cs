@@ -15,6 +15,7 @@ public class ShopItemBuyItem : MonoBehaviour
     public void BtnPressed()
     {
         ComputerSystem.instance.BtnEvtBuyItem(itemData);
+        Debug.Log("BuyItem");
     }
 
 
