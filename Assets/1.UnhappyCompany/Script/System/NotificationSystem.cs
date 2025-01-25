@@ -1,19 +1,19 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
+using TMPro;
 using UnityEngine;
 
 public class NotificationSystem : MonoBehaviour
 {
     public static NotificationSystem instance;
     // 하루 뒤에 보여주는 큐
-    public Queue<string> delayedNotificationQueue = new Queue<string>();
+    public Queue<(string, ENotificationCategory)> delayedNotificationQueue = new Queue<(string, ENotificationCategory)>();
     // 즉시 보여주는 큐
-    public Queue<string> immediateNotificationQueue = new Queue<string>();
-    public Queue<string> consoleQueue = new Queue<string>();
+    public Queue<(string, ENotificationCategory)> immediateNotificationQueue = new Queue<(string, ENotificationCategory)>();
+    public Queue<(string, ENotificationCategory)> consoleQueue = new Queue<(string, ENotificationCategory)>();
     public GameObject notificationUIPrefab;
-    public Transform notificationUIParent;
+    public RectTransform notificationUIParent;
 
     private void Awake()
     {
@@ -24,15 +24,10 @@ public class NotificationSystem : MonoBehaviour
         StartCoroutine(ShowNotification());
     }
 
-    void Update()
+    public void AddNotification(string message, string doneMessage, ENotificationCategory category)
     {
-        
-    }
-
-    public void AddNotification(string message, string doneMessage)
-    {
-        delayedNotificationQueue.Enqueue(doneMessage);
-        immediateNotificationQueue.Enqueue(message);
+        delayedNotificationQueue.Enqueue((doneMessage, category));
+        immediateNotificationQueue.Enqueue((message, category));
     }
 
     
@@ -52,7 +47,7 @@ public class NotificationSystem : MonoBehaviour
             string doneMessage = $"[{eggData.enemyAIData.category}] [{TimeManager.instance.GameTime}] Egg ID : {eggData.id} Egg Scanning…";
 
             Debug.Log(scaningMessage);
-            AddNotification(scaningMessage,doneMessage);
+            AddNotification(scaningMessage,doneMessage, eggData.enemyAIData.category);
         }
     }
     
@@ -62,20 +57,21 @@ public class NotificationSystem : MonoBehaviour
         {
             if (immediateNotificationQueue.Count > 0)
             {
-                string message = immediateNotificationQueue.Dequeue();
+                (string message, ENotificationCategory category) = immediateNotificationQueue.Dequeue();
                 Debug.Log(message);
-                InitNotification(message);
-
+                InitNotification(message, category);
             }
             yield return new WaitForSeconds(UnityEngine.Random.Range(0.1f, 0.45f));
         }
     }
 
     // 알림창에 보여주는 함수
-    public void InitNotification(string message)
+    public void InitNotification(string message,ENotificationCategory eNotificationCategory)
     {
         Debug.Log(message);
-        // GameObject notification = Instantiate(notificationUIPrefab, notificationUIParent);
+        GameObject notification = Instantiate(notificationUIPrefab, notificationUIParent.transform);
+        notification.transform.SetSiblingIndex(0);
+        notification.GetComponent<NotificationItem>().Init(message, eNotificationCategory);
     }
 }
 

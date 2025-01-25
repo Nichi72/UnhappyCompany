@@ -4265,7 +4265,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &878489548
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5667,7 +5667,6 @@ GameObject:
   - component: {fileID: 1070121360}
   - component: {fileID: 1070121363}
   - component: {fileID: 1070121366}
-  - component: {fileID: 1070121367}
   m_Layer: 0
   m_Name: GameCore
   m_TagString: Untagged
@@ -5761,20 +5760,6 @@ MonoBehaviour:
   startTime: 9
   realTimeMinutesPerGameDay: 10
   days: 1
---- !u!114 &1070121367
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1070121357}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a9101d487251c054db841e88506cf54f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  notificationUIPrefab: {fileID: 0}
-  notificationUIParent: {fileID: 0}
 --- !u!1 &1136046415
 GameObject:
   m_ObjectHideFlags: 0
@@ -9895,7 +9880,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2038594136
 RectTransform:
   m_ObjectHideFlags: 0

@@ -86,8 +86,6 @@ public class TimeManager : MonoBehaviour
         lastGameTime = GameTime;
         isDay = IsCurrentTimeDay();
 
-        notificationSystem = FindObjectOfType<NotificationSystem>();
-
         // 이벤트 초기화
         OnDayPassed += () =>
         {

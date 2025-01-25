@@ -3,9 +3,12 @@ using UnityEngine;
 
 public class ComputerSystem : MonoBehaviour
 {
-    public Computer computer;
-    public GameObject computerView;
     public static ComputerSystem instance = null;
+
+    public Computer computer;
+    public ShopSystem shopSystem;
+    public GameObject computerView;
+
 
 
     private void Awake()
@@ -14,6 +17,7 @@ public class ComputerSystem : MonoBehaviour
         {
             instance = this;
         }
+        LoadShopItems();
 
     }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -71,4 +75,17 @@ public class ComputerSystem : MonoBehaviour
     {
         BuyItem(itemData);
     }
+
+    private void LoadShopItems()
+    {
+        ItemData[] shopItems = Resources.LoadAll<ItemData>("ScriptableObj/Item/Shop");
+        foreach (ItemData item in shopItems)
+        {
+            Debug.Log($"Loaded item: {item.itemName}");
+            GameObject shopItemBuyItem = Instantiate(shopSystem.shopUIPrefab, shopSystem.shopUIParent);
+            shopItemBuyItem.GetComponent<ShopItemBuyItem>().Init(item);
+        }
+        
+    }
 }
+
