@@ -13,12 +13,7 @@ public abstract class Item : MonoBehaviour , IInteractable
 
     public virtual void Use(Player player)
     {
-        Debug.Log($"{itemData.itemName} USE");
-        var animator = GetComponent<Animator>();
-        if(animator != null)
-        {
-            animator.enabled = true;
-        }
+        // Debug.Log($"{itemData.itemName} USE");
     }
 
     public virtual void PickUp(Player player)
@@ -28,19 +23,19 @@ public abstract class Item : MonoBehaviour , IInteractable
         player.quickSlotSystem.UpdatePlayerSpeed();
     }
 
-    public virtual void Mount()
+    public virtual void Mount(Player player)
     {
         Debug.Log($"{itemData.itemName} mounted.");
-        var animator = GetComponent<Animator>();
-        var rigidbody = GetComponent<Rigidbody>();
-        if(rigidbody != null)
-        {
-            rigidbody.isKinematic = true;
-        }
-        if(animator != null)
-        {
-            animator.enabled = true;
-        }
+        // var animator = GetComponent<Animator>();
+        // var rigidbody = GetComponent<Rigidbody>();
+        // if(rigidbody != null)
+        // {
+        //     rigidbody.isKinematic = true;
+        // }
+        // if(animator != null)
+        // {
+        //     animator.enabled = true;
+        // }
     }
 
     

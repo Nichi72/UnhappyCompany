@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class MultiRaycastOcclusionCheck : MonoBehaviour
+public class ScanningSystem : MonoBehaviour
 {
     [Header("Camera & Target")]
     public Camera targetCamera;
@@ -45,30 +45,20 @@ public class MultiRaycastOcclusionCheck : MonoBehaviour
                     // 맞은 것이 "Enemy" 태그를 가진 오브젝트인지 확인
                     if (hitInfo.transform.CompareTag("Enemy"))
                     {
-
                         // 적 데이터 가져오기 
                         Egg egg = hitInfo.transform.GetComponent<Egg>();
-                        if (egg == null)
-                        {
-                            // Debug.LogWarning($"Egg component not found on {hitInfo.transform.name}");
-                        }
-                        // var enemyAIController = hitInfo.transform.GetComponent<EnemyAIController<BaseEnemyAIData>>();
-                        // var enemyData = enemyAIController.enemyData;
-                       
-                        // Egg 타입일때 처리
                         if(egg != null && !detectedEggs.ContainsKey(hitInfo.transform))
                         {
-                            detectedEggs.Add(hitInfo.transform, egg);
-                            hitCount++;
-                            Debug.Log($"Egg detected: {hitInfo.transform.name}");
+                            if(egg.isScanning == false)
+                            {
+                                // Egg 타입일때 처리
+                                detectedEggs.Add(hitInfo.transform, egg);
+                                hitCount++;
+                                Debug.Log($"Egg detected: {hitInfo.transform.name}");
+                                egg.isScanning = true;
+                            }
                         }
-                        // 일반 오브젝트 처리
-                        // else if (enemyData != null && !detectedEnemies.ContainsKey(hitInfo.transform))
-                        // {
-                        //     detectedEnemies.Add(hitInfo.transform, enemyData);
-                        //     hitCount++;
-                        //     Debug.Log($"Enemy detected: {hitInfo.transform.name}");
-                        // }
+                        // 일반 적도 개발해야함
                     }
                 }
             }
@@ -85,13 +75,5 @@ public class MultiRaycastOcclusionCheck : MonoBehaviour
             Debug.Log("No enemy detected in view.");
         }
     }
-
-    // private void SendEnemyData(Dictionary<Transform, EnemyAIData> detectedEnemies)
-    // {
-    //     foreach (var enemy in detectedEnemies)
-    //     {
-    //         Debug.Log($"Enemy: {enemy.Key.name}, Data: {enemy.Value}");
-    //     }
-    // }
 }
 

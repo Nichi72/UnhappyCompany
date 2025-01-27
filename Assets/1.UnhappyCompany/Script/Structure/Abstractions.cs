@@ -37,3 +37,14 @@ public interface IDamager
     int damage { get; set; }
     void DealDamage(IDamageable target);
 }
+public interface IAnimatorLayer
+{
+    string animatorLayerName { get; set; }
+}
+/// <summary>
+/// 업데이트를 오버라이드하는 인터페이스입니다.
+/// </summary>
+public interface IOverrideUpdate
+{
+    void OverrideUpdate();
+}
