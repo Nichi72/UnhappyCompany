@@ -19,11 +19,6 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer
 
     void Start()
     {
-       
-
-        // transform.localPosition = waterGunPosition;
-        // transform.localRotation = Quaternion.Euler(waterGunRotation);
-        // transform.localScale = waterGunScale;
     }
     public override void Use(Player player)
     {
