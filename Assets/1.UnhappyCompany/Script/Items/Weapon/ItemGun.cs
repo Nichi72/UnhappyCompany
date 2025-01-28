@@ -8,7 +8,11 @@ using UnityEngine;
 public class ItemGun : Item, IDamager, IOverrideUpdate
 {
    
-    public Animator playerAnimator;
+    public Animator playerArmAnimator;
+    private string animatorShootName;
+    private string animatorCockingName;
+    private string animatorReloadName;
+
     public int damage { get; set; } = 10;
     
     public override void Use(Player player)
@@ -21,36 +25,21 @@ public class ItemGun : Item, IDamager, IOverrideUpdate
         
     }
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
 
     
     public void OverrideUpdate()
     {
         if(Input.GetKeyDown(KeyCode.Mouse0))
         {
-            
+            playerArmAnimator.Play(animatorShootName);
+        }
+        if(Input.GetKeyDown(KeyCode.Mouse1))
+        {
+            playerArmAnimator.Play(animatorCockingName);
+        }
+        if(Input.GetKeyDown(KeyCode.R))
+        {
+            playerArmAnimator.Play(animatorReloadName);
         }
     }
-
-    public void Shoot()
-    {
-        // animator.SetTrigger("Shoot");
-    if (!playerAnimator.GetCurrentAnimatorStateInfo(0).IsName("Shoot"))
-    {
-        playerAnimator.Play("Shoot");
-    }
-    }
-    public void Reload()
-    {
-        playerAnimator.SetTrigger("Reload");
-    }
-    public void Cocking()
-    {
-        playerAnimator.SetTrigger("Cocking");
-    }
-
 }
