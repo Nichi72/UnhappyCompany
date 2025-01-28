@@ -39,6 +39,7 @@ public class Egg : MonoBehaviour, IDamageable
     private EggStage currentStage = EggStage.Stage1;
     public int hp { get; set; } = 100;
     public int id;
+    public bool isScanning = false;
 
 
     private void Start()

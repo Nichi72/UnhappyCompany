@@ -109,9 +109,9 @@ public class QuickSlotSystem : MonoBehaviour
     {
         currentItemObject = Instantiate(itemData.prefab);
         currentItemObject.transform.SetParent(player.rightHandPos);
-        currentItemObject.GetComponent<Item>().Mount();
-        currentItemObject.transform.localPosition = itemData.HandPosition;
-        currentItemObject.transform.localRotation = Quaternion.Euler(itemData.HandRotation);
+        currentItemObject.GetComponent<Item>().Mount(player);
+        // currentItemObject.transform.localPosition = itemData.HandPosition;
+        // currentItemObject.transform.localRotation = Quaternion.Euler(itemData.HandRotation);
     }
 
     public GameObject DropItem()
@@ -161,6 +161,9 @@ public class QuickSlotSystem : MonoBehaviour
         tempQuickSlot.icon.sprite = null;
         tempQuickSlot.RemoveItem();
         UpdatePlayerSpeed();
+        // 애니메이션 레이어 초기화
+        var armAnimator = player.armAnimator;
+        armAnimator.SetLayerWeight(0, 1); // Base Layer로 초기화
     }
 
     public Item GetCurrentItemInSlot()
@@ -203,7 +206,6 @@ public class QuickSlotSystem : MonoBehaviour
             if (!slot.IsEmpty())
             {
                 totalWeightTemp += slot.GetItem().itemData.weight;
-                
             }
         }
         totalWeight = totalWeightTemp;

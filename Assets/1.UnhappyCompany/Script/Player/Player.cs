@@ -7,6 +7,7 @@ public class Player : MonoBehaviour
     public InteractionSystem interactionSystem;
     public QuickSlotSystem quickSlotSystem;
     public BuildSystem buildSystem;
+    public Animator armAnimator;
     void Start()
     {
         
@@ -15,10 +16,19 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if(quickSlotSystem.currentItemObject == null) return;
+
+
+        var overrideUpdate = quickSlotSystem.currentItemObject.GetComponent<Item>() as IOverrideUpdate;
+        if(overrideUpdate != null)
+        {
+            overrideUpdate.OverrideUpdate();
+        }
         if(Input.GetKeyDown(KeyCode.G))
         {
             quickSlotSystem.DropItem();
         }
+        // if(Input.GetKeyDown(KeyCode.Mouse1))
 
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {

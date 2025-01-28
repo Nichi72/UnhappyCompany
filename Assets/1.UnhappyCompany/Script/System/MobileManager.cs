@@ -8,7 +8,7 @@ public class MobileManager : MonoBehaviour
     public GameObject scanObj;
     private Player player;
     public Camera mobileCamera;
-    public MultiRaycastOcclusionCheck multiRaycastOcclusionCheck;
+    public ScanningSystem multiRaycastOcclusionCheck;
     public static MobileManager instance;
     void Awake()
     {
