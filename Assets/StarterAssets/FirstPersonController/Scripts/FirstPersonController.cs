@@ -331,6 +331,7 @@ namespace StarterAssets
 			}
 		}
 
+		public float handClampAngle = 45f;
 		private void HandFollowCamera()
 		{
 			if (handTransform != null && _mainCamera != null)
@@ -338,8 +339,12 @@ namespace StarterAssets
 				//
 				// Quaternion targetRotation = _mainCamera.transform.rotation * Quaternion.Euler(new Vector3(0f, -34.203f, 0f));
 				Quaternion targetRotation = _mainCamera.transform.rotation;
-				
-				
+				//카메라의 회전 각도를 제한
+				Vector3 eulerRotation = targetRotation.eulerAngles;
+				if (eulerRotation.x > 180f) eulerRotation.x -= 360f; // 180도 이상일 경우 360도를 빼서 음수로 변환
+				eulerRotation.x = Mathf.Clamp(eulerRotation.x, -handClampAngle, handClampAngle); // 위아래 회전 각도 제한
+				targetRotation = Quaternion.Euler(eulerRotation);
+
 				handTransform.rotation = Quaternion.Slerp(handTransform.rotation, targetRotation, handSmoothSpeed * Time.deltaTime);
 			}
 		}
