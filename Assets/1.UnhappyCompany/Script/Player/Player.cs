@@ -8,6 +8,7 @@ public class Player : MonoBehaviour
     public QuickSlotSystem quickSlotSystem;
     public BuildSystem buildSystem;
     public Animator armAnimator;
+    public Animator ItemAnimator;
     void Start()
     {
         
@@ -16,6 +17,12 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if(Input.GetKeyDown(KeyCode.F3))
+        {
+            armAnimator.SetTrigger("test");
+            ItemAnimator.SetTrigger("test");
+        }
+
         if(quickSlotSystem.currentItemObject == null) return;
 
 
@@ -42,5 +49,6 @@ public class Player : MonoBehaviour
 
             tempItem.Use(this);
         }
+        
     }
 }
