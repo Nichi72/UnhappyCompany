@@ -3,21 +3,42 @@ using UnityEngine;
 
 public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer
 {
-    // 애니메이션 상태 이름
-    public readonly string animatorStartName = "Shot_Water_Start";
-    public readonly string animatorLoopName = "Shot_Water_Loop";
-    public readonly string animatorFinishName = "Shot_Water_Finish";
-    public readonly string animatorLoadWaterName = "Load_Water";
-    public readonly string animatorLoadAirName = "Load_Air";
+    [ReadOnly] [SerializeField] private Animator playerArmAnimator;
+    [SerializeField] private Animator itemAnimator;
+    
 
-    private Animator playerArmAnimator;
     
     public int damage { get; set; } = 0; // 물총의 데미지 설정
     public string animatorLayerName { get; set; } = "WaterGun";
-    public Vector3 waterGunPosition = new Vector3(-0.010254181f,0.0214034468f,0.206581041f);
-    public Vector3 waterGunRotation = new Vector3(306.530121f,243.974197f,216.739578f);
-    public Vector3 waterGunScale = new Vector3(0.554564357f,0.554564595f,0.554564416f);
+    public Vector3 waterGunPosition;
+    public Vector3 waterGunRotation;
+    public Vector3 waterGunScale;
 
+    // 애니메이션 상태 이름
+    public readonly string animatorItemStartName = "Shot_Water_Start";
+    public readonly string animatorItemLoopName = "Shot_Water_Loop";
+    public readonly string animatorItemFinishName = "Shot_Water_Finish";
+    public readonly string animatorItemLoadWaterName = "Load_Water";
+    public readonly string animatorItemLoadAirName = "Load_Air";
+
+
+
+    // public readonly string animatorArmLayerName = "Shot_Start_Arm";
+    public readonly string animatorArmStartName = "Arm_Shot_Water_Start";
+    public readonly string animatorArmLoopName = "Arm_Shot_Water_Loop";
+    public readonly string animatorArmFinishName = "Arm_Shot_Water_Finish";
+    public readonly string animatorArmLoadWaterName = "Arm_Load_Water";
+    public readonly string animatorArmLoadAirName = "Arm_Load_Air";
+
+
+
+
+
+
+    void Awake()
+    {
+ 
+    }
     void Start()
     {
     }
@@ -41,10 +62,11 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer
     {
         base.Mount(player);
 
-        waterGunPosition = new Vector3(-0.010254181f,0.0214034468f,0.206581041f);
-        waterGunRotation = new Vector3(306.530121f,243.974197f,216.739578f);
-        waterGunScale = new Vector3(0.554564357f,0.554564595f,0.554564416f);
+        itemAnimator.enabled = true;
 
+        waterGunPosition = new Vector3(0.714165092f,0.312598348f,0.881453872f);
+        waterGunRotation = new Vector3(4.73381901f,133.387222f,8.63204288f);    
+        waterGunScale = new Vector3(0.554564357f,0.554564595f,0.554564416f);
 
         Rigidbody rd =  GetComponent<Rigidbody>();
         rd.isKinematic = true;
@@ -55,6 +77,7 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer
         transform.localPosition = waterGunPosition;
         transform.localRotation = Quaternion.Euler(waterGunRotation);
         transform.localScale = waterGunScale;
+
     }
 
     public void Shoot()
@@ -88,22 +111,30 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer
         // 물총 발사
         if(Input.GetKeyDown(KeyCode.Mouse0))
         {
-            playerArmAnimator.Play(animatorStartName);
+            Fire();
         }
         // 물총 발사 중
-        if(Input.GetKey(KeyCode.Mouse0))
-        {
-            playerArmAnimator.Play(animatorLoopName);
-        }
+        // if(Input.GetKey(KeyCode.Mouse0))
+        // {
+        //     playerArmAnimator.Play(animatorLoopName);
+        // }
         // 물총 발사 완료
         if(Input.GetKeyUp(KeyCode.Mouse0))
         {
-            playerArmAnimator.Play(animatorFinishName);
+            itemAnimator.CrossFade(animatorItemFinishName,0.1f);
+            playerArmAnimator.CrossFade(animatorArmFinishName,0.1f);
         }
+
     }
 
     private void Fire()
     {
-        playerArmAnimator.Play(animatorStartName);
+        itemAnimator.CrossFade(animatorItemStartName,0.1f);
+        playerArmAnimator.CrossFade(animatorArmStartName,0.1f);
     }
+
+
+
+
+
 } 
