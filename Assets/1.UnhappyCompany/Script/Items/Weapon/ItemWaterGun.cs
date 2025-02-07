@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer
 {
+    // 애니메이션 상태 이름
     public readonly string animatorStartName = "Shot_Water_Start";
     public readonly string animatorLoopName = "Shot_Water_Loop";
     public readonly string animatorFinishName = "Shot_Water_Finish";
@@ -99,5 +100,10 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer
         {
             playerArmAnimator.Play(animatorFinishName);
         }
+    }
+
+    private void Fire()
+    {
+        playerArmAnimator.Play(animatorStartName);
     }
 } 
