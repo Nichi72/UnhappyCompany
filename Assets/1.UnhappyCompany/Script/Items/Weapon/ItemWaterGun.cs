@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.Mathematics;
 using UnityEngine;
 
 public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer
@@ -7,13 +8,17 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer
     [SerializeField] private Animator itemAnimator;
     [SerializeField] private Transform handPivot;
     [SerializeField] private ParticleSystem vfxWater;
+    [SerializeField] private ParticleSystem vfxWaterSmoke;
 
-    [ReadOnly] [SerializeField] float airValue = 0;
-    [ReadOnly] [SerializeField] float waterValue = 0;
+
+    [SerializeField] float currentAirValue = 100;
+    [ReadOnly] [SerializeField] float currentWaterValue = 100;
     [ReadOnly] [SerializeField] float airMaxValue = 100;
     [ReadOnly] [SerializeField] float waterMaxValue = 100;
     [SerializeField] float airDecreaseValue = 1;
     [SerializeField] float waterDecreaseValue = 1;
+
+
 
     
 
@@ -134,6 +139,7 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer
 
     public void OverrideUpdate()
     {
+        waterPower();
         // handPivot.position = transform.position;
         // 물총 발사
         if(Input.GetKeyDown(KeyCode.Mouse0))
@@ -143,8 +149,8 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer
         // 물총 발사 중
         if(Input.GetKey(KeyCode.Mouse0))
         {
-            airValue -= airDecreaseValue;
-            waterValue -= waterDecreaseValue;
+            currentAirValue -= airDecreaseValue;
+            currentWaterValue -= waterDecreaseValue;
         }
         // 물총 발사 완료
         if(Input.GetKeyUp(KeyCode.Mouse0))
@@ -156,7 +162,7 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer
         if(Input.GetKeyDown(KeyCode.Mouse1))
         {
             // itemAnimator.applyRootMotion = false;
-            itemAnimator.CrossFade(animatorItemLoadAirName,0.1f);
+            // itemAnimator.CrossFade(animatorItemLoadAirName,0.1f);
             playerArmAnimator.CrossFade(animatorArmLoadAirName,0.1f);
         }
 
@@ -169,7 +175,48 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer
         // itemAnimator.enabled = true;
         playerArmAnimator.CrossFade(animatorArmStartName,0.1f);
         vfxWater.Play();
+        waterPower();
     }
+
+    float currentWaterGravity = 10f;
+    float minWaterGravity = 2.6f;
+    float maxWaterGravity = 10f;
+    float currentWaterStartLifeTime = 1.5f;
+    float minWaterStartLifeTime = 0f;
+    float maxWaterStartLifeTime = 1.5f;
+
+
+
+    private void waterPower()
+    {
+        
+        UpdateWaterGravity();
+      
+
+
+    }
+
+    private void UpdateWaterGravity()
+    {
+        float airRatio = currentAirValue / airMaxValue;
+        Debug.Log($"airRatio: {airRatio} currentAirValue: {currentAirValue} airMaxValue: {airMaxValue}");
+        currentWaterGravity = Mathf.Lerp(minWaterGravity, maxWaterGravity, airRatio);
+        currentWaterStartLifeTime = Mathf.Lerp(minWaterStartLifeTime, maxWaterStartLifeTime, airRatio);
+
+
+        var vfxWaterSmokeMain = vfxWaterSmoke.main;
+        var vfxWaterMain = vfxWater.main;
+
+        vfxWaterSmokeMain.gravityModifier = currentWaterGravity;
+        vfxWaterMain.gravityModifier = currentWaterGravity;
+
+        vfxWaterSmokeMain.startLifetime = currentWaterStartLifeTime;
+        vfxWaterMain.startLifetime = currentWaterStartLifeTime;
+    }
+
+
+
+
 
 
 

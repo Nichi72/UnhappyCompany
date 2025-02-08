@@ -7149,37 +7149,13 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 2162263216726540946, guid: ec48b3a1edcbe3946aed447b983f44e6, type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4290358424154167006, guid: ec48b3a1edcbe3946aed447b983f44e6, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: -4.013289
-      objectReference: {fileID: 0}
-    - target: {fileID: 4290358424154167006, guid: ec48b3a1edcbe3946aed447b983f44e6, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 132.60735
-      objectReference: {fileID: 0}
-    - target: {fileID: 4290358424154167006, guid: ec48b3a1edcbe3946aed447b983f44e6, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 9.139851
+    - target: {fileID: 1380461811527821475, guid: ec48b3a1edcbe3946aed447b983f44e6, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.469
       objectReference: {fileID: 0}
     - target: {fileID: 4875738719613387346, guid: ec48b3a1edcbe3946aed447b983f44e6, type: 3}
       propertyPath: m_Name
       value: watergun
-      objectReference: {fileID: 0}
-    - target: {fileID: 5208410640948982849, guid: ec48b3a1edcbe3946aed447b983f44e6, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: -4.013289
-      objectReference: {fileID: 0}
-    - target: {fileID: 5208410640948982849, guid: ec48b3a1edcbe3946aed447b983f44e6, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 132.60735
-      objectReference: {fileID: 0}
-    - target: {fileID: 5208410640948982849, guid: ec48b3a1edcbe3946aed447b983f44e6, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 9.139851
       objectReference: {fileID: 0}
     - target: {fileID: 5251700900662925544, guid: ec48b3a1edcbe3946aed447b983f44e6, type: 3}
       propertyPath: m_LocalPosition.x
@@ -7221,29 +7197,13 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 8.632042
       objectReference: {fileID: 0}
-    - target: {fileID: 7044584406853294652, guid: ec48b3a1edcbe3946aed447b983f44e6, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: -4.013289
+    - target: {fileID: 7613452086801699232, guid: ec48b3a1edcbe3946aed447b983f44e6, type: 3}
+      propertyPath: InitialModule.gravityModifier.scalar
+      value: 1.78
       objectReference: {fileID: 0}
-    - target: {fileID: 7044584406853294652, guid: ec48b3a1edcbe3946aed447b983f44e6, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 132.60735
-      objectReference: {fileID: 0}
-    - target: {fileID: 7044584406853294652, guid: ec48b3a1edcbe3946aed447b983f44e6, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 9.139851
-      objectReference: {fileID: 0}
-    - target: {fileID: 8066938114879562226, guid: ec48b3a1edcbe3946aed447b983f44e6, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: -4.013289
-      objectReference: {fileID: 0}
-    - target: {fileID: 8066938114879562226, guid: ec48b3a1edcbe3946aed447b983f44e6, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 132.60735
-      objectReference: {fileID: 0}
-    - target: {fileID: 8066938114879562226, guid: ec48b3a1edcbe3946aed447b983f44e6, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 9.139851
+    - target: {fileID: 7613452086801699232, guid: ec48b3a1edcbe3946aed447b983f44e6, type: 3}
+      propertyPath: InitialModule.gravityModifier.minMaxState
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -10826,6 +10786,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7613452086801699232, guid: ec48b3a1edcbe3946aed447b983f44e6, type: 3}
+      propertyPath: InitialModule.rotation3D
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8820840923613042925, guid: ec48b3a1edcbe3946aed447b983f44e6, type: 3}
       propertyPath: m_UseGravity
       value: 0
@@ -11534,6 +11498,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: -1.6408263
       objectReference: {fileID: 0}
+    - target: {fileID: 4340981536054572169, guid: abeb93b4e38916f4db04982aafaac5ed, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4565722650115613889, guid: abeb93b4e38916f4db04982aafaac5ed, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 17.609987
@@ -11750,6 +11718,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0.54093933
       objectReference: {fileID: 0}
+    - target: {fileID: 6783202034494886157, guid: abeb93b4e38916f4db04982aafaac5ed, type: 3}
+      propertyPath: m_UseGravity
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6783202034494886157, guid: abeb93b4e38916f4db04982aafaac5ed, type: 3}
+      propertyPath: m_IsKinematic
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6786808231231833782, guid: abeb93b4e38916f4db04982aafaac5ed, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 56.850193
@@ -11809,6 +11785,10 @@ PrefabInstance:
     - target: {fileID: 7419987188253113809, guid: abeb93b4e38916f4db04982aafaac5ed, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: -1.4422544
+      objectReference: {fileID: 0}
+    - target: {fileID: 7485317734331698098, guid: abeb93b4e38916f4db04982aafaac5ed, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7679772943013622230, guid: abeb93b4e38916f4db04982aafaac5ed, type: 3}
       propertyPath: m_IsActive
@@ -12474,7 +12454,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 40bb4e679a2e1264690395dc78f2086f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rightHandPos: {fileID: 2098487817}
+  rightHandPos: {fileID: 1511882584}
   firstPersonController: {fileID: 4416926083347132228}
   interactionSystem: {fileID: 8153465871830975899}
   quickSlotSystem: {fileID: 285654100}
