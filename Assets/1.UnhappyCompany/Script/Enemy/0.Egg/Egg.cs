@@ -37,9 +37,10 @@ public class Egg : MonoBehaviour, IDamageable
     public ParticleSystem stageTransitionEffect;
     
     private EggStage currentStage = EggStage.Stage1;
-    public int hp { get; set; } = 100;
+    public int Hp { get; set; } = 100;
     public int id;
     public bool isScanning = false;
+    public bool isScanningOver = false;
 
 
     private void Start()
@@ -132,11 +133,11 @@ public class Egg : MonoBehaviour, IDamageable
                 return;
             }
 
-            hp -= damage;
-            Debug.Log($"{gameObject.name}({eggType}) Take Damage {damage} from {damageType} _ Left HP :{hp}");
+            Hp -= damage;
+            Debug.Log($"{gameObject.name}({eggType}) Take Damage {damage} from {damageType} _ Left HP :{Hp}");
             AuodioManager.instance.PlayOneShot(FMODEvents.instance.damage, transform.position);
             
-            if(hp <= 0)
+            if(Hp <= 0)
             {
                 DestroyEgg();
             }
@@ -198,7 +199,20 @@ public class Egg : MonoBehaviour, IDamageable
                 Debug.Log("동물형 알 파괴 - 물리 파편 발생!");
                 break;
         }
-        
+
         Destroy(gameObject);
     }
+
+    public void AutoCompleteScanAfterDay()
+    {
+        // TimeManager.instance.OnDayPassed += () =>   
+        // {
+        //     isScanningOver = true;
+        // };
+
+        // 테스트용 코드
+        isScanningOver = true;
+
+    }
+
 }

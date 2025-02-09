@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using MyUtility;
 
 public class Computer : MonoBehaviour , IInteractable
 {
@@ -12,7 +13,9 @@ public class Computer : MonoBehaviour , IInteractable
     public Transform cameraTarget;
     public Player currentUsePlayer;
     [SerializeField] private ComputerState computerState;
-    
+
+    public string InteractionText { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "Computer_ITR"); set => InteractionText = value; }
+
     private void Start()
     {
         computerState = ComputerState.Close;

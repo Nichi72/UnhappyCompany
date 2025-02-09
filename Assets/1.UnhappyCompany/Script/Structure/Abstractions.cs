@@ -6,8 +6,17 @@ using UnityEngine;
 /// <param name="player">상호 작용하는 플레이어</param>
 public interface IInteractable
 {
+    string InteractionText { get; set; }
     void HitEventInteractionF(Player rayOrigin);
 }
+
+public interface IToolTip
+{
+    string ToolTipText { get; set; }
+    string ToolTipText2 { get; set; }
+    string ToolTipText3 { get; set; }
+}
+
 
 /// <summary>
 /// 중앙 배터리를 소모하는 소비자를 정의하는 인터페이스입니다.
@@ -24,7 +33,7 @@ public interface ICentralBatteryConsumer
 /// </summary>
 public interface IDamageable
 {
-    int hp { get; set; }
+    int Hp { get; set; }
     void TakeDamage(int damage, DamageType damageType);
 }
 

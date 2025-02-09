@@ -1,17 +1,19 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 namespace MyUtility
 {
     public static class ComponentUtils
     {
         /// <summary>
         ///  /// <summary>
-        /// »óÀ§ °èÃþ¿¡¼­ Æ¯Á¤ Å¸ÀÔÀÇ ¸ðµç ÄÄÆ÷³ÍÆ®¸¦ Ã£´Â ¸Þ¼­µå.
+        /// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Æ¯ï¿½ï¿½ Å¸ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ Ã£ï¿½ï¿½ ï¿½Þ¼ï¿½ï¿½ï¿½.
         /// </summary>
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="gameObject"></param>
-        /// <param name="includeInactive">includeInactive¸¦ true·Î ¼³Á¤ÇÏ¸é ºñÈ°¼ºÈ­µÈ ºÎ¸ðµµ °Ë»ö¿¡ Æ÷ÇÔÇÕ´Ï´Ù.</param>
+        /// <param name="includeInactive">includeInactiveï¿½ï¿½ trueï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ ï¿½ï¿½È°ï¿½ï¿½È­ï¿½ï¿½ ï¿½Î¸ï¿½ ï¿½Ë»ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.</param>
         /// <returns></returns>
         public static T[] GetAllComponentsInParents<T>(GameObject gameObject, bool includeInactive = false) where T : Component
         {
@@ -19,7 +21,7 @@ namespace MyUtility
         }
 
         /// <summary>
-        /// ÇöÀç GameObject¿¡¼­ »óÀ§ °èÃþ±îÁö ¸ðµç ºÎ¸ðÀÇ ¸ðµç ÄÄÆ÷³ÍÆ®¸¦ Ã£´Â ¸Þ¼­µå.
+        /// ï¿½ï¿½ï¿½ï¿½ GameObjectï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Î¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ Ã£ï¿½ï¿½ ï¿½Þ¼ï¿½ï¿½ï¿½.
         /// </summary>
         public static List<Component> GetAllComponentsInParents(GameObject gameObject)
         {
@@ -36,4 +38,22 @@ namespace MyUtility
             return allComponents;
         }
     }
+
+    public static class LocalizationUtils
+    {
+        public static string GetLocalizedString(string tableEntryReference ,string tableReference =null,Locale locale = null)
+        {
+            if(locale == null)
+            {
+                locale = LocalizationSettings.SelectedLocale;
+            }
+            if(tableReference == null)
+            {
+                tableReference = "TESTs";
+            }
+            return LocalizationSettings.StringDatabase.GetLocalizedString(tableReference: tableReference, tableEntryReference: tableEntryReference, locale: locale);
+        }
+    }
 }
+
+

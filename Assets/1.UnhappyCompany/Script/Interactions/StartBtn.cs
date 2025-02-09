@@ -1,7 +1,10 @@
 using UnityEngine;
+using MyUtility;
 
 public class StartBtn : MonoBehaviour , IInteractable
 {
+    public string InteractionText { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "StartBtn_ITR"); set => InteractionText = value; }
+
     public void HitEventInteractionF(Player rayOrigin)
     {
         if(GameManager.instance.currentGameState == EGameState.None || GameManager.instance.currentGameState == EGameState.Ready)

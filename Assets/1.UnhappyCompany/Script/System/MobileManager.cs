@@ -18,7 +18,9 @@ public class MobileManager : MonoBehaviour
     {
         player = GameManager.instance.currentPlayer;
         CCTVManager.instance.mobileManager = this;
+        mobileCamera.enabled = false;
     }
+
 
     void Update()
     {
@@ -38,6 +40,7 @@ public class MobileManager : MonoBehaviour
         if(Input.GetKeyDown(KeyCode.Tab))
         {
             uiObjmobile.SetActive(!uiObjmobile.activeSelf);
+            // mobileCamera.SetActive(!mobileCamera.activeSelf);
             player.firstPersonController._input.SetCursorLock(!uiObjmobile.activeSelf);
         }
         if(Input.GetKeyDown(KeyCode.Q) && scanObj.activeSelf == true)

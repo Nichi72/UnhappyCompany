@@ -1,4 +1,6 @@
 using UnityEngine;
+using MyUtility;
+using UnityEditor.Rendering;
 
 /// <summary>
 /// 총을 사용하는 아이템입니다.
@@ -16,16 +18,16 @@ public class ItemGun : Item, IDamager, IOverrideUpdate, IAnimatorLayer
 
     public int damage { get; set; } = 10;
     public string animatorLayerName { get; set; } = "Gun";
+    public override string ToolTipText { get; set; } = "[LMB]: "; // 발사
+    public override string ToolTipText2 { get; set; } = "[RMB]: "; // 코킹
+    public override string ToolTipText3 { get; set; } = "[R]: "; // 재장전
 
     public override void Use(Player player)
     {
         // 사용하지 않음.
     }
 
-    public void DealDamage(IDamageable target)
-    {
-        
-    }
+    
     public override void PickUp(Player player)
     {
         base.PickUp(player);
@@ -34,11 +36,15 @@ public class ItemGun : Item, IDamager, IOverrideUpdate, IAnimatorLayer
     {
         base.Mount(player);
 
-
         Vector3 gunPosition = new Vector3(-0.0459837541f,0.233345002f,0.0039123809f);
         Vector3 gunRotation = new Vector3(331.509766f,106.864601f,57.3288536f);
         Vector3 gunScale = new Vector3(0.554564357f,0.554564595f,0.554564416f);
 
+        ToolTipText += LocalizationUtils.GetLocalizedString(tableEntryReference: "ItemGun_TT_LMB");
+        ToolTipText2 += LocalizationUtils.GetLocalizedString(tableEntryReference: "ItemGun_TT_RMB");
+        ToolTipText3 += LocalizationUtils.GetLocalizedString(tableEntryReference: "ItemGun_TT_R");
+
+        ToolTipUI.instance.SetToolTip(this);
 
         Rigidbody rd =  GetComponent<Rigidbody>();
         rd.isKinematic = true;
@@ -55,7 +61,7 @@ public class ItemGun : Item, IDamager, IOverrideUpdate, IAnimatorLayer
     {
         if(Input.GetKeyDown(KeyCode.Mouse0))
         {
-            playerArmAnimator.Play(animatorShootName);
+            Fire();
         }
         if(Input.GetKeyDown(KeyCode.Mouse1))
         {
@@ -66,4 +72,40 @@ public class ItemGun : Item, IDamager, IOverrideUpdate, IAnimatorLayer
             playerArmAnimator.Play(animatorReloadName);
         }
     }
+
+    private void Fire()
+    {
+        playerArmAnimator.Play(animatorShootName);
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit, 100f))
+        {
+            IDamageable damageable = hit.collider.GetComponent<IDamageable>();
+            if (damageable != null)
+            {
+                DealDamage(damageable);
+            }
+        }
+
+    }
+
+    public void DealDamage(IDamageable target)
+    {
+        target.TakeDamage(damage, DamageType.Nomal);
+        Debug.Log("Hit!");
+    }
+
+    // public void DealDamage(IDamageable target)
+    // {
+    //     if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, 100f))
+    //     {
+    //         IDamageable damageable = hit.collider.GetComponent<IDamageable>();
+    //         if (damageable != null)
+    //         {
+    //             damageable.TakeDamage(damage, DamageType.Nomal);
+    //             Debug.Log("Hit!");
+    //         }
+    //     }
+    // }
+
 }

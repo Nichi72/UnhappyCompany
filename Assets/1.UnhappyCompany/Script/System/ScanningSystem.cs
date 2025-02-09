@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Collections;
 
 public class ScanningSystem : MonoBehaviour
 {
@@ -13,11 +14,19 @@ public class ScanningSystem : MonoBehaviour
     [Range(1, 100)]
     public int verticalSamples = 50;
 
+    [SerializeField] private ObjectTrackerUI objectTrackerUI;
+    [SerializeField] private float scanCooldown = 3f; // 쿨타임 설정 (초 단위)
+
+    
     // 카메라 뷰에 "Enemy"가 있는지 스캔하는 메서드
+    private bool canScan = true;
+
     public void ScanForEnemies()
     {
-        if (targetCamera == null)
+        if (!canScan || targetCamera == null)
             return;
+
+        StartCoroutine(ScanCooldown());
 
         // (1) N×M 샘플링하여 레이캐스트
         int totalRays = horizontalSamples * verticalSamples;
@@ -43,12 +52,13 @@ public class ScanningSystem : MonoBehaviour
                 if (Physics.Raycast(ray, out RaycastHit hitInfo, distance, obstacleLayerMask))
                 {
                     // 맞은 것이 "Enemy" 태그를 가진 오브젝트인지 확인
-                    if (hitInfo.transform.CompareTag("Enemy"))
+                    if (hitInfo.transform.CompareTag("Egg"))
                     {
                         // 적 데이터 가져오기 
                         Egg egg = hitInfo.transform.GetComponent<Egg>();
                         if(egg != null && !detectedEggs.ContainsKey(hitInfo.transform))
                         {
+                            objectTrackerUI.AddTarget(hitInfo.transform, EObjectTrackerUIType.Egg);
                             if(egg.isScanning == false)
                             {
                                 // Egg 타입일때 처리
@@ -56,9 +66,22 @@ public class ScanningSystem : MonoBehaviour
                                 hitCount++;
                                 Debug.Log($"Egg detected: {hitInfo.transform.name}");
                                 egg.isScanning = true;
+                                egg.AutoCompleteScanAfterDay();
                             }
                         }
                         // 일반 적도 개발해야함
+                        
+                    }
+                    else if (hitInfo.transform.CompareTag("Enemy"))
+                    {
+                        // 적 처리
+                        // Egg egg = hitInfo.transform.GetComponent<>();
+                        // objectTrackerUI.AddTarget(hitInfo.transform);
+                    }
+                    else if (hitInfo.transform.CompareTag("CollectibleItem"))
+                    {
+                        // 수집 가능한 아이템 처리
+                        objectTrackerUI.AddTarget(hitInfo.transform, EObjectTrackerUIType.CollectibleItem);
                     }
                 }
             }
@@ -69,11 +92,19 @@ public class ScanningSystem : MonoBehaviour
         {
             Debug.Log($"Total enemies detected: {hitCount}");
             NotificationSystem.instance.ReceiveEnemyData(detectedEnemies, detectedEggs);
+            
         }
         else
         {
             Debug.Log("No enemy detected in view.");
         }
+    }
+
+    private IEnumerator ScanCooldown()
+    {
+        canScan = false;
+        yield return new WaitForSeconds(scanCooldown);
+        canScan = true;
     }
 }
 

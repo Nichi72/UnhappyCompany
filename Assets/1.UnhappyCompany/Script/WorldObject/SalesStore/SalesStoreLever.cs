@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using MyUtility;
 
 public class SalesStoreLever : MonoBehaviour , IInteractable
 {
@@ -8,6 +9,8 @@ public class SalesStoreLever : MonoBehaviour , IInteractable
     [SerializeField] private SalesStore salesStore;
 
     private bool isAnimating = false;
+
+    public string InteractionText { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "SalesStoreLever_ITR"); set => InteractionText = value; }
 
     public void HitEventInteractionF(Player rayOrigin)
     {

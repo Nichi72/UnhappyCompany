@@ -4,7 +4,7 @@ using UnityEngine.AI;
 /// <summary>
 /// EnemyAIController는 적의 기본 AI 동작을 정의하는 추상 클래스입니다.
 /// </summary>
-public abstract class EnemyAIController<T> : MonoBehaviour where T : BaseEnemyAIData
+public abstract class EnemyAIController<T> : MonoBehaviour , IDamageable where T : BaseEnemyAIData 
 {
     [SerializeField] protected IState currentState; // 현재 활성화된 상태
     protected UtilityCalculator utilityCalculator; // 유틸리티 계산기
@@ -26,6 +26,8 @@ public abstract class EnemyAIController<T> : MonoBehaviour where T : BaseEnemyAI
 
     public TimeOfDay CurrentTimeOfDay { get; private set; }
     public UtilityCalculator UtilityCalculator { get => utilityCalculator; set => utilityCalculator = value; }
+    public int hp = 0;
+    public int Hp { get => hp; set => hp = value; }
 
     [Header("Debug Settings")]
     public bool enableDebugUI = true;
@@ -127,8 +129,6 @@ public abstract class EnemyAIController<T> : MonoBehaviour where T : BaseEnemyAI
         currentState?.Exit();
         currentState = newState;
         currentState?.Enter();
-
-        
     }
 
     protected virtual void OnDrawGizmosSelected()
@@ -136,5 +136,16 @@ public abstract class EnemyAIController<T> : MonoBehaviour where T : BaseEnemyAI
         MyUtility.UtilityGizmos.DrawCircle(transform.position, PatrolRadius, patrolGizmoRangeColor);
         MyUtility.UtilityGizmos.DrawCircle(transform.position, ChaseRadius, chaseGizmoRangeColor);
         MyUtility.UtilityGizmos.DrawCircle(transform.position, AttackRadius, attackGizmoRangeColor);
+    }
+
+    public void TakeDamage(int damage, DamageType damageType)
+    {
+        Hp -= damage;
+        if(Hp <= 0)
+        {
+            EnemyManager.instance.activeEnemies.Remove(gameObject);
+            Debug.Log($"{gameObject.name} 사망");
+            Destroy(gameObject);
+        }
     }
 } 

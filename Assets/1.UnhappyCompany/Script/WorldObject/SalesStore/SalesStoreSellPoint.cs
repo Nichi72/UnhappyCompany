@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using MyUtility;
 
 public class SalesStoreSellPoint : MonoBehaviour , IInteractable
 {
@@ -20,6 +21,8 @@ public class SalesStoreSellPoint : MonoBehaviour , IInteractable
     }
 
     private bool isToggling = false;
+
+    public string InteractionText { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "SalesStoreSellPoint_ITR"); set => InteractionText = value; }
 
     public IEnumerator ToggleDoor()
     {

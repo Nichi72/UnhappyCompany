@@ -32,17 +32,12 @@ public enum EGameState
     Playing,
     End
 }
-public static class CoroutineHelper
+
+public enum EObjectTrackerUIType
 {
-    public static IEnumerator WaitForSecondsInFixedUpdate(float waitTime)
-    {
-        float elapsedTime = 0f;
-        while (elapsedTime < waitTime)
-        {
-            yield return new WaitForFixedUpdate(); // FixedUpdate �ֱ� ���
-            elapsedTime += Time.fixedDeltaTime;   // ���� �ð� ���� ����
-        }
-    }
+    Enemy,
+    Egg,
+    CollectibleItem
 }
 
 public enum ENotificationCategory

@@ -82,6 +82,7 @@ public class ComputerSystem : MonoBehaviour
     }
     public void BtnEvtPressed(GameObject view)
     {
+        Debug.Log("BtnEvtPressed");
         UIManager.instance.ToggleObject(view);
     }
 }

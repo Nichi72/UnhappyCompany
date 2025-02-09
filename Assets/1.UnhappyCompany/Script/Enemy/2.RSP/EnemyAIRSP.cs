@@ -9,7 +9,7 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData>
     public float AttackCooldown => enemyData.attackCooldown;
     public float SpecialAttackCooldown => enemyData.specialAttackCooldown;
     public float SpecialAttackRange => enemyData.specialAttackRange;
-    
+
     protected override void Start()
     {
         base.Start();

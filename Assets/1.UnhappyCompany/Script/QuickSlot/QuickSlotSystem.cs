@@ -147,6 +147,7 @@ public class QuickSlotSystem : MonoBehaviour
     public void ClearCurrentItemSlot()
     {
         var tempQuickSlot = GetCurrentQuickSlot();
+        currentItemObject.GetComponent<Item>().UnMount();
         if (currentItemObject != null)
         {
             currentItemObject.transform.SetParent(null);
@@ -192,7 +193,6 @@ public class QuickSlotSystem : MonoBehaviour
             //    return slot;
             //}
             return slot;
-           
         }
         return null;
     }

@@ -97,9 +97,17 @@ PrefabInstance:
       value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: 2070f63f3347bf74fb4548f7898365bf, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 2070f63f3347bf74fb4548f7898365bf, type: 3}
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: 86c30ecd07f82be4d9593b7d505adea9, type: 2}
+    - target: {fileID: 5866666021909216657, guid: 2070f63f3347bf74fb4548f7898365bf, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7845444099105968784, guid: 2070f63f3347bf74fb4548f7898365bf, type: 3}
       propertyPath: m_Layer
       value: 6
@@ -122,6 +130,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 8820840923613042925}
   m_SourcePrefab: {fileID: 100100000, guid: 2070f63f3347bf74fb4548f7898365bf, type: 3}
+--- !u!95 &2162263216726540946 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 2070f63f3347bf74fb4548f7898365bf, type: 3}
+  m_PrefabInstance: {fileID: 5722794579810434819}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &4875738719613387346 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 2070f63f3347bf74fb4548f7898365bf, type: 3}
@@ -140,9 +153,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemData: {fileID: 11400000, guid: 9f847cce33a187346b424ae82b0c756a, type: 2}
-  waterGunPosition: {x: -0.010254181, y: 0.021403447, z: 0.20658104}
-  waterGunRotation: {x: 306.53012, y: 243.9742, z: 216.73958}
-  waterGunScale: {x: 0.55456436, y: 0.5545646, z: 0.5545644}
+  playerArmAnimator: {fileID: 0}
+  itemAnimator: {fileID: 2162263216726540946}
+  handPivot: {fileID: 0}
+  waterGunPosition: {x: 0.902, y: 0.2092999, z: 0.72}
+  waterGunRotation: {x: 0, y: 0, z: 0}
+  waterGunScale: {x: 0.5545644, y: 0.5545646, z: 0.5545644}
 --- !u!65 &7991767863810571078
 BoxCollider:
   m_ObjectHideFlags: 0

@@ -1,4 +1,5 @@
 using UnityEngine;
+using MyUtility;
 
 public class DoorTrapBtn : MonoBehaviour,IInteractable
 {
@@ -8,7 +9,10 @@ public class DoorTrapBtn : MonoBehaviour,IInteractable
         Hammer,
         Electric
     }
-    [SerializeField] private DoorTrapBtnType doorTrapBtnType; 
+    [SerializeField] private DoorTrapBtnType doorTrapBtnType;
+
+    public string InteractionText { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "DoorTrapBtn_ITR"); set => InteractionText = value; }
+
     public void HitEventInteractionF(Player rayOrigin)
     {
         if(doorTrapBtnType == DoorTrapBtnType.Fire)

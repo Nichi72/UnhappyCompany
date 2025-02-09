@@ -1,9 +1,10 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class InteractionSystem : MonoBehaviour
 {
-    public GameObject CenterText;
+    public TextMeshProUGUI CenterText;
     public float raycastMaxDistance = 5f; // Raycast의 최대 거리
     public LayerMask interactionLayer; // 레이어 마스크 설정
     private List<GameObject> interactionObjs;
@@ -13,7 +14,7 @@ public class InteractionSystem : MonoBehaviour
     private void Awake()
     {
         interactionObjs = new List<GameObject>();
-        interactionObjs.Add(CenterText);
+        interactionObjs.Add(CenterText.transform.parent.gameObject);
         player = GetComponent<Player>();
     }
 
@@ -30,12 +31,14 @@ public class InteractionSystem : MonoBehaviour
         if (Physics.Raycast(ray, out hit, raycastMaxDistance, interactionLayer))
         {
             var hitEvent = hit.transform.GetComponent<IInteractable>();
-            CenterText.SetActive(true);
-            if (Input.GetKeyDown(KeyCode.F))
+            if(hitEvent != null)
             {
-                if(hitEvent != null)
+                CenterText.transform.parent.gameObject.SetActive(true);
+                CenterText.text = hitEvent.InteractionText;
+                if (Input.GetKeyDown(KeyCode.F))
                 {
                     hitEvent.HitEventInteractionF(player);
+                    Debug.Log(hitEvent.InteractionText);
                 }
             }
         }
