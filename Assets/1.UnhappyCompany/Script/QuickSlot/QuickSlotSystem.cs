@@ -109,6 +109,7 @@ public class QuickSlotSystem : MonoBehaviour
     {
         currentItemObject = Instantiate(itemData.prefab);
         currentItemObject.transform.SetParent(player.rightHandPos);
+        currentItemObject.GetComponent<Item>().itemData = itemData;
         currentItemObject.GetComponent<Item>().Mount(player);
         // currentItemObject.transform.localPosition = itemData.HandPosition;
         // currentItemObject.transform.localRotation = Quaternion.Euler(itemData.HandRotation);
@@ -121,16 +122,7 @@ public class QuickSlotSystem : MonoBehaviour
             return null;
         }
         var temp = currentItemObject;
-        var rigidbody = currentItemObject.GetComponent<Rigidbody>();
-        if(rigidbody != null)
-        {
-            rigidbody.isKinematic = false;
-        }
-        var animator = currentItemObject.GetComponent<Animator>();
-        if(animator != null)
-        {
-            animator.enabled = false;
-        }
+        currentItemObject.GetComponent<Item>().OnDrop();
         ClearCurrentItemSlot();
         Debug.Log($"DropItem {temp.name}");
         return temp;

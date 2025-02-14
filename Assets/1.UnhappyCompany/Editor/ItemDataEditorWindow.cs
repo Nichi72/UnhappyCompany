@@ -30,7 +30,7 @@ public class ItemDataEditorWindow : EditorWindow
         // Sort based on current field and direction
         itemDataArray = currentSortField switch
         {
-            "ItemID" => ascending ? itemDataArray.OrderBy(item => item.ItemID).ToArray() : itemDataArray.OrderByDescending(item => item.ItemID).ToArray(),
+            "ItemID" => ascending ? itemDataArray.OrderBy(item => item.savableItemData.GetItemID()).ToArray() : itemDataArray.OrderByDescending(item => item.savableItemData.GetItemID()).ToArray(),
             "ItemName" => ascending ? itemDataArray.OrderBy(item => item.itemName).ToArray() : itemDataArray.OrderByDescending(item => item.itemName).ToArray(),
             "Weight" => ascending ? itemDataArray.OrderBy(item => item.weight).ToArray() : itemDataArray.OrderByDescending(item => item.weight).ToArray(),
             "SellPrice" => ascending ? itemDataArray.OrderBy(item => item.SellPrice).ToArray() : itemDataArray.OrderByDescending(item => item.SellPrice).ToArray(),
@@ -72,7 +72,7 @@ public class ItemDataEditorWindow : EditorWindow
             serializedItemData.Update();
 
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(itemDataArray[i].ItemID.ToString(), GUILayout.Width(50));
+            EditorGUILayout.LabelField(itemDataArray[i].savableItemData.GetItemID().ToString(), GUILayout.Width(50));
             EditorGUILayout.PropertyField(serializedItemData.FindProperty("itemName"), GUIContent.none, GUILayout.Width(100));
             EditorGUILayout.PropertyField(serializedItemData.FindProperty("weight"), GUIContent.none, GUILayout.Width(50));
             EditorGUILayout.PropertyField(serializedItemData.FindProperty("SellPrice"), GUIContent.none, GUILayout.Width(70));
@@ -117,7 +117,7 @@ public class ItemDataEditorWindow : EditorWindow
 
     private void CheckForDuplicateIDs()
     {
-        var duplicateIDs = itemDataArray.GroupBy(item => item.ItemID)
+        var duplicateIDs = itemDataArray.GroupBy(item => item.savableItemData.GetItemID())
                                         .Where(group => group.Count() > 1)
                                         .Select(group => group.Key)
                                         .ToList();

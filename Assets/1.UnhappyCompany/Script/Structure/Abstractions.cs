@@ -57,3 +57,9 @@ public interface IOverrideUpdate
 {
     void OverrideUpdate();
 }
+
+public interface ISavable
+{
+    void SaveState();
+    void LoadState();
+}

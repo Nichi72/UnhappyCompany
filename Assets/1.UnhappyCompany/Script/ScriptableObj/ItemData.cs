@@ -6,9 +6,6 @@ using System.IO;
 public class ItemData : ScriptableObject
 {
     [SerializeField, ReadOnly]
-    private int itemID;
-    public int ItemID => itemID; // 외부에서 읽기만 가능
-
     public string itemName; 
     public float weight; 
     public int SellPrice;
@@ -19,11 +16,14 @@ public class ItemData : ScriptableObject
     public GameObject prefab;
     public Vector3 HandPosition;
     public Vector3 HandRotation;
+    // 세이브 데이터
+    public SavableItemData savableItemData;
+
 
 
     private void OnEnable()
     {
-        if (itemID == 0)
+        if (savableItemData.GetItemID() == 0)
         {
             string assetPath = AssetDatabase.GetAssetPath(this);
             string fileName = Path.GetFileNameWithoutExtension(assetPath);
@@ -33,14 +33,15 @@ public class ItemData : ScriptableObject
 
             if (extractedID > 0)
             {
-                itemID = extractedID;
+                savableItemData.SetItemID(extractedID);
             }
             else
             {
                 // 새로운 ID 할당
-                itemID = GenerateNewID();
+                int newID = GenerateNewID();
+                savableItemData.SetItemID(newID);
                 // 파일 이름에 ID 추가
-                RenameAssetWithID(assetPath, itemID);
+                RenameAssetWithID(assetPath, newID);
             }
         }
     }
