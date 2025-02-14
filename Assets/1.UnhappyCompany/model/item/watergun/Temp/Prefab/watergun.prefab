@@ -10,7 +10,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 656078645509030632, guid: 32aea57c592a6524ca95f245a64e7b12, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -0.693
       objectReference: {fileID: 0}
     - target: {fileID: 656078645509030632, guid: 32aea57c592a6524ca95f245a64e7b12, type: 3}
       propertyPath: m_LocalPosition.y
@@ -48,9 +48,17 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 832180382672813516, guid: 32aea57c592a6524ca95f245a64e7b12, type: 3}
+      propertyPath: playOnAwake
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2459313487289564661, guid: 32aea57c592a6524ca95f245a64e7b12, type: 3}
       propertyPath: m_Name
       value: Vfx_Watergun
+      objectReference: {fileID: 0}
+    - target: {fileID: 8330204573001530347, guid: 32aea57c592a6524ca95f245a64e7b12, type: 3}
+      propertyPath: playOnAwake
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -206,7 +214,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: 2070f63f3347bf74fb4548f7898365bf, type: 3}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: 2070f63f3347bf74fb4548f7898365bf, type: 3}
       propertyPath: m_Controller
@@ -214,7 +222,7 @@ PrefabInstance:
       objectReference: {fileID: 9100000, guid: 86c30ecd07f82be4d9593b7d505adea9, type: 2}
     - target: {fileID: 5866666021909216657, guid: 2070f63f3347bf74fb4548f7898365bf, type: 3}
       propertyPath: m_ApplyRootMotion
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7845444099105968784, guid: 2070f63f3347bf74fb4548f7898365bf, type: 3}
       propertyPath: m_Layer
@@ -285,8 +293,8 @@ MonoBehaviour:
   currentWaterValue: 100
   airMaxValue: 100
   waterMaxValue: 100
-  airDecreaseValue: 1
-  waterDecreaseValue: 1
+  airDecreaseValue: 0.8
+  waterDecreaseValue: 0.1
   waterGunPosition: {x: 0.902, y: 0.2092999, z: 0.72}
   waterGunRotation: {x: 0, y: 0, z: 0}
   waterGunScale: {x: 0.5545644, y: 0.5545646, z: 0.5545644}

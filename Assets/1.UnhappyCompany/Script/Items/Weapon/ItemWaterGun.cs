@@ -1,8 +1,9 @@
 using System.Collections;
+using MyUtility;
 using Unity.Mathematics;
 using UnityEngine;
 
-public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer
+public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer, ISavable
 {
     [ReadOnly] [SerializeField] private Animator playerArmAnimator;
     [SerializeField] private Animator itemAnimator;
@@ -10,21 +11,14 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer
     [SerializeField] private ParticleSystem vfxWater;
     [SerializeField] private ParticleSystem vfxWaterSmoke;
 
-
-    [SerializeField] float currentAirValue = 100;
+    [ReadOnly] [SerializeField] float currentAirValue = 100;
     [ReadOnly] [SerializeField] float currentWaterValue = 100;
     [ReadOnly] [SerializeField] float airMaxValue = 100;
     [ReadOnly] [SerializeField] float waterMaxValue = 100;
-    [SerializeField] float airDecreaseValue = 1;
-    [SerializeField] float waterDecreaseValue = 1;
+    [SerializeField] float airDecreaseValue = 0.8f;
+    [SerializeField] float waterDecreaseValue = 0.01f;
 
 
-
-    
-
-
-
-    
     public int damage { get; set; } = 0; // 물총의 데미지 설정
     public string animatorLayerName { get; set; } = "WaterGun";
 
@@ -49,29 +43,46 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer
     public readonly string animatorArmLoadWaterName = "Arm_Load_Water";
     public readonly string animatorArmLoadAirName = "Arm_Load_Air";
 
+    override public string ToolTipText { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "Item_TT_WaterGun_0"); set => ToolTipText = value; } // [LM]발사
+    override public string ToolTipText2 { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "Item_TT_WaterGun_1"); set => ToolTipText2 = value; } // [RM]공기 충전.
+    override public string ToolTipText3 { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "Item_TT_WaterGun_2"); set => ToolTipText3 = value; } // [R]물 충전. 
 
-
-
+    private bool isLoadWaterStateChecked = false;
 
 
     void Awake()
     {
- 
+        ToggleAnimator();
     }
     void Start()
     {
+        
     }
     public override void Use(Player player)
     {
         base.Use(player);
     }
-   
 
     private void Update()
     {
-        // 물총의 업데이트 로직이 필요하다면 여기에 추가
+        AnimatorStateInfo stateInfo = itemAnimator.GetCurrentAnimatorStateInfo(0);
+
+        if (stateInfo.IsName(animatorItemLoadWaterName))
+        {
+            isLoadWaterStateChecked = true;
+        }
+        else if (isLoadWaterStateChecked)
+        {
+            // "LoadWater" 상태가 끝났을 때 실행
+            AniEvtLoadWaterEnd();
+            isLoadWaterStateChecked = false;
+        }
     }
-    
+    public override void OnDrop()
+    {
+        base.OnDrop();
+        
+    }
     public override void PickUp(Player player)
     {
         base.PickUp(player);
@@ -80,12 +91,9 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer
     public override void Mount(Player player)
     {
         base.Mount(player);
-        itemAnimator.enabled = true;
-        // itemAnimator.applyRootMotion = true;
+        ToggleAnimator();
         handPivot = player.rightHandPos;
         transform.position = handPivot.position;
-        // transform.parent = handPivot;
-        
 
         // hand pivot 기준
         // waterGunPosition = new Vector3(0.714165092f,0.312598348f,0.881453872f);
@@ -93,22 +101,24 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer
         // waterGunScale = new Vector3(0.554564357f,0.554564595f,0.554564416f);
 
         // right hand 기준
-        waterGunPosition = new Vector3(-0.0383468196f,0.165113255f,0.0990908518f);
-        waterGunRotation = new Vector3(2.06121516f,245.157364f,281.128632f);  
-        waterGunScale = new Vector3(0.554564357f,0.554564595f,0.554564416f);
+        // waterGunPosition = new Vector3(-0.0383468196f,0.165113255f,0.0990908518f);
+        // waterGunRotation = new Vector3(2.06121516f,245.157364f,281.128632f);  
+        // waterGunScale = new Vector3(0.554564357f,0.554564595f,0.554564416f);
         
+        // 새로운 RH 기준
+        waterGunPosition = new Vector3(0.162f,-0.164000005f,0.428000003f);
+        waterGunRotation = new Vector3(306.530121f,243.974197f,216.739578f) ;
+        waterGunScale = new Vector3(0.371532321f,0.37153247f,0.371532351f);
 
         Rigidbody rd =  GetComponent<Rigidbody>();
         rd.isKinematic = true;
         playerArmAnimator = player.armAnimator;
         int layerIndex = playerArmAnimator.GetLayerIndex(animatorLayerName);
         playerArmAnimator.SetLayerWeight(layerIndex, 1);
-
         
         transform.localPosition = waterGunPosition;
         transform.localRotation = Quaternion.Euler(waterGunRotation);
         transform.localScale = waterGunScale;
-        // 
     }
 
     public void Shoot()
@@ -135,91 +145,164 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer
         Debug.Log($"{target.ToString()} Water Damage! _ Left HP { target.Hp}");
     }
 
-    
+    private void CheckValuesAndStop()
+    {
+        if (currentAirValue <= 0)
+        {
+            // 물총 발사 중지
+            vfxWater.Stop();
+            vfxWaterSmoke.Stop();
+            
+            // 추가적인 동작이 필요하다면 여기에 추가
+            Debug.Log("Air is depleted. Stopping effects.");
+        }
+
+        if (currentWaterValue <= 0)
+        {
+            // 물총 발사 중지
+            vfxWater.Stop();
+            vfxWaterSmoke.Stop();
+            
+            // 추가적인 동작이 필요하다면 여기에 추가
+            Debug.Log("Water is depleted. Stopping effects.");
+        }
+    }
 
     public void OverrideUpdate()
     {
-        waterPower();
-        // handPivot.position = transform.position;
-        // 물총 발사
-        if(Input.GetKeyDown(KeyCode.Mouse0))
+        WaterPower();
+        if(Input.GetKeyDown(KeyCode.Mouse0) && itemAnimator.GetCurrentAnimatorStateInfo(0).IsName("Idle"))
         {
             Fire();
         }
         // 물총 발사 중
-        if(Input.GetKey(KeyCode.Mouse0))
+        if(Input.GetKey(KeyCode.Mouse0) && itemAnimator.GetCurrentAnimatorStateInfo(0).IsName("Idle"))
         {
             currentAirValue -= airDecreaseValue;
             currentWaterValue -= waterDecreaseValue;
+            CheckValuesAndStop(); // 값이 0이 되었는지 확인
         }
         // 물총 발사 완료
-        if(Input.GetKeyUp(KeyCode.Mouse0))
-
+        if(Input.GetKeyUp(KeyCode.Mouse0) && itemAnimator.GetCurrentAnimatorStateInfo(0).IsName("Idle"))
         {
-            // itemAnimator.CrossFade(animatorItemFinishName,0.1f);
             playerArmAnimator.CrossFade(animatorArmFinishName,0.1f);
+            vfxWater.Stop();
+            vfxWaterSmoke.Stop();
         }
-        if(Input.GetKeyDown(KeyCode.Mouse1))
+        if(Input.GetKeyDown(KeyCode.Mouse1) && itemAnimator.GetCurrentAnimatorStateInfo(0).IsName("Idle"))
         {
-            // itemAnimator.applyRootMotion = false;
-            // itemAnimator.CrossFade(animatorItemLoadAirName,0.1f);
+            itemAnimator.CrossFade(animatorItemLoadAirName,0.1f);
             playerArmAnimator.CrossFade(animatorArmLoadAirName,0.1f);
         }
-
+        if(Input.GetKeyDown(KeyCode.R) && itemAnimator.GetCurrentAnimatorStateInfo(0).IsName("Idle"))
+        {
+            itemAnimator.CrossFade(animatorItemLoadWaterName,0.1f);
+            playerArmAnimator.CrossFade(animatorArmLoadWaterName,0.1f);
+        }
 
     }
 
     private void Fire()
     {
-        // itemAnimator.CrossFade(animatorItemStartName,0.1f);
-        // itemAnimator.enabled = true;
         playerArmAnimator.CrossFade(animatorArmStartName,0.1f);
         vfxWater.Play();
-        waterPower();
+        WaterPower();
     }
 
     float currentWaterGravity = 10f;
     float minWaterGravity = 2.6f;
-    float maxWaterGravity = 10f;
+    float maxWaterGravity = 50f;
+
     float currentWaterStartLifeTime = 1.5f;
     float minWaterStartLifeTime = 0f;
     float maxWaterStartLifeTime = 1.5f;
 
 
-
-    private void waterPower()
+    private void WaterPower()
     {
-        
         UpdateWaterGravity();
-      
-
-
     }
 
     private void UpdateWaterGravity()
     {
         float airRatio = currentAirValue / airMaxValue;
-        Debug.Log($"airRatio: {airRatio} currentAirValue: {currentAirValue} airMaxValue: {airMaxValue}");
-        currentWaterGravity = Mathf.Lerp(minWaterGravity, maxWaterGravity, airRatio);
+        // Debug.Log($"airRatio: {airRatio} currentAirValue: {currentAirValue} airMaxValue: {airMaxValue}");
+        currentWaterGravity = Mathf.Lerp(maxWaterGravity, minWaterGravity, airRatio);
         currentWaterStartLifeTime = Mathf.Lerp(minWaterStartLifeTime, maxWaterStartLifeTime, airRatio);
-
-
+        // Debug.Log($"currentWaterGravity: {currentWaterGravity} currentWaterStartLifeTime: {currentWaterStartLifeTime}");
         var vfxWaterSmokeMain = vfxWaterSmoke.main;
         var vfxWaterMain = vfxWater.main;
 
         vfxWaterSmokeMain.gravityModifier = currentWaterGravity;
         vfxWaterMain.gravityModifier = currentWaterGravity;
 
-        vfxWaterSmokeMain.startLifetime = currentWaterStartLifeTime;
-        vfxWaterMain.startLifetime = currentWaterStartLifeTime;
+        if(airRatio <= 0f)
+        {
+            vfxWaterSmoke.Stop();
+            vfxWater.Stop();
+        }
     }
 
+    private void ToggleAnimator()
+    {
+        if(transform.parent == null)
+        {
+            itemAnimator.enabled = false;
+        }
+        else
+        {
+            itemAnimator.enabled = true;
+        }
+    }
 
+    public void AniEvtLoadAirEnd()
+    {
+        Debug.Log("Do AniEvtLoadAirEnd");
+        RefillAir();
+    }
+    
+    public void AniEvtLoadWaterEnd()
+    {
+        Debug.Log("Do AniEvtLoadWaterEnd");
+        RefillWater();
+    }
 
+    private void RefillAir()
+    {
+        currentAirValue = airMaxValue;
+    }
 
+    private void RefillWater()
+    {
+        currentWaterValue = waterMaxValue;
+    }
 
+    public void SaveWaterGunState()
+    {
+        ES3.Save("currentAirValue", currentAirValue);
+        ES3.Save("currentWaterValue", currentWaterValue);
+        Debug.Log($"WaterGunState Saved {currentAirValue} {currentWaterValue}");
+    }
 
+    public void LoadWaterGunState()
+    {
+        currentAirValue = ES3.Load<float>("currentAirValue", airMaxValue);
+        currentWaterValue = ES3.Load<float>("currentWaterValue", waterMaxValue);
+        Debug.Log($"WaterGunState Loaded {currentAirValue} {currentWaterValue}");
+    }
+    
 
+    
 
+    public override void SaveState()
+    {
+        base.SaveState();
+        SaveWaterGunState();
+    }
 
+    public override void LoadState()
+    {
+        base.LoadState();
+        LoadWaterGunState();
+    }
 } 

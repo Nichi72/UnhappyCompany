@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class GameManager : MonoBehaviour
 {
@@ -10,6 +11,8 @@ public class GameManager : MonoBehaviour
     public int totalGold = 10;
     public EGameState currentGameState = EGameState.None;
     public bool isPressedStartBtn = false;
+
+
     private void Awake()
     {
         if (instance == null)
@@ -21,6 +24,7 @@ public class GameManager : MonoBehaviour
     {
         GameStart();
         StartCoroutine(CheckGameOver());
+
     }
     private void GameStart()
     {
@@ -110,7 +114,8 @@ public class GameManager : MonoBehaviour
     private void Update()
     {
         UIManager.instance.UpdateGold(totalGold);
-      
+
+       
     }
     private IEnumerator CheckGameOver()
     {
