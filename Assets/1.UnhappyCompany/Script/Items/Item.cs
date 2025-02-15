@@ -40,6 +40,8 @@ public abstract class Item : MonoBehaviour , IInteractable , IToolTip, ISavable
         {
             animator.enabled = false;
         }
+
+        
     }
 
     public virtual void Use(Player player)
@@ -84,6 +86,15 @@ public abstract class Item : MonoBehaviour , IInteractable , IToolTip, ISavable
 
     }
 
+    /// <summary>
+    /// 현재 아이템의 상태를 새 인스턴스에 복사합니다.
+    /// 기본 구현은 아무런 작업도 하지 않습니다.
+    /// 특수한 아이템은 이 메서드를 오버라이드해서 필요한 상태를 복사하면 됩니다.
+    /// </summary>
+    public virtual void CloneStateTo(Item targetItem)
+    {
+        // 기본적으로는 복사할 상태가 없는 경우 빈 구현
+    }
     public virtual void SaveState()
     {
         if(itemData != null)

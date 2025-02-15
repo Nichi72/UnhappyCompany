@@ -7,7 +7,7 @@ using UnityEditor.Rendering;
 /// 총 종류의 아이템들을 해당 클래스에서 상속받아 사용합니다.
 /// 총 종류는 왼쪽 클릭 버튼을 눌러서 사용합니다. 
 /// </summary>
-public class ItemGun : Item, IDamager, IOverrideUpdate, IAnimatorLayer
+public class ItemGun : Item, IDamager, IOverrideUpdate
 {
    
     public Animator playerArmAnimator;

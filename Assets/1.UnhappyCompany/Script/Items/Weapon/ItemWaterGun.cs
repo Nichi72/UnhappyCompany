@@ -3,7 +3,7 @@ using MyUtility;
 using Unity.Mathematics;
 using UnityEngine;
 
-public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer, ISavable
+public class ItemWaterGun : Item, IDamager, IOverrideUpdate , ISavable
 {
     [ReadOnly] [SerializeField] private Animator playerArmAnimator;
     [SerializeField] private Animator itemAnimator;
@@ -81,7 +81,7 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer, IS
     public override void OnDrop()
     {
         base.OnDrop();
-        
+        UnMount();
     }
     public override void PickUp(Player player)
     {
@@ -94,20 +94,9 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer, IS
         ToggleAnimator();
         handPivot = player.rightHandPos;
         transform.position = handPivot.position;
-
-        // hand pivot 기준
-        // waterGunPosition = new Vector3(0.714165092f,0.312598348f,0.881453872f);
-        // waterGunRotation = new Vector3(4.73381901f,133.387222f,8.63204288f);    
-        // waterGunScale = new Vector3(0.554564357f,0.554564595f,0.554564416f);
-
-        // right hand 기준
-        // waterGunPosition = new Vector3(-0.0383468196f,0.165113255f,0.0990908518f);
-        // waterGunRotation = new Vector3(2.06121516f,245.157364f,281.128632f);  
-        // waterGunScale = new Vector3(0.554564357f,0.554564595f,0.554564416f);
-        
         // 새로운 RH 기준
         waterGunPosition = new Vector3(0.162f,-0.164000005f,0.428000003f);
-        waterGunRotation = new Vector3(306.530121f,243.974197f,216.739578f) ;
+        waterGunRotation = new Vector3(306.530121f,243.974197f,216.739578f);
         waterGunScale = new Vector3(0.371532321f,0.37153247f,0.371532351f);
 
         Rigidbody rd =  GetComponent<Rigidbody>();
@@ -119,6 +108,14 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer, IS
         transform.localPosition = waterGunPosition;
         transform.localRotation = Quaternion.Euler(waterGunRotation);
         transform.localScale = waterGunScale;
+
+    }
+    public override void UnMount()
+    {
+        base.UnMount();
+        Debug.Log("ItemWaterGun UnMount");
+        int layerIndex = playerArmAnimator.GetLayerIndex(animatorLayerName);
+        playerArmAnimator.SetLayerWeight(layerIndex, 0);
     }
 
     public void Shoot()
@@ -292,8 +289,6 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer, IS
     }
     
 
-    
-
     public override void SaveState()
     {
         base.SaveState();
@@ -304,5 +299,16 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer, IS
     {
         base.LoadState();
         LoadWaterGunState();
+    }
+    public override void CloneStateTo(Item targetItem)
+    {
+        // 타입 체크를 통해 ItemWaterGun으로 캐스팅
+        if(targetItem is ItemWaterGun targetWaterGun)
+        {
+            targetWaterGun.currentAirValue = this.currentAirValue;
+            targetWaterGun.currentWaterValue = this.currentWaterValue;
+            // 필요한 경우 추가 상태도 복사할 수 있습니다.
+            Debug.Log($"CloneStateTo : currentAirValue {targetWaterGun.currentAirValue} , currentWaterValue {targetWaterGun.currentWaterValue}");
+        }
     }
 } 

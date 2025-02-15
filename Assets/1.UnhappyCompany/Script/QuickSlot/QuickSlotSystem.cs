@@ -111,6 +111,7 @@ public class QuickSlotSystem : MonoBehaviour
         currentItemObject.transform.SetParent(player.rightHandPos);
         currentItemObject.GetComponent<Item>().itemData = itemData;
         currentItemObject.GetComponent<Item>().Mount(player);
+        currentItemObject.GetComponent<Item>().CloneStateTo(currentItem);
         // currentItemObject.transform.localPosition = itemData.HandPosition;
         // currentItemObject.transform.localRotation = Quaternion.Euler(itemData.HandRotation);
     }
