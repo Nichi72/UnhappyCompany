@@ -35,7 +35,7 @@ public class CubeChaseState : IState
         Debug.Log("오전 추적 실행");
         HandleChaseLogic(
             () => controller.ChangeState(new CubeAttackState(controller, utilityCalculator)),
-            () => controller.ChangeState(new CubePatrolState(controller, utilityCalculator))
+            () => controller.ChangeState(new CubePatrolState(controller, utilityCalculator, controller.pathCalculator))
         );
     }
 
@@ -45,7 +45,7 @@ public class CubeChaseState : IState
         controller.agent.speed *= 1.5f; // 추적 속도 증가
         HandleChaseLogic(
             () => controller.ChangeState(new CubeAttackState(controller, utilityCalculator)),
-            () => controller.ChangeState(new CubePatrolState(controller, utilityCalculator))
+            () => controller.ChangeState(new CubePatrolState(controller, utilityCalculator, controller.pathCalculator))
         );
     }
 

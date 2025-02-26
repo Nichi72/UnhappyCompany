@@ -155,15 +155,15 @@ public class Egg : MonoBehaviour, IDamageable
         var adultEnemyPrefab = soEnemies[randomIndex];
         
         // 성체 생성
-        GameObject adult = Instantiate(adultEnemyPrefab.Prefab, eggPosition, Quaternion.identity);
+        GameObject adult = Instantiate(adultEnemyPrefab.prefab, eggPosition, Quaternion.identity);
         EnemyManager.instance.activeEnemies.Add(adult);
         
         // AI 상태 설정
         var enemyBehavior = adult.GetComponent<EnemyAIController<BaseEnemyAIData>>();
-        if (enemyBehavior != null)
-        {
-            enemyBehavior.ChangeState(new CubePatrolState(enemyBehavior.GetComponent<EnemyAICube>(), enemyBehavior.UtilityCalculator));
-        }
+        // if (enemyBehavior != null)
+        // {
+        //     enemyBehavior.ChangeState(new CubePatrolState(enemyBehavior.GetComponent<EnemyAICube>(), enemyBehavior.UtilityCalculator ));
+        // }
 
         // 알 제거
         EnemyManager.instance.activeEggs.Remove(gameObject);

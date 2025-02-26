@@ -15,7 +15,7 @@ public class EnemyManager : MonoBehaviour
     [Tooltip("알이 성체로 부화하는데 걸리는 시간")] public float eggHatchTime = 5.0f;
 
     [Header("SO_Enemy")]
-    public List<SO_Enemy> soEnemies;
+    public List<BaseEnemyAIData> soEnemies;
     public LayerMask SpawnLayer;
 
     [Header("Enemy Spawning")]
