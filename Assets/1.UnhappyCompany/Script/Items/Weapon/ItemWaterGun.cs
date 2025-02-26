@@ -3,7 +3,7 @@ using MyUtility;
 using Unity.Mathematics;
 using UnityEngine;
 
-public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer, ISavable
+public class ItemWaterGun : Item, IDamager, IOverrideUpdate
 {
     [ReadOnly] [SerializeField] private Animator playerArmAnimator;
     [SerializeField] private Animator itemAnimator;
@@ -53,7 +53,12 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer, IS
     void Awake()
     {
         ToggleAnimator();
+        if (string.IsNullOrEmpty(uniqueInstanceID))
+        {
+            uniqueInstanceID = System.Guid.NewGuid().ToString();
+        }
     }
+    
     void Start()
     {
         
@@ -61,6 +66,10 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer, IS
     public override void Use(Player player)
     {
         base.Use(player);
+    }
+    public override void HitEventInteractionF(Player player)
+    {
+        base.HitEventInteractionF(player);
     }
 
     private void Update()
@@ -81,33 +90,30 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer, IS
     public override void OnDrop()
     {
         base.OnDrop();
-        
+        UnMount();
     }
     public override void PickUp(Player player)
     {
         base.PickUp(player);
     }
 
-    public override void Mount(Player player)
+    public override void Mount(Player player, object state)
     {
-        base.Mount(player);
+        base.Mount(player, state);
+        if(state != null)
+        {
+            DeserializeState(state);
+        }
+        else
+        {
+           Debug.Log("Mount ItemWaterGun state NULL");
+        }
         ToggleAnimator();
         handPivot = player.rightHandPos;
         transform.position = handPivot.position;
-
-        // hand pivot 기준
-        // waterGunPosition = new Vector3(0.714165092f,0.312598348f,0.881453872f);
-        // waterGunRotation = new Vector3(4.73381901f,133.387222f,8.63204288f);    
-        // waterGunScale = new Vector3(0.554564357f,0.554564595f,0.554564416f);
-
-        // right hand 기준
-        // waterGunPosition = new Vector3(-0.0383468196f,0.165113255f,0.0990908518f);
-        // waterGunRotation = new Vector3(2.06121516f,245.157364f,281.128632f);  
-        // waterGunScale = new Vector3(0.554564357f,0.554564595f,0.554564416f);
-        
         // 새로운 RH 기준
         waterGunPosition = new Vector3(0.162f,-0.164000005f,0.428000003f);
-        waterGunRotation = new Vector3(306.530121f,243.974197f,216.739578f) ;
+        waterGunRotation = new Vector3(306.530121f,243.974197f,216.739578f);
         waterGunScale = new Vector3(0.371532321f,0.37153247f,0.371532351f);
 
         Rigidbody rd =  GetComponent<Rigidbody>();
@@ -119,6 +125,16 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer, IS
         transform.localPosition = waterGunPosition;
         transform.localRotation = Quaternion.Euler(waterGunRotation);
         transform.localScale = waterGunScale;
+
+        
+
+    }
+    public override void UnMount()
+    {
+        base.UnMount();
+        Debug.Log("ItemWaterGun UnMount");
+        int layerIndex = playerArmAnimator.GetLayerIndex(animatorLayerName);
+        playerArmAnimator.SetLayerWeight(layerIndex, 0);
     }
 
     public void Shoot()
@@ -292,17 +308,44 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , IAnimatorLayer, IS
     }
     
 
-    
+    // public override void SaveState()
+    // {
+    //     // base.SaveState();
+    //     SaveWaterGunState();
+    // }
 
-    public override void SaveState()
+    // public override void LoadState()
+    // {
+    //     // base.LoadState();
+    //     LoadWaterGunState();
+    // }
+   
+    public override object SerializeState()
     {
-        base.SaveState();
-        SaveWaterGunState();
+        WaterGunState waterGunState = new WaterGunState();
+        waterGunState.currentAirValue = this.currentAirValue;
+        waterGunState.currentWaterValue = this.currentWaterValue;
+        Debug.Log($"SerializeState {waterGunState.Print()}");
+        return waterGunState;
     }
+    public override void DeserializeState(object state)
+    {
+        if (state is WaterGunState s)
+        {
+            this.currentAirValue = s.currentAirValue;
+            this.currentWaterValue = s.currentWaterValue;
+            Debug.Log($"DeserializeState {s.Print()}");
+        }
+    }
+}
 
-    public override void LoadState()
+
+public class WaterGunState
+{
+    public float currentAirValue;
+    public float currentWaterValue;
+    public string Print()
     {
-        base.LoadState();
-        LoadWaterGunState();
+        return $"WaterGunState : currentAirValue {currentAirValue} , currentWaterValue {currentWaterValue}";
     }
-} 
+}

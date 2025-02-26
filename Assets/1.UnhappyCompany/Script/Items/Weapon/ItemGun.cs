@@ -7,7 +7,7 @@ using UnityEditor.Rendering;
 /// 총 종류의 아이템들을 해당 클래스에서 상속받아 사용합니다.
 /// 총 종류는 왼쪽 클릭 버튼을 눌러서 사용합니다. 
 /// </summary>
-public class ItemGun : Item, IDamager, IOverrideUpdate, IAnimatorLayer
+public class ItemGun : Item, IDamager, IOverrideUpdate
 {
    
     public Animator playerArmAnimator;
@@ -32,9 +32,9 @@ public class ItemGun : Item, IDamager, IOverrideUpdate, IAnimatorLayer
     {
         base.PickUp(player);
     }
-    public override void Mount(Player player)
+    public override void Mount(Player player, object state = null)
     {
-        base.Mount(player);
+        base.Mount(player, state);
 
         Vector3 gunPosition = new Vector3(-0.0459837541f,0.233345002f,0.0039123809f);
         Vector3 gunRotation = new Vector3(331.509766f,106.864601f,57.3288536f);

@@ -14,8 +14,10 @@ public class ItemData : ScriptableObject
     //Game Obj Data
     public Sprite icon; 
     public GameObject prefab;
-    public Vector3 HandPosition;
-    public Vector3 HandRotation;
+
+    public Vector3 ItemPosition;
+    public Vector3 ItemRotation;
+    public Vector3 ItemScale;
     // 세이브 데이터
     public SavableItemData savableItemData;
 
