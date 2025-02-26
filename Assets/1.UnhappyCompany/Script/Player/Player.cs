@@ -8,6 +8,7 @@ public class Player : MonoBehaviour
     public QuickSlotSystem quickSlotSystem;
     public BuildSystem buildSystem;
     public Animator armAnimator;
+    
     void Start()
     {
         

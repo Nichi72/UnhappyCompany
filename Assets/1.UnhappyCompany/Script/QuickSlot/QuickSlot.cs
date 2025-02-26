@@ -1,9 +1,10 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 public class QuickSlot : MonoBehaviour
 {
     private int slotIndex;
-    [SerializeField] private Item item;
+    public QuickSlotState quickSlotState;
     public Image icon; // 
 
     public void SetSlotIndex(int index)
@@ -11,21 +12,29 @@ public class QuickSlot : MonoBehaviour
         slotIndex = index;
     }
 
-    public void SetItem(Item newItem)
+    public void SetItem(Item newItem , object itemSerializedState , string uniqueInstanceID)
     {
-        item = newItem;
+        quickSlotState.item = newItem;
         icon.sprite = newItem.itemData.icon;
         icon.enabled = true;
-    }
-
-    public Item GetItem()
-    {
-        return item;
+        quickSlotState.itemSerializedState = itemSerializedState;
+        quickSlotState.uniqueItemID = uniqueInstanceID;
+        // item.AssignUniqueInstanceID(uniqueInstanceID);
     }
 
     public bool IsEmpty()
     {
-        return item == null;
+        return quickSlotState.item == null;
+    }
+
+    public Item GetItem()
+    {
+        return quickSlotState.item;
+    }
+
+    public object GetState()
+    {
+        return quickSlotState.itemSerializedState;
     }
 
     public void Select()
@@ -40,6 +49,23 @@ public class QuickSlot : MonoBehaviour
 
     public void RemoveItem()
     {
-        item = null;
+        quickSlotState.item = null;
+        quickSlotState.itemSerializedState = null;
+        quickSlotState.uniqueItemID = null;
     }
+// #if UNITY_EDITOR
+    [ContextMenu("Execute")]
+    private void ExecuteInEditor()
+    {
+        Debug.Log($"{quickSlotState.item.GetUniqueInstanceID()}");
+    }
+// #endif
 }
+
+// [Serializable]
+// public class QuickSlotState
+// {
+//     public string uniqueItemID; // 슬롯에 들어있는 아이템의 ID. 없으면 null
+//     public Item item;
+//     public object state;
+// }

@@ -4,7 +4,10 @@ using System;
 [Serializable]
 public class SavableItemData
 {
-    private int itemID;
+    [SerializeField] public int itemID;
+
+    // 이미 주워진 아이템인지 여부 (true면 월드 스폰 생략)
+    public bool isPickedUp;
 
     public int GetItemID()
     {
@@ -21,8 +24,15 @@ public class SavableItemData
     public Vector3 scale;
     public float durability; // 내구도
 
-    public SavableItemData()
+    public SavableItemData() {}
+
+    public SavableItemData(int itemID , Vector3 position , Quaternion rotation , Vector3 scale)
     {
-        itemType = "";
+        this.itemID = itemID;
+        this.position = position;
+        this.rotation = rotation;
+        this.scale = scale;
+        durability = 100;
+        isPickedUp = false;
     }
 }

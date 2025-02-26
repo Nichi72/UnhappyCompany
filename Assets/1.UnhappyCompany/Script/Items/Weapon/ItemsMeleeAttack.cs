@@ -57,9 +57,13 @@ public class ItemsMeleeAttack : Item ,IDamager
         UnMount();
     }
 
-    public override void Mount(Player player)
+    public override void Mount(Player player, object state = null)
     {
-        base.Mount(player);
+        base.Mount(player, state);
+        if(state != null)
+        {
+            DeserializeState(state);
+        }
         armAnimator = player.armAnimator;
 
         Rigidbody rd =  GetComponent<Rigidbody>();

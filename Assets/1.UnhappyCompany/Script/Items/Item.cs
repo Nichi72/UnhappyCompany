@@ -2,9 +2,9 @@ using UnityEngine;
 using UnityEngine.Localization.Settings;
 using MyUtility;
 using System;
-public abstract class Item : MonoBehaviour , IInteractable , IToolTip, ISavable
+[Serializable]
+public abstract class Item : MonoBehaviour , IInteractable , IToolTip
 {
-
     public ItemData itemData;
     // string interactionText;
 
@@ -12,19 +12,32 @@ public abstract class Item : MonoBehaviour , IInteractable , IToolTip, ISavable
     public virtual string ToolTipText { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "Item_TT_Drop"); set => ToolTipText = value; }
     public virtual string ToolTipText2 { get => ""; set => ToolTipText2 = value; }
     public virtual string ToolTipText3 { get => ""; set => ToolTipText3 = value; }
-    // override public string ToolTipText { get => "[LM]발사"; set => ToolTipText = value; } // [LM]발사
-    // override public string ToolTipText2 { get => "[RM]공기 충전."; set => ToolTipText2 = value; } // [RM]공기 충전.
-    // override public string ToolTipText3 { get => "[R]물 충전."; set => ToolTipText3 = value; } // [R]물 충전. 
+
+    [SerializeField]protected string uniqueInstanceID;
+
+    void Awake()
+    {
+        if (string.IsNullOrEmpty(uniqueInstanceID))
+        {
+            uniqueInstanceID = System.Guid.NewGuid().ToString();
+        }
+    }
 
     private void Start()
     {
-        // ToolTipText = 
     }
-    public virtual void HitEventInteractionF(Player player)
 
+    public string GetUniqueInstanceID()
+    {
+        return uniqueInstanceID;
+    }
+
+    public virtual void HitEventInteractionF(Player player)
     {
         Debug.Log("HitEvent!");
-        player.quickSlotSystem.AddItemToQuickSlot(itemData.prefab.GetComponent<Item>());
+        Item newItem = itemData.prefab.GetComponent<Item>();
+        object state = SerializeState();
+        player.quickSlotSystem.AddItemToQuickSlot(newItem, state, uniqueInstanceID);
         PickUp(player);
     }
 
@@ -40,8 +53,6 @@ public abstract class Item : MonoBehaviour , IInteractable , IToolTip, ISavable
         {
             animator.enabled = false;
         }
-
-        
     }
 
     public virtual void Use(Player player)
@@ -52,13 +63,25 @@ public abstract class Item : MonoBehaviour , IInteractable , IToolTip, ISavable
     public virtual void PickUp(Player player)
     {
         Debug.Log($"{itemData.itemName} picked up.");
+
+        // SavableItemData가 있는 경우, 주운 상태로 표시
+        if(itemData != null && itemData.savableItemData != null)
+        {
+            itemData.savableItemData.isPickedUp = true;
+        }
+        
         Destroy(gameObject);
         player.quickSlotSystem.UpdatePlayerSpeed();
     }
 
-    public virtual void Mount(Player player)
+    public virtual void Mount(Player player , object state = null)
     {
         Debug.Log($"{itemData.itemName} mounted.");
+        if(state != null)
+        {
+            DeserializeState(state);
+        }
+
         ToolTipUI.instance.SetToolTip(this);
     }
 
@@ -85,44 +108,28 @@ public abstract class Item : MonoBehaviour , IInteractable , IToolTip, ISavable
 
 
     }
-
+    
+    private int GenerateItemID()
+    {
+        return System.Guid.NewGuid().GetHashCode();
+    }
     /// <summary>
-    /// 현재 아이템의 상태를 새 인스턴스에 복사합니다.
-    /// 기본 구현은 아무런 작업도 하지 않습니다.
-    /// 특수한 아이템은 이 메서드를 오버라이드해서 필요한 상태를 복사하면 됩니다.
+    /// 상태 적용을 위한 가상 메서드 (별도 처리하지 않으면 아무 것도 하지 않음)
     /// </summary>
-    public virtual void CloneStateTo(Item targetItem)
-    {
-        // 기본적으로는 복사할 상태가 없는 경우 빈 구현
+ 
+    public virtual void DeserializeState(object state) 
+    { 
+
     }
-    public virtual void SaveState()
-    {
-        if(itemData != null)
-        {
-            string key = "ItemData_" + itemData.savableItemData.GetItemID();
-            ES3.Save<SavableItemData>(key, itemData.savableItemData, SaveManager.Instance.saveFileName);
-            Debug.Log("아이템 데이터 저장 완료: " + key);
-        }
+        // 상태 저장을 위한 가상 메서드 (특별한 상태가 없으면 기본적으로 null 반환)
+    public virtual object SerializeState() 
+    { 
+        return null; 
     }
-    public virtual void LoadState()
+
+    public void AssignUniqueInstanceID(string newID)
     {
-        if(itemData != null)
-        {
-            string key = "ItemData_" + itemData.savableItemData.GetItemID();
-            if (ES3.KeyExists(key, SaveManager.Instance.saveFileName))
-            {
-                itemData.savableItemData = ES3.Load<SavableItemData>(key, SaveManager.Instance.saveFileName);
-                // 필요하다면 불러온 데이터로 transform 갱신
-                transform.position = itemData.savableItemData.position;
-                transform.rotation = itemData.savableItemData.rotation;
-                transform.localScale = itemData.savableItemData.scale;
-                Debug.Log("아이템 데이터 불러오기 성공: " + key);
-            }
-            else
-            {
-                Debug.LogWarning("저장된 아이템 데이터가 없습니다: " + key);
-            }
-        }
+        uniqueInstanceID = newID;
     }
 }
 

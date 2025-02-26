@@ -3,7 +3,7 @@ using MyUtility;
 using Unity.Mathematics;
 using UnityEngine;
 
-public class ItemWaterGun : Item, IDamager, IOverrideUpdate , ISavable
+public class ItemWaterGun : Item, IDamager, IOverrideUpdate
 {
     [ReadOnly] [SerializeField] private Animator playerArmAnimator;
     [SerializeField] private Animator itemAnimator;
@@ -53,7 +53,12 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , ISavable
     void Awake()
     {
         ToggleAnimator();
+        if (string.IsNullOrEmpty(uniqueInstanceID))
+        {
+            uniqueInstanceID = System.Guid.NewGuid().ToString();
+        }
     }
+    
     void Start()
     {
         
@@ -61,6 +66,10 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , ISavable
     public override void Use(Player player)
     {
         base.Use(player);
+    }
+    public override void HitEventInteractionF(Player player)
+    {
+        base.HitEventInteractionF(player);
     }
 
     private void Update()
@@ -88,9 +97,17 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , ISavable
         base.PickUp(player);
     }
 
-    public override void Mount(Player player)
+    public override void Mount(Player player, object state)
     {
-        base.Mount(player);
+        base.Mount(player, state);
+        if(state != null)
+        {
+            DeserializeState(state);
+        }
+        else
+        {
+           Debug.Log("Mount ItemWaterGun state NULL");
+        }
         ToggleAnimator();
         handPivot = player.rightHandPos;
         transform.position = handPivot.position;
@@ -108,6 +125,8 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , ISavable
         transform.localPosition = waterGunPosition;
         transform.localRotation = Quaternion.Euler(waterGunRotation);
         transform.localScale = waterGunScale;
+
+        
 
     }
     public override void UnMount()
@@ -289,26 +308,44 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate , ISavable
     }
     
 
-    public override void SaveState()
-    {
-        base.SaveState();
-        SaveWaterGunState();
-    }
+    // public override void SaveState()
+    // {
+    //     // base.SaveState();
+    //     SaveWaterGunState();
+    // }
 
-    public override void LoadState()
+    // public override void LoadState()
+    // {
+    //     // base.LoadState();
+    //     LoadWaterGunState();
+    // }
+   
+    public override object SerializeState()
     {
-        base.LoadState();
-        LoadWaterGunState();
+        WaterGunState waterGunState = new WaterGunState();
+        waterGunState.currentAirValue = this.currentAirValue;
+        waterGunState.currentWaterValue = this.currentWaterValue;
+        Debug.Log($"SerializeState {waterGunState.Print()}");
+        return waterGunState;
     }
-    public override void CloneStateTo(Item targetItem)
+    public override void DeserializeState(object state)
     {
-        // 타입 체크를 통해 ItemWaterGun으로 캐스팅
-        if(targetItem is ItemWaterGun targetWaterGun)
+        if (state is WaterGunState s)
         {
-            targetWaterGun.currentAirValue = this.currentAirValue;
-            targetWaterGun.currentWaterValue = this.currentWaterValue;
-            // 필요한 경우 추가 상태도 복사할 수 있습니다.
-            Debug.Log($"CloneStateTo : currentAirValue {targetWaterGun.currentAirValue} , currentWaterValue {targetWaterGun.currentWaterValue}");
+            this.currentAirValue = s.currentAirValue;
+            this.currentWaterValue = s.currentWaterValue;
+            Debug.Log($"DeserializeState {s.Print()}");
         }
     }
-} 
+}
+
+
+public class WaterGunState
+{
+    public float currentAirValue;
+    public float currentWaterValue;
+    public string Print()
+    {
+        return $"WaterGunState : currentAirValue {currentAirValue} , currentWaterValue {currentWaterValue}";
+    }
+}
