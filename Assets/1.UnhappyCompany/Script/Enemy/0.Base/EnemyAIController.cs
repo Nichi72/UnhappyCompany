@@ -138,7 +138,7 @@ public abstract class EnemyAIController<T> : MonoBehaviour , IDamageable where T
         MyUtility.UtilityGizmos.DrawCircle(transform.position, AttackRadius, attackGizmoRangeColor);
     }
 
-    public void TakeDamage(int damage, DamageType damageType)
+    public virtual void TakeDamage(int damage, DamageType damageType)
     {
         Hp -= damage;
         if(Hp <= 0)

@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &7037086153132843391
+--- !u!1001 &2491467927041822902
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -78,34 +78,29 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 29a3a2e152c75af469e97723cb5eee76, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1523319195150698950}
+      addedObject: {fileID: 1575996053328840018}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 29a3a2e152c75af469e97723cb5eee76, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 8219712459260420492}
+      addedObject: {fileID: 7461407145579296598}
   m_SourcePrefab: {fileID: 100100000, guid: 29a3a2e152c75af469e97723cb5eee76, type: 3}
---- !u!95 &3513464373350571246 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 29a3a2e152c75af469e97723cb5eee76, type: 3}
-  m_PrefabInstance: {fileID: 7037086153132843391}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &7884018730588478510 stripped
+--- !u!1 &3337749175928778215 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 29a3a2e152c75af469e97723cb5eee76, type: 3}
-  m_PrefabInstance: {fileID: 7037086153132843391}
+  m_PrefabInstance: {fileID: 2491467927041822902}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1523319195150698950
+--- !u!114 &1575996053328840018
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7884018730588478510}
+  m_GameObject: {fileID: 3337749175928778215}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9fbf38d89a26387489eff8e265dcc28f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  agent: {fileID: 0}
+  agent: {fileID: 7461407145579296598}
   player: {fileID: 0}
   enemyData: {fileID: 11400000, guid: 682f52a097136bf40aac1d5dae74c130, type: 2}
   patrolGizmoRangeColor: {r: 0, g: 1, b: 0, a: 1}
@@ -116,14 +111,14 @@ MonoBehaviour:
   debugUIPrefab: {fileID: 0}
   debugUI: {fileID: 0}
   slimeEmitInterval: 10
-  animator: {fileID: 3513464373350571246}
---- !u!195 &8219712459260420492
+  animator: {fileID: 8356971480870546727}
+--- !u!195 &7461407145579296598
 NavMeshAgent:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7884018730588478510}
+  m_GameObject: {fileID: 3337749175928778215}
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.54
@@ -139,3 +134,8 @@ NavMeshAgent:
   m_BaseOffset: 0.98
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!95 &8356971480870546727 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 29a3a2e152c75af469e97723cb5eee76, type: 3}
+  m_PrefabInstance: {fileID: 2491467927041822902}
+  m_PrefabAsset: {fileID: 0}

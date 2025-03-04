@@ -103,6 +103,9 @@ namespace StarterAssets
 			}
 		}
 
+		private float originalMoveSpeed;
+		private float originalSprintSpeed;
+
 		private void Awake()
 		{
 			// get a reference to our main camera
@@ -126,6 +129,8 @@ namespace StarterAssets
 			// reset our timeouts on start
 			_jumpTimeoutDelta = JumpTimeout;
 			_fallTimeoutDelta = FallTimeout;
+			originalMoveSpeed = MoveSpeed;
+			originalSprintSpeed = SprintSpeed;
 		}
 
 		private void Update()
@@ -219,7 +224,7 @@ namespace StarterAssets
 			}
 
 			// move the player
-			_controller.Move(inputDirection.normalized * ((_speed* weightSpeed) * Time.deltaTime) + new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
+			_controller.Move(inputDirection.normalized * ((_speed * weightSpeed) * Time.deltaTime) + new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
 		}
 		private void JumpAndGravity()
 		{
@@ -347,6 +352,18 @@ namespace StarterAssets
 
 				handTransform.rotation = Quaternion.Slerp(handTransform.rotation, targetRotation, handSmoothSpeed * Time.deltaTime);
 			}
+		}
+
+		public void ModifySpeed(float multiplier)
+		{
+			MoveSpeed = originalMoveSpeed * multiplier;
+			SprintSpeed = originalSprintSpeed * multiplier;
+		}
+
+		public void ResetSpeed()
+		{
+			MoveSpeed = originalMoveSpeed;
+			SprintSpeed = originalSprintSpeed;
 		}
 	}
 }
