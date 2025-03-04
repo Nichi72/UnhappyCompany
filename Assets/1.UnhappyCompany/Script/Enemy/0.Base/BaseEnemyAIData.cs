@@ -4,6 +4,10 @@ public abstract class BaseEnemyAIData : ScriptableObject
 {
     [Header("Enemy Name")]
     public string enemyName = "...";
+
+    [Header("Enemy Prefab")]
+    public GameObject prefab;
+
     [Header("Notification Category")]
     public ENotificationCategory category = ENotificationCategory.Normal;
     [Header("Enemy Type")]

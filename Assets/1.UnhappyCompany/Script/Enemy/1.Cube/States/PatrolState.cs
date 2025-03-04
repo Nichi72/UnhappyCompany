@@ -9,18 +9,23 @@ public class CubePatrolState : IState
 {
     private EnemyAICube controller;
     private UtilityCalculator utilityCalculator;
+    
     private Vector3 currentPatrolPoint;
     private bool isMovingToPoint = false;
     private float minDistanceToPoint = 1f; // 목적지 도달 판정 거리
+    private int currentPathIndex = 0;
+    private PathCalculator pathCalculator;
 
-    public CubePatrolState(EnemyAICube controller, UtilityCalculator calculator)
+    public CubePatrolState(EnemyAICube controller, UtilityCalculator calculator, PathCalculator pathCalculator)
     {
         this.controller = controller;
         this.utilityCalculator = calculator;
+        this.pathCalculator = pathCalculator;
     }
 
     public void Enter()
     {
+        pathCalculator.CalculateNewPath();
         SetNewPatrolPoint(); // 초기 패트롤 포인트 설정
     }
 
@@ -38,6 +43,7 @@ public class CubePatrolState : IState
             SetNewPatrolPoint();
         }
 
+        UpdateAnimation();
         DrawPatrolGizmos();
     }
 
@@ -55,6 +61,7 @@ public class CubePatrolState : IState
             SetNewPatrolPoint();
         }
 
+        UpdateAnimation();
         DrawPatrolGizmos();
     }
 
@@ -97,7 +104,10 @@ public class CubePatrolState : IState
         }
 
         currentPatrolPoint = newPoint;
-        controller.agent.SetDestination(currentPatrolPoint);
+        pathCalculator.target = new GameObject().transform; // 임시 타겟 생성
+        pathCalculator.target.position = currentPatrolPoint;
+        pathCalculator.CalculateNewPath();
+        currentPathIndex = 0;
         isMovingToPoint = true;
     }
 
@@ -119,8 +129,33 @@ public class CubePatrolState : IState
         return hit.position;
     }
 
+    private void UpdateAnimation()
+    {
+        if (pathCalculator.path.corners.Length == 0 || currentPathIndex >= pathCalculator.path.corners.Length)
+        {
+            isMovingToPoint = false;
+            return;
+        }
+
+        Vector3 targetPosition = pathCalculator.path.corners[currentPathIndex];
+        Vector3 direction = (targetPosition - controller.transform.position).normalized;
+        float distance = Vector3.Distance(controller.transform.position, targetPosition);
+
+        if (distance < minDistanceToPoint)
+        {
+            currentPathIndex++;
+        }
+        else
+        {
+            // 루트 모션을 통해 이동
+            // controller.animator.SetFloat("Speed", controller.enemyData.moveSpeed);
+            // controller.animator.SetBool("IsMoving", true);
+            // controller.transform.rotation = Quaternion.LookRotation(direction);
+        }
+    }
+
     public void Exit()
     {
         isMovingToPoint = false;
     }
-} 
+}

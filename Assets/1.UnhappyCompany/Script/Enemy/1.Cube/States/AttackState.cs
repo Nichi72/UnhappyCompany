@@ -24,14 +24,14 @@ public class CubeAttackState : IState
 
     public void Enter()
     {
-        DisableAgentSafely();
+        // DisableAgentSafely();
         lastAttackTime = Time.time;
         isAttackCasting = false;
     }
 
     public void Exit()
     {
-        EnableAgentSafely();
+        // EnableAgentSafely();
         isAttackCasting = false;
     }
 
@@ -66,8 +66,8 @@ public class CubeAttackState : IState
         if (controller.AttackRadius  <= distanceToPlayer)
         {
             rigidbody.isKinematic = true;
-            EnableAgentSafely();
-            controller.ChangeState(new CubePatrolState(controller, utilityCalculator));
+            // EnableAgentSafely();
+            controller.ChangeState(new CubePatrolState(controller, utilityCalculator , controller.pathCalculator));
             return;
         }
 
@@ -105,32 +105,32 @@ public class CubeAttackState : IState
             Debug.Log("공격 실행!");
         }
     }
-    private void DisableAgentSafely()
-    {
-        if (controller.agent != null && controller.agent.enabled)
-        {
-            controller.agent.isStopped = true; // NavMeshAgent의 이동을 중지
-            controller.agent.enabled = false;  // NavMeshAgent 비활성화
-            Debug.Log("NavMeshAgent가 안전하게 비활성화되었습니다.");
-        }
-        else
-        {
-            Debug.LogWarning("NavMeshAgent가 이미 비활성화되어 있거나 존재하지 않습니다.");
-        }
-    }
-    private void EnableAgentSafely()
-    {
-        if (controller.agent != null && !controller.agent.enabled)
-        {
-            controller.agent.enabled = true;   // NavMeshAgent 활성화
-            controller.agent.isStopped = false; // NavMeshAgent의 이동 재개
-            Debug.Log("NavMeshAgent가 안전하게 활성화되었습니다.");
-        }
-        else
-        {
-            Debug.LogWarning("NavMeshAgent가 이미 활성화되어 있거나 존재하지 않습니다.");
-        }
-    }
+    // private void DisableAgentSafely()
+    // {
+    //     if (controller.agent != null && controller.agent.enabled)
+    //     {
+    //         controller.agent.isStopped = true; // NavMeshAgent의 이동을 중지
+    //         controller.agent.enabled = false;  // NavMeshAgent 비활성화
+    //         Debug.Log("NavMeshAgent가 안전하게 비활성화되었습니다.");
+    //     }
+    //     else
+    //     {
+    //         Debug.LogWarning("NavMeshAgent가 이미 비활성화되어 있거나 존재하지 않습니다.");
+    //     }
+    // }
+    // private void EnableAgentSafely()
+    // {
+    //     if (controller.agent != null && !controller.agent.enabled)
+    //     {
+    //         controller.agent.enabled = true;   // NavMeshAgent 활성화
+    //         controller.agent.isStopped = false; // NavMeshAgent의 이동 재개
+    //         Debug.Log("NavMeshAgent가 안전하게 활성화되었습니다.");
+    //     }
+    //     else
+    //     {
+    //         Debug.LogWarning("NavMeshAgent가 이미 활성화되어 있거나 존재하지 않습니다.");
+    //     }
+    // }
     private Material originalMaterial;
     private Color originalColor;
 

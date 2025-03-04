@@ -11,12 +11,13 @@ public class EnemyAICube : EnemyAIController<CubeEnemyAIData>
     public float AttackCooldown => CurrentTimeOfDay == TimeOfDay.Morning ? enemyData.morningAttackCooldown : enemyData.afternoonAttackCooldown;
     public float AttackCastingTime => CurrentTimeOfDay == TimeOfDay.Morning ? enemyData.morningAttackCastingTime : enemyData.afternoonAttackCastingTime;
     
+    public PathCalculator pathCalculator;
     
     protected override void Start()
     {
         base.Start();
         // Cube 특화 초기화
-        ChangeState(new CubePatrolState(this, utilityCalculator));
+        ChangeState(new CubePatrolState(this, utilityCalculator, pathCalculator));
     }
 
     protected override void HandleTimeOfDayChanged(TimeOfDay newTimeOfDay)
