@@ -53,3 +53,6 @@ public enum EnemyType
     Human,      // 인간형 (불 속성)
     Animal      // 동물형 (물리 속성)
 }
+
+public enum RSPChoice { Rock, Scissors, Paper }
+public enum RSPResult { Win, Lose, Draw }

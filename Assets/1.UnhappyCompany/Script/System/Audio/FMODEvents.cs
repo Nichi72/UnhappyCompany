@@ -1,5 +1,6 @@
 using UnityEngine;
 using FMODUnity;
+using System.Collections.Generic;
 
 
 public class FMODEvents : MonoBehaviour
@@ -9,6 +10,10 @@ public class FMODEvents : MonoBehaviour
     [field: SerializeField] public EventReference missDamage { get; private set; }
 
     [field: SerializeField] public EventReference damage { get; private set; }
+    [field: SerializeField] public EventReference rspWin { get; private set; }
+    [field: SerializeField] public EventReference rspLose { get; private set; }
+    [field: SerializeField] public List<EventReference> rspStack { get; private set; }
+
     void Awake()
     {
         if (instance == null)
@@ -16,15 +21,4 @@ public class FMODEvents : MonoBehaviour
             instance = this;
         }
     }   
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }
