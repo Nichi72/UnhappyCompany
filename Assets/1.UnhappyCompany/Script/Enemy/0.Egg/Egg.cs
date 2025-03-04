@@ -119,7 +119,7 @@ public class Egg : MonoBehaviour, IDamageable
         if (currentStage == EggStage.Stage1)
         {
             Debug.Log($"{gameObject.name}은(는) 아직 무적 상태입니다!");
-            AuodioManager.instance.PlayOneShot(FMODEvents.instance.missDamage, transform.position);
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.missDamage, transform);
             return;
         }
 
@@ -129,13 +129,13 @@ public class Egg : MonoBehaviour, IDamageable
             if (!IsWeakTo(damageType))
             {
                 Debug.Log($"{gameObject.name}({eggType})은(는) {damageType} 속성에 면역입니다!");
-                AuodioManager.instance.PlayOneShot(FMODEvents.instance.missDamage, transform.position);
+                AudioManager.instance.PlayOneShot(FMODEvents.instance.missDamage, transform);
                 return;
             }
 
             Hp -= damage;
             Debug.Log($"{gameObject.name}({eggType}) Take Damage {damage} from {damageType} _ Left HP :{Hp}");
-            AuodioManager.instance.PlayOneShot(FMODEvents.instance.damage, transform.position);
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.damage, transform);
             
             if(Hp <= 0)
             {
