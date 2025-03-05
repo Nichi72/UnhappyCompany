@@ -27,6 +27,7 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractable
     public readonly string LoseAnimationName = "RSP_Lose";
     public readonly string DrawAnimationName = "RSP_Draw";
     public readonly string IdleAnimationName = "RSP_Idle";
+    public readonly string HoldingAnimationName = "RSP_Stop";
 
     protected override void Start()
     {
@@ -151,9 +152,9 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractable
     #endregion
 
     #region Animation
-    public void PlayAnimation(string animationName)
+    public void PlayAnimation(string animationName, float transitionTime = 0.2f )
     {
-        animator.CrossFade(animationName, 0.2f);
+        animator.CrossFade(animationName, transitionTime);
     }
 
     public void AniEvt_AnimationEnd()

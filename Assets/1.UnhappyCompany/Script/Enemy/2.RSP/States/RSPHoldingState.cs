@@ -81,6 +81,7 @@ public class RSPHoldingState : IState
 
         Debug.Log("RSP: 점프스퀘어로 점프");
         EnableCompoenet(false);
+        controller.PlayAnimation(controller.HoldingAnimationName, 0f);
 
         Vector3 jumpsquarePosition = player.OffsetLists[0].position;
         while (Vector3.Distance(controller.transform.position, jumpsquarePosition) > 0.1f)
@@ -95,7 +96,7 @@ public class RSPHoldingState : IState
         }
         controller.transform.parent = player.OffsetLists[0];
         controller.transform.localPosition = new Vector3(0,0,0);
-        controller.transform.localRotation = Quaternion.Euler(0,180,0);
+        controller.transform.localRotation = Quaternion.Euler(0,0,0);
 
         Debug.Log("RSP: 점프스퀘어에 도착");
 
