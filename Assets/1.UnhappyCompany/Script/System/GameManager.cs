@@ -145,4 +145,11 @@ public class GameManager : MonoBehaviour
         totalGold -= itemData.BuyPrice;
         return true;
     }
+
+    public Player GetNearestPlayer(Transform transform)
+    {
+        // 멀티 상황에서 플레이어 중 가장 가까운 플레이어를 반환
+        // 지금은 싱글이라 그냥 반환
+        return currentPlayer;
+    }
 }

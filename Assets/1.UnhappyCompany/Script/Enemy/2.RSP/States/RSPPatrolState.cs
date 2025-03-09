@@ -10,11 +10,17 @@ public class RSPPatrolState : IState
     private float stuckCheckTime = 3f; // 멈춤 감지 시간
     private float lastMovedTime; // 마지막 이동 시간
     private Vector3 lastPosition; // 마지막 위치
+    private float chaseCooldown; // 추적 상태로 전환하기 전 대기 시간
+    private float lastChaseAttemptTime; // 마지막 추적 시도 시간
+    
 
-    public RSPPatrolState(EnemyAIRSP controller, UtilityCalculator calculator)
+    public RSPPatrolState(EnemyAIRSP controller, UtilityCalculator calculator, float chaseCooldown)
     {
         this.controller = controller;
         this.utilityCalculator = calculator;
+        this.chaseCooldown = chaseCooldown;
+        this.lastChaseAttemptTime = Time.time; // 현재 시간으로 초기화
+        
     }
 
     public void Enter()
@@ -22,18 +28,17 @@ public class RSPPatrolState : IState
         Debug.Log("RSP: 순찰 상태 시작");
         lastPosition = controller.transform.position;
         lastMovedTime = Time.time;
+        lastChaseAttemptTime = Time.time; // 상태 진입 시 초기화
         SetNewDestination();
     }
 
     public void ExecuteMorning()
     {
-        Debug.Log("RSP: 오전 순찰 중");
         PatrolBehavior();
     }
 
     public void ExecuteAfternoon()
     {
-        Debug.Log("RSP: 오후 순찰 중");
         PatrolBehavior();
     }
 
@@ -41,8 +46,9 @@ public class RSPPatrolState : IState
     {
         // 플레이어가 감지 범위 내에 있는지 체크
         float distanceToPlayer = Vector3.Distance(controller.transform.position, controller.player.position);
-        if (distanceToPlayer < controller.ChaseRadius)
+        if (distanceToPlayer < controller.ChaseRadius && Time.time - lastChaseAttemptTime > chaseCooldown)
         {
+            lastChaseAttemptTime = Time.time;
             controller.ChangeState(new RSPChaseState(controller, utilityCalculator));
             return;
         }

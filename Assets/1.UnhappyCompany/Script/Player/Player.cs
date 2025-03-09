@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Player : MonoBehaviour
@@ -8,6 +9,9 @@ public class Player : MonoBehaviour
     public QuickSlotSystem quickSlotSystem;
     public BuildSystem buildSystem;
     public Animator armAnimator;
+    public List<Transform> OffsetLists;
+
+    
     
     void Start()
     {
