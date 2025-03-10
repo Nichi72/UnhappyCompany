@@ -1,10 +1,10 @@
 using System.Collections;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "Structures", menuName = "Scriptable Objects/Structures")]
-public class Structures
+public static class Structures
 {
-    
+    public const string LAB_WATCHER = "Lab Watcher";
+    public const string LAB_WATCHER_TOOL = "Lab Watcher/Placement Tool";
 }
 
 public enum ETag

@@ -37,11 +37,11 @@ public class ItemsMeleeAttack : Item ,IDamager
             {
                 return;
             }
-            DealDamage(damageAbleTemp);
+            DealDamage(damage, damageAbleTemp);
         }
     }
 
-    public void DealDamage(IDamageable target)
+    public void DealDamage(int damage, IDamageable target) 
     {
         target.TakeDamage(damage, DamageType.Physical);
         Debug.Log($"{target.ToString()} Damage! _ Left HP { target.Hp}");
