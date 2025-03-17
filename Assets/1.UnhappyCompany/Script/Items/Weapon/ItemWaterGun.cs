@@ -151,11 +151,11 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate
             {
                 return;
             }
-            DealDamage(damageAbleTemp);
+            DealDamage(damage, damageAbleTemp);
         }
     }
 
-    public void DealDamage(IDamageable target)
+    public void DealDamage(int damage, IDamageable target)
     {
         target.TakeDamage(damage, DamageType.Water); // 물 데미지 타입 사용
         Debug.Log($"{target.ToString()} Water Damage! _ Left HP { target.Hp}");
@@ -337,6 +337,9 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate
             Debug.Log($"DeserializeState {s.Print()}");
         }
     }
+
+   
+
 }
 
 

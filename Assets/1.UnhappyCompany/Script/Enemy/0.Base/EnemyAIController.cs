@@ -4,7 +4,7 @@ using UnityEngine.AI;
 /// <summary>
 /// EnemyAIController는 적의 기본 AI 동작을 정의하는 추상 클래스입니다.
 /// </summary>
-public abstract class EnemyAIController<T> : MonoBehaviour , IDamageable where T : BaseEnemyAIData 
+public abstract class EnemyAIController<T> : MonoBehaviour , IDamageable, IDamager where T : BaseEnemyAIData 
 {
     [SerializeField] protected IState currentState; // 현재 활성화된 상태
     protected UtilityCalculator utilityCalculator; // 유틸리티 계산기
@@ -28,6 +28,7 @@ public abstract class EnemyAIController<T> : MonoBehaviour , IDamageable where T
     public UtilityCalculator UtilityCalculator { get => utilityCalculator; set => utilityCalculator = value; }
     public int hp = 0;
     public int Hp { get => hp; set => hp = value; }
+    public int damage { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
 
     [Header("Debug Settings")]
     public bool enableDebugUI = true;
@@ -147,5 +148,10 @@ public abstract class EnemyAIController<T> : MonoBehaviour , IDamageable where T
             Debug.Log($"{gameObject.name} 사망");
             Destroy(gameObject);
         }
+    }
+
+    public virtual void DealDamage(int damage, IDamageable target)
+    {
+        target.TakeDamage(damage, DamageType.Physical);
     }
 } 

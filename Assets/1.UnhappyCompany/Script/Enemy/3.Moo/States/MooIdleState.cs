@@ -13,15 +13,17 @@ public class MooIdleState : IState
     public void Enter()
     {
         Debug.Log("Moo: Idle 상태 시작");
-        controller.PlayAnimation("Idle");
+        controller.PlayAnimation(controller.idleAnimationName);
     }
 
     public void ExecuteMorning()
     {
-        // 무작위 이동 로직
-        if (controller.agent.remainingDistance < 0.5f)
+        if (controller.agent.enabled && controller.agent.isOnNavMesh)
         {
-            SetRandomDestination();
+            if (controller.agent.remainingDistance < 0.5f)
+            {
+                SetRandomDestination();
+            }
         }
     }
 
