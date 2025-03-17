@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-7946969559011645214
+--- !u!114 &-5056836050940925626
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}
@@ -23,35 +23,24 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: floorForCubeHalfSize 1
+  m_Name: walltexForCubeHalfSize 1
   m_Shader: {fileID: -6465566751694194690, guid: 8d7180d86aab44f15bb161c4ab3113a9, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - _ALPHACUT
-  - _BAKEDLIT
   - _DETAIL
-  - _DETAILSTOCHASTIC
   - _DETAILTEXTUREROTATION
   - _DISABLE_SSR_TRANSPARENT
-  - _LAYERBLENDMULT2X
-  - _LAYEREFFECTOR
-  - _LAYERNOISE
-  - _LAYERNOISETEXTURE
   - _NORMALMAP
   - _USEBRIGHTNESSCONTRAST
   - _USEHSVSHIFT
-  - _WETNESSEFFECTOR
   m_InvalidKeywords:
-  - _LAYEREFFECTORINVERT_ON
   - _NORMALMAP_TANGENT_SPACE
-  - _WETNESSEFFECTORINVERT_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 2450
-  stringTagMap:
-    RenderType: TransparentCutout
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
   disabledShaderPasses:
   - TransparentDepthPrepass
   - TransparentDepthPostpass
@@ -63,8 +52,8 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _AlbedoMap:
-        m_Texture: {fileID: 2800000, guid: 913739f407da19b48ab72a57279d7e2f, type: 3}
-        m_Scale: {x: 10, y: 20}
+        m_Texture: {fileID: 2800000, guid: 235763a9eafea754a88b9a725a19d2fc, type: 3}
+        m_Scale: {x: 5, y: 2}
         m_Offset: {x: 0, y: 0}
     - _AlbedoMap_P1:
         m_Texture: {fileID: 0}
@@ -79,8 +68,8 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BaseColorMap:
-        m_Texture: {fileID: 2800000, guid: 913739f407da19b48ab72a57279d7e2f, type: 3}
-        m_Scale: {x: 10, y: 10}
+        m_Texture: {fileID: 2800000, guid: 235763a9eafea754a88b9a725a19d2fc, type: 3}
+        m_Scale: {x: 5, y: 2}
         m_Offset: {x: 0, y: 0}
     - _BentNormalMap:
         m_Texture: {fileID: 0}
@@ -125,7 +114,7 @@ Material:
     - _DetailMap:
         m_Texture: {fileID: 2800000, guid: ec3569c13f22748f49ea97be722ebd54, type: 3}
         m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0.72, y: 0}
+        m_Offset: {x: 0, y: 0}
     - _DetailMap_P1:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -451,7 +440,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _LayerNoiseTex:
-        m_Texture: {fileID: 2800000, guid: fbc5d8fa9ce564d2d8e32cf846b91719, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _LayerNoiseTex_Ext_1:
@@ -587,8 +576,8 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 913739f407da19b48ab72a57279d7e2f, type: 3}
-        m_Scale: {x: 10, y: 10}
+        m_Texture: {fileID: 2800000, guid: 235763a9eafea754a88b9a725a19d2fc, type: 3}
+        m_Scale: {x: 5, y: 2}
         m_Offset: {x: 0, y: 0}
     - _MaskMap:
         m_Texture: {fileID: 0}
@@ -607,7 +596,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
-        m_Texture: {fileID: 2800000, guid: 8066ddedafbb8aa42ae768171e15fd66, type: 3}
+        m_Texture: {fileID: 2800000, guid: c646474fddedbb54fb2499964674e209, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMapOS:
@@ -810,10 +799,10 @@ Material:
     - _ATDistance: 1
     - _AddPrecomputedVelocity: 0
     - _AlbedoAffectEmissive: 0
-    - _AlbedoBrightness: 0.003
-    - _AlbedoContrast: 1.817
-    - _AlbedoHue: 0.029
-    - _AlbedoSaturation: 0.717
+    - _AlbedoBrightness: 0.042
+    - _AlbedoContrast: 2
+    - _AlbedoHue: 0.936
+    - _AlbedoSaturation: 0.559
     - _AlphaCutoff: 0.5
     - _AlphaCutoffEnable: 0
     - _AlphaCutoffPostpass: 0.5
@@ -823,7 +812,7 @@ Material:
     - _AlphaRemapMax: 1
     - _AlphaRemapMin: 0
     - _AlphaSrcBlend: 1
-    - _AlphaThreshold: 0.251
+    - _AlphaThreshold: 0
     - _AlphaToMask: 0
     - _AlphaToMaskInspectorValue: 0
     - _Anisotropy: 0
@@ -841,17 +830,17 @@ Material:
     - _CoatMask: 0
     - _CullMode: 2
     - _CullModeForward: 2
-    - _Cutoff: 0.251
+    - _Cutoff: 0.5
     - _DebugSampleCountThreshold: 12
     - _DepthOffsetEnable: 0
     - _DetailAlbedoScale: 1
-    - _DetailAlbedoStrength: 1.73
+    - _DetailAlbedoStrength: 0.717
     - _DetailNormalScale: 1
-    - _DetailNormalStrength: 0.122
+    - _DetailNormalStrength: 1.28
     - _DetailSmoothnessScale: 1
-    - _DetailSmoothnessStrength: 1.261
-    - _DetailStochasticContrast: 0.105
-    - _DetailStochasticScale: 0.438
+    - _DetailSmoothnessStrength: 1.068
+    - _DetailStochasticContrast: 0.7
+    - _DetailStochasticScale: 0.5
     - _DetailTriplanarBaryBlend: 0.9
     - _DetailTriplanarContrast: 4
     - _DetailTriplanarSpace: 0
@@ -891,7 +880,7 @@ Material:
     - _EnableGeometricSpecularAA: 0
     - _EnableGeometrySpecAA: 0
     - _EnergyConservingSpecularColor: 1
-    - _FlatShadingBlend: 0
+    - _FlatShadingBlend: 1
     - _HeightAmplitude: 0.02
     - _HeightCenter: 0.5
     - _HeightMapParametrization: 0
@@ -903,7 +892,7 @@ Material:
     - _HeightTessCenter: 0.5
     - _HideUnused: 0
     - _InitialBend: 1
-    - _InvTilingScale: 0.1
+    - _InvTilingScale: 0.2857143
     - _Ior: 1.5
     - _IridescenceMask: 1
     - _IridescenceThickness: 1
@@ -932,7 +921,7 @@ Material:
     - _LayerAngleMin_Ext_1: 0.1
     - _LayerAngleMin_Ext_2: 0.1
     - _LayerAngleMin_Ext_3: 0.1
-    - _LayerBlendContrast: 6.08
+    - _LayerBlendContrast: 2
     - _LayerBlendContrast_Ext_1: 2
     - _LayerBlendContrast_Ext_2: 2
     - _LayerBlendContrast_Ext_3: 2
@@ -952,7 +941,7 @@ Material:
     - _LayerClearCoatSmoothness_Ext_1: 1
     - _LayerClearCoatSmoothness_Ext_2: 1
     - _LayerClearCoatSmoothness_Ext_3: 1
-    - _LayerEffectorInvert: 1
+    - _LayerEffectorInvert: 0
     - _LayerEffectorInvert_Ext_1: 0
     - _LayerEffectorInvert_Ext_2: 0
     - _LayerEffectorInvert_Ext_3: 0
@@ -984,7 +973,7 @@ Material:
     - _LayerMicroShadowStrength_Ext_1: 0
     - _LayerMicroShadowStrength_Ext_2: 0
     - _LayerMicroShadowStrength_Ext_3: 0
-    - _LayerNoiseAmplitude: 4.6
+    - _LayerNoiseAmplitude: 0.5
     - _LayerNoiseAmplitude_Ext_1: 0.5
     - _LayerNoiseAmplitude_Ext_2: 0.5
     - _LayerNoiseAmplitude_Ext_3: 0.5
@@ -1049,7 +1038,7 @@ Material:
     - _LayerUVSource_Ext_1: 0
     - _LayerUVSource_Ext_2: 0
     - _LayerUVSource_Ext_3: 0
-    - _LayerUseEffector: 1
+    - _LayerUseEffector: 0
     - _LayerUseEffector_Ext_1: 0
     - _LayerUseEffector_Ext_2: 0
     - _LayerUseEffector_Ext_3: 0
@@ -1064,8 +1053,8 @@ Material:
     - _MetallicRemapMin: 0
     - _MicroShadowStrength: 0
     - _NormalMapSpace: 0
-    - _NormalScale: 1
-    - _NormalStrength: 1.244
+    - _NormalScale: 0.43
+    - _NormalStrength: 1
     - _ObjectSpaceUVMapping: 0
     - _ObjectSpaceUVMappingEmissive: 0
     - _OpaqueCullMode: 2
@@ -1100,7 +1089,7 @@ Material:
     - _RenderQueueType: 1
     - _RequireSplitLighting: 0
     - _ShiverDrag: 0.05
-    - _Smoothness: 0.749
+    - _Smoothness: 0
     - _SmoothnessRemapMax: 1
     - _SmoothnessRemapMin: 0
     - _SnowAmount: 1
@@ -1168,14 +1157,14 @@ Material:
     - _UseShadowThreshold: 0
     - _Version: 0
     - _WetnessAmount: 0
-    - _WetnessAngleMin: -0.296
-    - _WetnessEffectorInvert: 1
-    - _WetnessFalloff: 0.389
-    - _WetnessMax: 0.508
+    - _WetnessAngleMin: -1
+    - _WetnessEffectorInvert: 0
+    - _WetnessFalloff: 1
+    - _WetnessMax: 1
     - _WetnessMin: 0
-    - _WetnessMode: 1
+    - _WetnessMode: 0
     - _WetnessShoreline: -99999
-    - _WetnessUseEffector: 1
+    - _WetnessUseEffector: 0
     - _WindNormalInfluence: 0
     - _WindParticulateOcclusionStrength: 1
     - _WindParticulatePower: 1
@@ -1218,7 +1207,7 @@ Material:
     - _ColorZ: {r: 1, g: 1, b: 1, a: 1}
     - _ColorZ2: {r: 1, g: 1, b: 1, a: 1}
     - _ColorZRange: {r: 0, g: 1, b: 0, a: 0}
-    - _DetailTextureRotation: {r: 0.617, g: 0, b: 0, a: 0}
+    - _DetailTextureRotation: {r: 0.103, g: 0, b: 0, a: 0}
     - _DiffusionProfileAsset: {r: 0, g: 0, b: 0, a: 0}
     - _DitherAlphaDistance: {r: 1, g: 50, b: 0, a: 50}
     - _DoubleSidedConstants: {r: 1, g: 1, b: -1, a: 0}
