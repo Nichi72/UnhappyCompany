@@ -11,7 +11,7 @@ public class ItemDataEditorWindow : EditorWindow
     private string currentSortField = "ItemID";
     private bool ascending = true;
 
-    [MenuItem("Window/Item Data Viewer")]
+    [MenuItem(Structures.LAB_WATCHER + "/Item Data Viewer")]
     public static void ShowWindow()
     {
         GetWindow<ItemDataEditorWindow>("Item Data Viewer");

@@ -43,8 +43,8 @@ public interface IDamageable
 /// </summary>
 public interface IDamager
 {
-    int damage { get; set; }
-    void DealDamage(IDamageable target);
+    // int damage { get; set; }
+    void DealDamage(int damage, IDamageable target);
 }
 
 /// <summary>

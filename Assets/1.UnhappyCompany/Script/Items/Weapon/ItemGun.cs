@@ -83,13 +83,13 @@ public class ItemGun : Item, IDamager, IOverrideUpdate
             IDamageable damageable = hit.collider.GetComponent<IDamageable>();
             if (damageable != null)
             {
-                DealDamage(damageable);
+                DealDamage(damage, damageable);
             }
         }
 
     }
 
-    public void DealDamage(IDamageable target)
+    public void DealDamage(int damage, IDamageable target)
     {
         target.TakeDamage(damage, DamageType.Nomal);
         Debug.Log("Hit!");

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Player : MonoBehaviour
+public class Player : MonoBehaviour , IDamageable
 {
     public Transform rightHandPos;
     public StarterAssets.FirstPersonController firstPersonController;
@@ -11,8 +11,18 @@ public class Player : MonoBehaviour
     public Animator armAnimator;
     public List<Transform> OffsetLists;
 
-    
-    
+    public int Hp { get; set; } = 100;
+
+    public void TakeDamage(int damage, DamageType damageType)
+    {
+        Hp -= damage;
+        Debug.Log($"Player {damage}의 피해 입음 남은 체력:{Hp}");
+        if(Hp <= 0)
+        {
+            Debug.Log("Player 사망");
+        }   
+    }
+
     void Start()
     {
         
