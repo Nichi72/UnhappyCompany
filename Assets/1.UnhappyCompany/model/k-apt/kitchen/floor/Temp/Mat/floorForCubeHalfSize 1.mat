@@ -28,19 +28,30 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _ALPHACUT
   - _BAKEDLIT
+  - _DETAIL
+  - _DETAILSTOCHASTIC
+  - _DETAILTEXTUREROTATION
   - _DISABLE_SSR_TRANSPARENT
+  - _LAYERBLENDMULT2X
+  - _LAYEREFFECTOR
+  - _LAYERNOISE
+  - _LAYERNOISETEXTURE
   - _NORMALMAP
-  - _WETNESS
+  - _USEBRIGHTNESSCONTRAST
+  - _USEHSVSHIFT
   - _WETNESSEFFECTOR
   m_InvalidKeywords:
+  - _LAYEREFFECTORINVERT_ON
   - _NORMALMAP_TANGENT_SPACE
   - _WETNESSEFFECTORINVERT_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
+  m_CustomRenderQueue: 2450
+  stringTagMap:
+    RenderType: TransparentCutout
   disabledShaderPasses:
   - TransparentDepthPrepass
   - TransparentDepthPostpass
@@ -112,9 +123,9 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DetailMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: ec3569c13f22748f49ea97be722ebd54, type: 3}
         m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
+        m_Offset: {x: 0.72, y: 0}
     - _DetailMap_P1:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -440,7 +451,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _LayerNoiseTex:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: fbc5d8fa9ce564d2d8e32cf846b91719, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _LayerNoiseTex_Ext_1:
@@ -799,10 +810,10 @@ Material:
     - _ATDistance: 1
     - _AddPrecomputedVelocity: 0
     - _AlbedoAffectEmissive: 0
-    - _AlbedoBrightness: 0
-    - _AlbedoContrast: 1
-    - _AlbedoHue: 0
-    - _AlbedoSaturation: 1
+    - _AlbedoBrightness: 0.003
+    - _AlbedoContrast: 1.817
+    - _AlbedoHue: 0.029
+    - _AlbedoSaturation: 0.717
     - _AlphaCutoff: 0.5
     - _AlphaCutoffEnable: 0
     - _AlphaCutoffPostpass: 0.5
@@ -812,7 +823,7 @@ Material:
     - _AlphaRemapMax: 1
     - _AlphaRemapMin: 0
     - _AlphaSrcBlend: 1
-    - _AlphaThreshold: 0
+    - _AlphaThreshold: 0.251
     - _AlphaToMask: 0
     - _AlphaToMaskInspectorValue: 0
     - _Anisotropy: 0
@@ -830,17 +841,17 @@ Material:
     - _CoatMask: 0
     - _CullMode: 2
     - _CullModeForward: 2
-    - _Cutoff: 0.5
+    - _Cutoff: 0.251
     - _DebugSampleCountThreshold: 12
     - _DepthOffsetEnable: 0
     - _DetailAlbedoScale: 1
-    - _DetailAlbedoStrength: 1
+    - _DetailAlbedoStrength: 1.73
     - _DetailNormalScale: 1
-    - _DetailNormalStrength: 1
+    - _DetailNormalStrength: 0.122
     - _DetailSmoothnessScale: 1
-    - _DetailSmoothnessStrength: 1
-    - _DetailStochasticContrast: 0.7
-    - _DetailStochasticScale: 0.5
+    - _DetailSmoothnessStrength: 1.261
+    - _DetailStochasticContrast: 0.105
+    - _DetailStochasticScale: 0.438
     - _DetailTriplanarBaryBlend: 0.9
     - _DetailTriplanarContrast: 4
     - _DetailTriplanarSpace: 0
@@ -880,7 +891,7 @@ Material:
     - _EnableGeometricSpecularAA: 0
     - _EnableGeometrySpecAA: 0
     - _EnergyConservingSpecularColor: 1
-    - _FlatShadingBlend: 1
+    - _FlatShadingBlend: 0
     - _HeightAmplitude: 0.02
     - _HeightCenter: 0.5
     - _HeightMapParametrization: 0
@@ -921,7 +932,7 @@ Material:
     - _LayerAngleMin_Ext_1: 0.1
     - _LayerAngleMin_Ext_2: 0.1
     - _LayerAngleMin_Ext_3: 0.1
-    - _LayerBlendContrast: 2
+    - _LayerBlendContrast: 6.08
     - _LayerBlendContrast_Ext_1: 2
     - _LayerBlendContrast_Ext_2: 2
     - _LayerBlendContrast_Ext_3: 2
@@ -941,7 +952,7 @@ Material:
     - _LayerClearCoatSmoothness_Ext_1: 1
     - _LayerClearCoatSmoothness_Ext_2: 1
     - _LayerClearCoatSmoothness_Ext_3: 1
-    - _LayerEffectorInvert: 0
+    - _LayerEffectorInvert: 1
     - _LayerEffectorInvert_Ext_1: 0
     - _LayerEffectorInvert_Ext_2: 0
     - _LayerEffectorInvert_Ext_3: 0
@@ -973,7 +984,7 @@ Material:
     - _LayerMicroShadowStrength_Ext_1: 0
     - _LayerMicroShadowStrength_Ext_2: 0
     - _LayerMicroShadowStrength_Ext_3: 0
-    - _LayerNoiseAmplitude: 0.5
+    - _LayerNoiseAmplitude: 4.6
     - _LayerNoiseAmplitude_Ext_1: 0.5
     - _LayerNoiseAmplitude_Ext_2: 0.5
     - _LayerNoiseAmplitude_Ext_3: 0.5
@@ -1038,7 +1049,7 @@ Material:
     - _LayerUVSource_Ext_1: 0
     - _LayerUVSource_Ext_2: 0
     - _LayerUVSource_Ext_3: 0
-    - _LayerUseEffector: 0
+    - _LayerUseEffector: 1
     - _LayerUseEffector_Ext_1: 0
     - _LayerUseEffector_Ext_2: 0
     - _LayerUseEffector_Ext_3: 0
@@ -1089,7 +1100,7 @@ Material:
     - _RenderQueueType: 1
     - _RequireSplitLighting: 0
     - _ShiverDrag: 0.05
-    - _Smoothness: 0.07
+    - _Smoothness: 0.749
     - _SmoothnessRemapMax: 1
     - _SmoothnessRemapMin: 0
     - _SnowAmount: 1
@@ -1207,7 +1218,7 @@ Material:
     - _ColorZ: {r: 1, g: 1, b: 1, a: 1}
     - _ColorZ2: {r: 1, g: 1, b: 1, a: 1}
     - _ColorZRange: {r: 0, g: 1, b: 0, a: 0}
-    - _DetailTextureRotation: {r: 0, g: 0, b: 0, a: 0}
+    - _DetailTextureRotation: {r: 0.617, g: 0, b: 0, a: 0}
     - _DiffusionProfileAsset: {r: 0, g: 0, b: 0, a: 0}
     - _DitherAlphaDistance: {r: 1, g: 50, b: 0, a: 50}
     - _DoubleSidedConstants: {r: 1, g: 1, b: -1, a: 0}
