@@ -15,6 +15,9 @@ public abstract class Item : MonoBehaviour , IInteractable , IToolTip
 
     [SerializeField]protected string uniqueInstanceID;
 
+    public bool useItemDataPosition = false;
+    public bool useItemDataRotation = false;
+
     void Awake()
     {
         if (string.IsNullOrEmpty(uniqueInstanceID))
