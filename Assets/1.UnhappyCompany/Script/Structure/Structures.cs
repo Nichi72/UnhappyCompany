@@ -10,7 +10,9 @@ public static class Structures
 public enum ETag
 {
     RaycastHit,
-    Item
+    Item,
+    Wall,
+    Player
 }
 
 public enum EItem

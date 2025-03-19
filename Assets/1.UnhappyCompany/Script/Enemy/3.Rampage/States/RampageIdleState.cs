@@ -6,8 +6,9 @@ public class RampageIdleState : IState
     private float idleTimer = 2f; // 대기 후 순찰로 넘어가기 위한 시간
     private float startTime;
 
-    public RampageIdleState(RampageAIController controller)
+    public RampageIdleState(RampageAIController controller,string beforeState)
     {
+        Debug.Log($"{beforeState} 상태에서 대기 시작");
         this.controller = controller;
     }
 
@@ -41,7 +42,7 @@ public class RampageIdleState : IState
         // 플레이어 감지 시 Charge 상태로 전환
         if (CheckPlayerDetected())
         {
-            controller.ChangeState(new RampageChargeState(controller));
+            controller.ChangeState(new RampageChargeState(controller,"IdleState"));
             return;
         }
 

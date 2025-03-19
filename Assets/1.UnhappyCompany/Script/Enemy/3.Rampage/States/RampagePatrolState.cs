@@ -47,7 +47,7 @@ public class RampagePatrolState : IState
 
     private void PatrolUpdateLogic()
     {
-        if (!agent.pathPending && agent.remainingDistance < 0.5f)
+        if (!agent.pathPending && agent.remainingDistance < 1f)
         {
             SetRandomPatrolDestination();
         }
@@ -55,7 +55,7 @@ public class RampagePatrolState : IState
         // 플레이어 감지 범위 / 각도 확인
         if (CheckPlayerDetected())
         {
-            controller.ChangeState(new RampageChargeState(controller));
+            controller.ChangeState(new RampageChargeState(controller,"PatrolState"));
         }
     }
 

@@ -13,11 +13,12 @@ public class RampageExplodeState : IState
     public void Enter()
     {
         Debug.Log("Rampage: Explode(자폭) 상태 시작");
-        DoExplode();
+        // DoExplode();
     }
 
     public void ExecuteMorning()
     {
+        Debug.Log("Rampage: Explode(자폭) 상태 시작");
     }
 
     public void ExecuteAfternoon()

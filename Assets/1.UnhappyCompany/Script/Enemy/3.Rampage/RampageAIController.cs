@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
+using System.Collections;
 
 /// <summary>
 /// 렘페이지(Rampage) AI 컨트롤러.
@@ -7,15 +8,19 @@ using UnityEngine.AI;
 /// </summary>
 public class RampageAIController : EnemyAIController<RampageAIData>
 {
+    [Header("DEBUG")]
+    public string currentStateName;
     // 내부적으로 사용할 현재 HP
-    private int currentHP;
+    // private int currentHP => ;
     // 패널 체력(상태마다 갱신)
     public int currentPanelHealth { get; set; }
 
     [Header("Charge State")]
-    public bool isCollided = false;  // 돌진 중 충돌 발생 여부
-    private int chargeCount = 0;     // 돌진 횟수
-    private int maxChargeCount = 3;  // 최대 돌진 횟수
+    public bool isCollided = false;      // 돌진 중 충돌 발생 여부
+    private int chargeCount = 0;         // 돌진 횟수
+    private int maxChargeCount = 3;      // 최대 돌진 횟수
+    private int consecutiveCollisions = 0;// 연속 충돌 카운트
+    private const int MAX_CONSECUTIVE_COLLISIONS = 10; // 최대 연속 충돌 횟수
 
     // 쿠션 충돌 시 노출될 패널 수 / 쿠션 없이 충돌 시 노출될 패널 수
     private int cushionPanelCount => enemyData.cushionPanelCount;
@@ -34,9 +39,9 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     {
         base.Start();
         // 초기 HP 세팅
-        currentHP = enemyData.maxHP;
+        Hp = enemyData.maxHP;
         // 초기 상태는 Idle이라고 가정
-        ChangeState(new RampageIdleState(this));
+        ChangeState(new RampageIdleState(this,"Start에서 실행"));
 
         // LineRenderer 초기화
         lineRenderer.positionCount = 0;
@@ -51,6 +56,26 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     {
         base.Update();
         UpdateLineRenderer();
+        currentStateName = currentState.GetType().Name;
+    }
+
+    void LateUpdate()
+    {
+        if(isCollided)
+        {
+            consecutiveCollisions++;
+            if(consecutiveCollisions >= MAX_CONSECUTIVE_COLLISIONS)
+            {
+                // HandleStuck();
+                consecutiveCollisions = 0;
+            }
+            Debug.Log("isCollided false");
+            isCollided = false;
+        }
+        else
+        {
+            consecutiveCollisions = 0;
+        }
     }
 
     /// <summary>
@@ -114,8 +139,8 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     /// </summary>
     public override void TakeDamage(int damage, DamageType damageType)
     {
-        currentHP -= damage;
-        if (currentHP <= 0)
+        Hp -= damage;
+        if (Hp <= 0)
         {
             // HP가 0 이하로 떨어졌다면 자폭으로 전환
             ChangeState(new RampageExplodeState(this));
@@ -133,21 +158,12 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     /// </summary>
     public void ReduceHP(int amount)
     {
-        currentHP -= amount;
-        if (currentHP <= 0)
+        Hp -= amount;
+        if (Hp <= 0)
         {
             ChangeState(new RampageExplodeState(this));
         }
     }
-
-    /// <summary>
-    /// 현재 렘페이지의 HP 가져오기(디버깅용)
-    /// </summary>
-    public int GetCurrentHP()
-    {
-        return currentHP;
-    }
-
     /// <summary>
     /// 패널 Health 초기화
     /// </summary>
@@ -167,42 +183,45 @@ public class RampageAIController : EnemyAIController<RampageAIData>
         // 현재는 임시로 collision.collider 태그가 "Cushion"이면 쿠션 있다고 가정
         return collision.collider.CompareTag("Cushion"); 
     }
-
+    
     /// <summary>
     /// 물리 충돌 시 쿠션 여부 판단 후 상태 전환
     /// </summary>
     private void OnCollisionEnter(Collision collision)
     {
+        
+    }
+    public bool onceReduceHP = true; // 충돌시 false로 바꾸고 ChargeCoroutine에서 충돌전 회전할때 true로 만듬.
+    void OnCollisionStay(Collision collision)
+    {
         // 현재 상태가 Charge 상태인지 확인
         if (currentState is RampageChargeState chargeState)
         {
-            Debug.Log("Rampage: Charge 상태에서 충돌 발생");
-            if (isCollided) return;
-            isCollided = true;
-
             bool hasCushion = IsCushionAtCollision(collision);
-            int panelCount = hasCushion 
-                ? enemyData.cushionPanelCount
-                : enemyData.noCushionPanelCount;
+            // int panelCount = hasCushion
+            //     ? enemyData.cushionPanelCount
+            //     : enemyData.noCushionPanelCount;
 
-            if (!hasCushion)
+            if (!hasCushion && onceReduceHP) 
             {
                 // HP 감소
                 ReduceHP(enemyData.hpLossOnNoCushion);
+                onceReduceHP = false;
             }
 
-            // 플레이어가 여전히 순찰 범위 내에 있는지 확인
-            if (chargeState.CheckPlayerInPatrolRange())
+
+            Debug.Log("Rampage: Charge 상태에서 충돌 발생 collision " + collision.gameObject.tag + " ETag " + ETag.Wall.ToString());
+            if (collision.collider.CompareTag(ETag.Wall.ToString()))
             {
-                // Charge 상태로 재진입
-                ChangeState(new RampageChargeState(this));
-            }
-            else
-            {
-                // 돌진 횟수 증가 및 상태 전환
-                IncrementChargeCount();
+                isCollided = true;
+                Debug.Log("충돌 발생");
             }
         }
+    }
+
+    void OnCollisionExit(Collision collision)
+    {
+       
     }
 
     /// <summary>
@@ -214,11 +233,44 @@ public class RampageAIController : EnemyAIController<RampageAIData>
         if (chargeCount >= maxChargeCount)
         {
             chargeCount = 0; // 돌진 횟수 초기화
-            ChangeState(new RampageIdleState(this)); // Idle 상태로 전환
+            ChangeState(new RampageIdleState(this,"IncrementChargeCount에서 실행")); // Idle 상태로 전환
         }
         else
         {
             ChangeState(new RampagePatrolState(this)); // Patrol 상태로 전환
         }
     }
-} 
+
+    /// <summary>
+    /// 돌진 코루틴 시작
+    /// </summary>
+    public void StartCoroutine(float waitTime, System.Action onComplete)
+    {
+        StartCoroutine(ChargeCoroutine(waitTime, onComplete));
+    }
+
+    private IEnumerator ChargeCoroutine(float waitTime, System.Action onComplete)
+    {
+        yield return new WaitForSeconds(waitTime);
+        onComplete?.Invoke();
+    }
+    public void CustomStopCoroutine(Coroutine coroutine)
+    {
+        Debug.Log("CustomStopCoroutine ");
+        StopCoroutine(coroutine);
+    }
+
+    /// <summary>
+    /// 벽에 끼었을 때 처리하는 함수
+    /// </summary>
+    private void HandleStuck()
+    {
+        Debug.Log("벽에 끼었습니다! 상태를 초기화합니다.");
+        // 현재 위치에서 뒤로 약간 이동
+        // transform.position -= transform.forward * 2f;
+        // Idle 상태로 강제 전환
+        ChangeState(new RampageIdleState(this,"HandleStuck에서 실행"));
+        // 충돌 카운트 초기화
+        chargeCount = 0;
+    }
+}
