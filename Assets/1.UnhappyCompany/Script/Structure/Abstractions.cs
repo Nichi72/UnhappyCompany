@@ -44,13 +44,13 @@ public interface IDamageable
 public interface IDamager
 {
     // int damage { get; set; }
-    void DealDamage(int damage, IDamageable target);
+    public void DealDamage(int damage, IDamageable target);
 }
 
 /// <summary>
 /// 업데이트를 오버라이드하는 인터페이스입니다.
 /// </summary>
-public interface IOverrideUpdate
+public interface IItemOverrideUpdate
 {
     void OverrideUpdate();
 }

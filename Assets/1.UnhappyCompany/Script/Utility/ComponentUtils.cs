@@ -7,13 +7,11 @@ namespace MyUtility
     public static class ComponentUtils
     {
         /// <summary>
-        ///  /// <summary>
-        /// ���� �������� Ư�� Ÿ���� ��� ������Ʈ�� ã�� �޼���.
-        /// </summary>
+        /// 특정 게임 오브젝트의 부모들에서 특정 타입의 모든 컴포넌트를 찾는 메서드.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="gameObject"></param>
-        /// <param name="includeInactive">includeInactive�� true�� �����ϸ� ��Ȱ��ȭ�� �θ� �˻��� �����մϴ�.</param>
+        /// <param name="includeInactive">includeInactive가 true로 설정되면 비활성화된 객체도 검색에 포함됩니다.</param>
         /// <returns></returns>
         public static T[] GetAllComponentsInParents<T>(GameObject gameObject, bool includeInactive = false) where T : Component
         {
@@ -21,7 +19,7 @@ namespace MyUtility
         }
 
         /// <summary>
-        /// ���� GameObject���� ���� �������� ��� �θ��� ��� ������Ʈ�� ã�� �޼���.
+        /// 주어진 GameObject로부터 모든 부모들의 모든 컴포넌트를 찾는 메서드.
         /// </summary>
         public static List<Component> GetAllComponentsInParents(GameObject gameObject)
         {

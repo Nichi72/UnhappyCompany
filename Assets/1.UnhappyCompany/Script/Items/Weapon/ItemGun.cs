@@ -7,7 +7,7 @@ using UnityEditor.Rendering;
 /// 총 종류의 아이템들을 해당 클래스에서 상속받아 사용합니다.
 /// 총 종류는 왼쪽 클릭 버튼을 눌러서 사용합니다. 
 /// </summary>
-public class ItemGun : Item, IDamager, IOverrideUpdate
+public class ItemGun : Item, IDamager, IItemOverrideUpdate
 {
    
     public Animator playerArmAnimator;
@@ -21,7 +21,11 @@ public class ItemGun : Item, IDamager, IOverrideUpdate
     public override string ToolTipText { get; set; } = "[LMB]: "; // 발사
     public override string ToolTipText2 { get; set; } = "[RMB]: "; // 코킹
     public override string ToolTipText3 { get; set; } = "[R]: "; // 재장전
+    public LayerMask DamageLayer { get => damageLayer; set => damageLayer = value; }
+    public float Distance { get => distance; set => distance = value; }
 
+    private LayerMask damageLayer;
+    private float distance;
     public override void Use(Player player)
     {
         // 사용하지 않음.
@@ -76,17 +80,18 @@ public class ItemGun : Item, IDamager, IOverrideUpdate
     private void Fire()
     {
         playerArmAnimator.Play(animatorShootName);
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-        if (Physics.Raycast(ray, out hit, 100f))
-        {
-            IDamageable damageable = hit.collider.GetComponent<IDamageable>();
-            if (damageable != null)
-            {
-                DealDamage(damage, damageable);
-            }
-        }
-
+        DamageSystem.RaycastDamage(damage, DamageType.Nomal, 100f, damageLayer,
+         (damage, damageable) => DealDamage(damage, damageable));
+        // Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        // RaycastHit hit;
+        // if (Physics.Raycast(ray, out hit, 100f))
+        // {
+        //     IDamageable damageable = hit.collider.GetComponent<IDamageable>();
+        //     if (damageable != null)
+        //     {
+                
+        //     }
+        // }
     }
 
     public void DealDamage(int damage, IDamageable target)
@@ -94,18 +99,4 @@ public class ItemGun : Item, IDamager, IOverrideUpdate
         target.TakeDamage(damage, DamageType.Nomal);
         Debug.Log("Hit!");
     }
-
-    // public void DealDamage(IDamageable target)
-    // {
-    //     if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, 100f))
-    //     {
-    //         IDamageable damageable = hit.collider.GetComponent<IDamageable>();
-    //         if (damageable != null)
-    //         {
-    //             damageable.TakeDamage(damage, DamageType.Nomal);
-    //             Debug.Log("Hit!");
-    //         }
-    //     }
-    // }
-
 }

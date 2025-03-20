@@ -13,7 +13,7 @@ public class RampageAIData : BaseEnemyAIData
     public float detectAngle = 60f;   // 플레이어 감지 각도 (전방 위주)
 
     [Header("Panel Settings")]
-    public int panelHealth = 6;       // 패널 공격 요구량
+    public int maxPanelHealth = 6;       // 패널 공격 요구량
     public float panelOpenTime = 10f; // 패널 열림 유지 시간
 
     [Header("Collision/Cushion Settings")]
@@ -24,6 +24,8 @@ public class RampageAIData : BaseEnemyAIData
     [Header("Cooldown/Timer")]
     public float chargeCooldown = 3f; // 돌진 후 재돌진 전 대기 시간
     public float stunDuration = 5f;   // 스턴 상태 지속 시간
+    [Header("Charge State")]
+    public int maxChargeCount = 3; // 돌진 횟수
 
     [Header("Explode Settings")]
     public float explodeRadius = 5f;  // 자폭 범위

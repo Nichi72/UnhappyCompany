@@ -154,4 +154,4 @@ public abstract class EnemyAIController<T> : MonoBehaviour , IDamageable, IDamag
     {
         target.TakeDamage(damage, DamageType.Physical);
     }
-} 
+}

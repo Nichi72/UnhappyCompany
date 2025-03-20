@@ -5,7 +5,11 @@ public class ItemsMeleeAttack : Item ,IDamager
 {
     public Animator armAnimator;
     public int damage { get; set; } = 20;
+    public LayerMask DamageLayer { get => damageLayer; set => damageLayer = value; }
+    public float Distance { get => distance; set => distance = value; }
 
+    private LayerMask damageLayer;
+    private float distance;
 
     public override void Use(Player player)
     {
@@ -28,9 +32,7 @@ public class ItemsMeleeAttack : Item ,IDamager
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
 
-        var interactionSystemTemp = MyUtility.ComponentUtils.GetAllComponentsInParents<InteractionSystem>(gameObject,true)[0];
-
-        if (Physics.Raycast(ray, out hit, interactionSystemTemp.raycastMaxDistance, interactionSystemTemp.interactionLayer))
+        if (Physics.Raycast(ray, out hit, distance, damageLayer))
         {
             var damageAbleTemp = hit.transform.GetComponent<IDamageable>();
             if (damageAbleTemp == null)
@@ -68,12 +70,6 @@ public class ItemsMeleeAttack : Item ,IDamager
 
         Rigidbody rd =  GetComponent<Rigidbody>();
         rd.isKinematic = true;
-
-        // Vector3(0.00400000019,0.0949999988,0.108999997)
-        // Vector3(356.488678,264.935211,265.85611)
-        // Vector3(0.135276109,0.223078802,0.24817732)
-
-        
         transform.localPosition = itemData.ItemPosition;
         transform.localRotation = Quaternion.Euler(itemData.ItemRotation);
         transform.localScale = itemData.ItemScale;

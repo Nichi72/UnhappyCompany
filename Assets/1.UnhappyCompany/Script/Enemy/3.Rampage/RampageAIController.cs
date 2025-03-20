@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
+using System.Collections.Generic;
 
 /// <summary>
 /// 렘페이지(Rampage) AI 컨트롤러.
@@ -10,18 +11,15 @@ public class RampageAIController : EnemyAIController<RampageAIData>
 {
     [Header("DEBUG")]
     public string currentStateName;
-    // 내부적으로 사용할 현재 HP
-    // private int currentHP => ;
-    // 패널 체력(상태마다 갱신)
-    public int currentPanelHealth { get; set; }
+    
 
     [Header("Charge State")]
     public bool isCollided = false;      // 돌진 중 충돌 발생 여부
-    private int chargeCount = 0;         // 돌진 횟수
-    private int maxChargeCount = 3;      // 최대 돌진 횟수
+    public int chargeCount = 0;         // 돌진 횟수
     private int consecutiveCollisions = 0;// 연속 충돌 카운트
     private const int MAX_CONSECUTIVE_COLLISIONS = 10; // 최대 연속 충돌 횟수
-
+    [Header("Panel State")]
+    public int currentPanelHealth { get; set; }
     // 쿠션 충돌 시 노출될 패널 수 / 쿠션 없이 충돌 시 노출될 패널 수
     private int cushionPanelCount => enemyData.cushionPanelCount;
     private int noCushionPanelCount => enemyData.noCushionPanelCount;
@@ -34,14 +32,19 @@ public class RampageAIController : EnemyAIController<RampageAIData>
 
     // LineRenderer for visualizing detection
     [SerializeField] private LineRenderer lineRenderer;
+    public List<RampagePanel> panels;
 
     protected override void Start()
     {
         base.Start();
         // 초기 HP 세팅
         Hp = enemyData.maxHP;
+        currentPanelHealth = enemyData.maxPanelHealth;
+        chargeCount = enemyData.maxChargeCount;
         // 초기 상태는 Idle이라고 가정
         ChangeState(new RampageIdleState(this,"Start에서 실행"));
+        ResetPanelHealth(enemyData.cushionPanelCount);
+        InitPannel();
 
         // LineRenderer 초기화
         lineRenderer.positionCount = 0;
@@ -50,6 +53,7 @@ public class RampageAIController : EnemyAIController<RampageAIData>
         lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
         lineRenderer.startColor = Color.green;
         lineRenderer.endColor = Color.green;
+
     }
 
     protected override void Update()
@@ -78,38 +82,7 @@ public class RampageAIController : EnemyAIController<RampageAIData>
         }
     }
 
-    /// <summary>
-    /// LineRenderer를 사용하여 감지 범위 시각화
-    /// </summary>
-    public void UpdateLineRenderer()
-    {
-        Vector3 forward = transform.forward;
-        Vector3 leftBoundary = Quaternion.Euler(0, -enemyData.detectAngle / 2, 0) * forward;
-        Vector3 rightBoundary = Quaternion.Euler(0, enemyData.detectAngle / 2, 0) * forward;
-
-        Vector3[] positions = new Vector3[]
-        {
-            transform.position,
-            transform.position + leftBoundary * enemyData.detectRange,
-            transform.position + rightBoundary * enemyData.detectRange,
-            transform.position
-        };
-
-        lineRenderer.positionCount = positions.Length;
-        lineRenderer.SetPositions(positions);
-
-        // 플레이어 감지 여부에 따라 색상 변경
-        if (CheckPlayerDetected())
-        {
-            lineRenderer.startColor = Color.red;
-            lineRenderer.endColor = Color.red;
-        }
-        else
-        {
-            lineRenderer.startColor = Color.green;
-            lineRenderer.endColor = Color.green;
-        }
-    }
+    
 
     /// <summary>
     /// LineRenderer를 비활성화
@@ -169,7 +142,7 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     /// </summary>
     public void ResetPanelHealth(int panelCount)
     {
-        currentPanelHealth = enemyData.panelHealth;
+        currentPanelHealth = enemyData.maxPanelHealth;
         // 필요하다면 패널 UI 표시, 애니메이션 트리거 등
     }
 
@@ -219,47 +192,6 @@ public class RampageAIController : EnemyAIController<RampageAIData>
         }
     }
 
-    void OnCollisionExit(Collision collision)
-    {
-       
-    }
-
-    /// <summary>
-    /// 돌진 횟수 증가 및 상태 전환 로직
-    /// </summary>
-    public void IncrementChargeCount()
-    {
-        chargeCount++;
-        if (chargeCount >= maxChargeCount)
-        {
-            chargeCount = 0; // 돌진 횟수 초기화
-            ChangeState(new RampageIdleState(this,"IncrementChargeCount에서 실행")); // Idle 상태로 전환
-        }
-        else
-        {
-            ChangeState(new RampagePatrolState(this)); // Patrol 상태로 전환
-        }
-    }
-
-    /// <summary>
-    /// 돌진 코루틴 시작
-    /// </summary>
-    public void StartCoroutine(float waitTime, System.Action onComplete)
-    {
-        StartCoroutine(ChargeCoroutine(waitTime, onComplete));
-    }
-
-    private IEnumerator ChargeCoroutine(float waitTime, System.Action onComplete)
-    {
-        yield return new WaitForSeconds(waitTime);
-        onComplete?.Invoke();
-    }
-    public void CustomStopCoroutine(Coroutine coroutine)
-    {
-        Debug.Log("CustomStopCoroutine ");
-        StopCoroutine(coroutine);
-    }
-
     /// <summary>
     /// 벽에 끼었을 때 처리하는 함수
     /// </summary>
@@ -273,4 +205,47 @@ public class RampageAIController : EnemyAIController<RampageAIData>
         // 충돌 카운트 초기화
         chargeCount = 0;
     }
+
+    private void InitPannel()
+    {
+        foreach (var panel in panels)
+        {
+            panel.gameObject.SetActive(false);
+        }
+    }
+
+    #region == Debug ==
+    /// <summary>
+    /// LineRenderer를 사용하여 감지 범위 시각화
+    /// </summary>
+    public void UpdateLineRenderer()
+    {
+        Vector3 forward = transform.forward;
+        Vector3 leftBoundary = Quaternion.Euler(0, -enemyData.detectAngle / 2, 0) * forward;
+        Vector3 rightBoundary = Quaternion.Euler(0, enemyData.detectAngle / 2, 0) * forward;
+
+        Vector3[] positions = new Vector3[]
+        {
+            transform.position,
+            transform.position + leftBoundary * enemyData.detectRange,
+            transform.position + rightBoundary * enemyData.detectRange,
+            transform.position
+        };
+
+        lineRenderer.positionCount = positions.Length;
+        lineRenderer.SetPositions(positions);
+
+        // 플레이어 감지 여부에 따라 색상 변경
+        if (CheckPlayerDetected())
+        {
+            lineRenderer.startColor = Color.red;
+            lineRenderer.endColor = Color.red;
+        }
+        else
+        {
+            lineRenderer.startColor = Color.green;
+            lineRenderer.endColor = Color.green;
+        }
+    }
+    #endregion
 }

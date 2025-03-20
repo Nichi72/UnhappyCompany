@@ -3,7 +3,7 @@ using MyUtility;
 using Unity.Mathematics;
 using UnityEngine;
 
-public class ItemWaterGun : Item, IDamager, IOverrideUpdate
+public class ItemWaterGun : Item, IDamager, IItemOverrideUpdate
 {
     [ReadOnly] [SerializeField] private Animator playerArmAnimator;
     [SerializeField] private Animator itemAnimator;
@@ -46,6 +46,11 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate
     override public string ToolTipText { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "Item_TT_WaterGun_0"); set => ToolTipText = value; } // [LM]발사
     override public string ToolTipText2 { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "Item_TT_WaterGun_1"); set => ToolTipText2 = value; } // [RM]공기 충전.
     override public string ToolTipText3 { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "Item_TT_WaterGun_2"); set => ToolTipText3 = value; } // [R]물 충전. 
+    public LayerMask DamageLayer { get => damageLayer; set => damageLayer = value; }
+    public float Distance { get => distance; set => distance = value; }
+
+    private LayerMask damageLayer;
+    private float distance;
 
     private bool isLoadWaterStateChecked = false;
 
@@ -142,9 +147,7 @@ public class ItemWaterGun : Item, IDamager, IOverrideUpdate
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
 
-        var interactionSystemTemp = MyUtility.ComponentUtils.GetAllComponentsInParents<InteractionSystem>(gameObject, true)[0];
-
-        if (Physics.Raycast(ray, out hit, interactionSystemTemp.raycastMaxDistance, interactionSystemTemp.interactionLayer))
+        if (Physics.Raycast(ray, out hit, distance, damageLayer))
         {
             var damageAbleTemp = hit.transform.GetComponent<IDamageable>();
             if (damageAbleTemp == null)

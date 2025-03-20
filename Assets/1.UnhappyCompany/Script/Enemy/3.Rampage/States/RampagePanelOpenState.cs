@@ -1,36 +1,40 @@
+using System.Collections;
 using UnityEngine;
 
 public class RampagePanelOpenState : IState
 {
     private RampageAIController controller;
-    private float panelOpenStartTime;
+    // private 
+
     private float panelOpenDuration;
     private int panelCount; // 쿠션 충돌 시 3, 아니면 1
 
-    public RampagePanelOpenState(RampageAIController controller, int panelCount)
+
+    public RampagePanelOpenState(RampageAIController controller, int panelCount, string beforeState)
     {
+        Debug.Log($"{beforeState} 상태에서 패널 열기 시작");
         this.controller = controller;
         this.panelCount = panelCount;
+
+        panelOpenDuration = controller.enemyData.panelOpenTime;
+        controller.chargeCount--;
     }
 
     public void Enter()
     {
         Debug.Log("Rampage: PanelOpen 상태 시작");
-        panelOpenStartTime = Time.time;
-        panelOpenDuration = controller.enemyData.panelOpenTime;
-        // 패널 Health 리셋
-        controller.ResetPanelHealth(panelCount);
-        // TODO: 패널 애니메이션/사운드 재생
+        
+        controller.StartCoroutine(OpenPanelCoroutine());
     }
 
     public void ExecuteMorning()
     {
-        UpdatePanelOpen();
+        // UpdatePanelOpen();
     }
 
     public void ExecuteAfternoon()
     {
-        UpdatePanelOpen();
+        // UpdatePanelOpen();
     }
 
     public void Exit()
@@ -42,18 +46,30 @@ public class RampagePanelOpenState : IState
     public void ExecuteFixedMorning() { }
     public void ExecuteFixedAfternoon() { }
 
-    private void UpdatePanelOpen()
+    private IEnumerator OpenPanelCoroutine()
     {
-        float elapsed = Time.time - panelOpenStartTime;
-        if (controller.currentPanelHealth <= 0)
-        {
-            // 패널 공격이 완료되면 Disabled 상태로 전환
-            controller.ChangeState(new RampageDisabledState(controller));
-        }
-        else if (elapsed > panelOpenDuration)
-        {
-            // panelOpenTime 경과 시 패널 닫힘 → Stunned 상태로 전환
-            controller.ChangeState(new RampageStunnedState(controller));
-        }
+        Debug.Log("OpenPanelCoroutine");
+        RampagePanel panel = OpenPanel();
+        yield return new WaitForSeconds(panelOpenDuration);
+        ClosePanel(panel);
+        controller.ChangeState(new RampageChargeState(controller,"PanelOpenState"));
+    }
+
+    private RampagePanel GetRandomPanel()
+    {
+        int randomIndex = Random.Range(0, controller.panels.Count);
+        return controller.panels[randomIndex];
+    }
+    private RampagePanel OpenPanel()
+    {
+        RampagePanel panel = GetRandomPanel();
+        panel.gameObject.SetActive(true);
+        panel.OpenPanel();
+        return panel;
+    }
+
+    private void ClosePanel(RampagePanel panel)
+    {
+        panel.gameObject.SetActive(false);
     }
 } 

@@ -36,7 +36,7 @@ public class Player : MonoBehaviour , IDamageable
         if(quickSlotSystem.currentItemObject == null) return;
 
 
-        var overrideUpdate = quickSlotSystem.currentItemObject.GetComponent<Item>() as IOverrideUpdate;
+        var overrideUpdate = quickSlotSystem.currentItemObject.GetComponent<Item>() as IItemOverrideUpdate;
         if(overrideUpdate != null)
         {
             overrideUpdate.OverrideUpdate();
