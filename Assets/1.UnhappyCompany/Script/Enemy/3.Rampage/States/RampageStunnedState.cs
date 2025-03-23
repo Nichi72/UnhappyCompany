@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// 사용안함
 public class RampageStunnedState : IState
 {
     private RampageAIController controller;

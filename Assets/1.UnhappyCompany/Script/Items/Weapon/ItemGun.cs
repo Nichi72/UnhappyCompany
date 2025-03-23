@@ -24,8 +24,8 @@ public class ItemGun : Item, IDamager, IItemOverrideUpdate
     public LayerMask DamageLayer { get => damageLayer; set => damageLayer = value; }
     public float Distance { get => distance; set => distance = value; }
 
-    private LayerMask damageLayer;
-    private float distance;
+    [SerializeField] private LayerMask damageLayer;
+    [SerializeField] private float distance;
     public override void Use(Player player)
     {
         // 사용하지 않음.
@@ -80,18 +80,7 @@ public class ItemGun : Item, IDamager, IItemOverrideUpdate
     private void Fire()
     {
         playerArmAnimator.Play(animatorShootName);
-        DamageSystem.RaycastDamage(damage, DamageType.Nomal, 100f, damageLayer,
-         (damage, damageable) => DealDamage(damage, damageable));
-        // Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        // RaycastHit hit;
-        // if (Physics.Raycast(ray, out hit, 100f))
-        // {
-        //     IDamageable damageable = hit.collider.GetComponent<IDamageable>();
-        //     if (damageable != null)
-        //     {
-                
-        //     }
-        // }
+        DamageSystem.RaycastDamage(damage, 100f, damageLayer, DealDamage);
     }
 
     public void DealDamage(int damage, IDamageable target)

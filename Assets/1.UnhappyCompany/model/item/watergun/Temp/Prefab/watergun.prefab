@@ -284,6 +284,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemData: {fileID: 11400000, guid: 9f847cce33a187346b424ae82b0c756a, type: 2}
+  uniqueInstanceID: 
+  useItemDataPosition: 0
+  useItemDataRotation: 0
   playerArmAnimator: {fileID: 0}
   itemAnimator: {fileID: 2162263216726540946}
   handPivot: {fileID: 0}
@@ -298,6 +301,10 @@ MonoBehaviour:
   waterGunPosition: {x: 0.902, y: 0.2092999, z: 0.72}
   waterGunRotation: {x: 0, y: 0, z: 0}
   waterGunScale: {x: 0.5545644, y: 0.5545646, z: 0.5545644}
+  damageLayer:
+    serializedVersion: 2
+    m_Bits: 264
+  distance: 10
 --- !u!65 &7991767863810571078
 BoxCollider:
   m_ObjectHideFlags: 0

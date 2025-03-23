@@ -49,8 +49,8 @@ public class ItemWaterGun : Item, IDamager, IItemOverrideUpdate
     public LayerMask DamageLayer { get => damageLayer; set => damageLayer = value; }
     public float Distance { get => distance; set => distance = value; }
 
-    private LayerMask damageLayer;
-    private float distance;
+    [SerializeField] private LayerMask damageLayer;
+    [SerializeField] private float distance;
 
     private bool isLoadWaterStateChecked = false;
 
@@ -144,18 +144,7 @@ public class ItemWaterGun : Item, IDamager, IItemOverrideUpdate
 
     public void Shoot()
     {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-
-        if (Physics.Raycast(ray, out hit, distance, damageLayer))
-        {
-            var damageAbleTemp = hit.transform.GetComponent<IDamageable>();
-            if (damageAbleTemp == null)
-            {
-                return;
-            }
-            DealDamage(damage, damageAbleTemp);
-        }
+        DamageSystem.RaycastDamage(damage, 100f, damageLayer, DealDamage);
     }
 
     public void DealDamage(int damage, IDamageable target)

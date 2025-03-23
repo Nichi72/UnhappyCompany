@@ -52,7 +52,8 @@ public class RampagePanelOpenState : IState
         RampagePanel panel = OpenPanel();
         yield return new WaitForSeconds(panelOpenDuration);
         ClosePanel(panel);
-        controller.ChangeState(new RampageChargeState(controller,"PanelOpenState"));
+
+        controller.ChangeState(new RampageChargeState(controller, "PanelOpenState"));
     }
 
     private RampagePanel GetRandomPanel()

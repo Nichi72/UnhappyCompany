@@ -23,6 +23,7 @@ public class RampageExplodeState : IState
 
     public void ExecuteAfternoon()
     {
+        
     }
 
     public void Exit()
@@ -35,24 +36,7 @@ public class RampageExplodeState : IState
 
     private void DoExplode()
     {
-        if (exploded) return;
-        exploded = true;
-
-        // 폭발 범위 내 대상에게 대미지
-        Collider[] hitColliders = Physics.OverlapSphere(controller.transform.position, controller.ExplodeRadius);
-        foreach (var hit in hitColliders)
-        {
-            // TODO: 플레이어, 오브젝트 등에 폭발 대미지
-            IDamageable damageable = hit.GetComponent<IDamageable>();
-            if (damageable != null)
-            {
-                damageable.TakeDamage(controller.ExplodeDamage, DamageType.Nomal);
-            }
-        }
-
-        // 폭발 이펙트, 사운드 등
-        // TODO: Instantiate(폭발 이펙트), 사운드 재생
-
+      
         // 자폭 후 곧바로 제거
         GameObject.Destroy(controller.gameObject);
     }

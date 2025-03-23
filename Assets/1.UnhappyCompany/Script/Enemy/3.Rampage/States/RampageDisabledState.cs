@@ -38,11 +38,6 @@ public class RampageDisabledState : IState
 
     private void UpdateDisabled()
     {
-        // 필요에 따라 영구 방치도 가능, 여기서는 5초 후 제거 예시
-        if (Time.time - disableStartTime > removeDelay)
-        {
-            // AI 제거
-            GameObject.Destroy(controller.gameObject);
-        }
+        Debug.Log("해체 작업 처리");
     }
 } 

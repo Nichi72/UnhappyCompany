@@ -63,7 +63,16 @@ public class RampageIdleState : IState
 
         if (distance <= controller.enemyData.detectRange && angle <= controller.enemyData.detectAngle)
         {
-            return true;
+            // 레이캐스트를 사용하여 시야에 장애물이 있는지 확인
+            RaycastHit hit;
+            if (Physics.Raycast(controller.transform.position, toPlayer.normalized, out hit, distance))
+            {
+                // 레이캐스트가 플레이어에 닿았는지 확인
+                if (hit.transform == controller.player)
+                {
+                    return true;
+                }
+            }
         }
         return false;
     }

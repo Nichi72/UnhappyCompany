@@ -7,10 +7,14 @@ using System.Collections;
 /// </summary>
 public class MooAIController : EnemyAIController<MooAIData>
 {
+    [Header("Debug")]
+    [ReadOnly] [SerializeField] public string CurrentStateName = "";
     // 점액 배출 간격
     public float slimeEmitInterval = 10f;
     private float lastSlimeEmitTime;
     public Animator animator;
+    [Header("Wall Check")]
+    public float wallCheckDistance = 10f;
 
     // 애니메이션 이름 상수
     public readonly string idleAnimationName = "Moo_Idle";
@@ -18,6 +22,7 @@ public class MooAIController : EnemyAIController<MooAIData>
     public readonly string hitReactionAnimationName = "Moo_HitReaction";
     public readonly string bumpAnimationName = "Moo_Bump";
     public readonly string cryAnimationName = "Moo_Cry";
+    [ReadOnly] [SerializeField] private float animatorSpeed = 2f;
 
     // 이동 및 스트레스 관련 변수
     public float moveSpeed = 2f;
@@ -32,6 +37,8 @@ public class MooAIController : EnemyAIController<MooAIData>
     // 데미지 관련 변수
     public int damageAmount = 10; // 플레이어에게 줄 데미지 양
 
+    public CharacterController characterController;
+
     /// <summary>
     /// 초기화 메서드입니다.
     /// </summary>
@@ -42,7 +49,14 @@ public class MooAIController : EnemyAIController<MooAIData>
         lastSlimeEmitTime = Time.time;
         agent = GetComponent<NavMeshAgent>();
         agent.enabled = false; // 초기에는 NavMeshAgent를 사용하지 않음
+        agent.speed = moveSpeed;
         ChangeDirection();
+        if(characterController == null)
+        {
+            characterController = GetComponent<CharacterController>();
+        }
+        StartCoroutine(SlimeEmitRoutine());
+        StartCoroutine(MovementRoutine());
     }
 
     /// <summary>
@@ -51,45 +65,8 @@ public class MooAIController : EnemyAIController<MooAIData>
     protected override void Update()
     {
         base.Update();
-        if (Time.time - lastSlimeEmitTime > slimeEmitInterval)
-        {
-            ChangeState(new MooSlimeEmitState(this));
-            lastSlimeEmitTime = Time.time;
-        }
-
         UpdateAnimatorSpeed();
-
-        if (!isStressed && !isBumping)
-        {
-            // 무작위 방향으로 이동
-            transform.Translate(moveDirection * moveSpeed * Time.deltaTime);
-
-            // 이동 방향으로 회전
-            RotateTowardsMoveDirection();
-
-            // 벽에 부딪혔을 때 스트레스 증가
-            RaycastHit hit;
-            if (Physics.Raycast(transform.position, moveDirection, out hit, 0.5f))
-            {
-                stress += stressIncreaseAmount;
-                moveDirection = Vector3.Reflect(moveDirection, hit.normal);
-                StartCoroutine(HandleBump());
-            }
-
-            // 스트레스 임계치 도달 시 스트레스 상태로 전환
-            if (stress >= stressThreshold)
-            {
-                EnterStressState();
-            }
-        }
-        else if (isStressed)
-        {
-            // 스트레스 상태에서 목적지에 도달하면 스트레스 상태 종료
-            if (!agent.pathPending && agent.remainingDistance < 0.5f)
-            {
-                ExitStressState();
-            }
-        }
+        CurrentStateName = currentState.GetType().Name;
     }
 
     /// <summary>
@@ -97,8 +74,9 @@ public class MooAIController : EnemyAIController<MooAIData>
     /// </summary>
     private void UpdateAnimatorSpeed()
     {
-        float speed = agent.velocity.magnitude / agent.speed; // 현재 속도를 0~1 범위로 정규화
-        animator.SetFloat("Speed", speed);
+        // Debug.Log($"characterController.velocity.magnitude : {characterController.velocity.magnitude}, moveSpeed : {moveSpeed}");
+        animatorSpeed = characterController.velocity.magnitude / moveSpeed; // 현재 속도를 0~1 범위로 정규화
+        animator.SetFloat("Speed", animatorSpeed);
     }
 
     /// <summary>
@@ -207,5 +185,60 @@ public class MooAIController : EnemyAIController<MooAIData>
     public override void DealDamage(int damage, IDamageable target)
     {
         target.TakeDamage(damage, DamageType.Physical);
+    }
+
+    // 새로운 코루틴: 점액 배출 처리
+    private IEnumerator SlimeEmitRoutine()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(slimeEmitInterval);
+            ChangeState(new MooSlimeEmitState(this));
+        }
+    }
+
+    // 새로운 코루틴: 이동 및 스트레스 처리
+    private IEnumerator MovementRoutine()
+    {
+        while (true)
+        {
+            if (!isStressed && !isBumping)
+            {
+                characterController.Move(moveDirection * moveSpeed * Time.deltaTime);
+
+                // 이동 방향으로 회전
+                RotateTowardsMoveDirection();
+
+                // 벽에 부딪혔을 때 스트레스 증가
+                RaycastHit hit;
+                if (Physics.Raycast(transform.position, moveDirection, out hit, wallCheckDistance))
+                {
+                    if(hit.collider.gameObject.layer == LayerMask.NameToLayer("Wall"))
+                    {
+                        stress += stressIncreaseAmount;
+                        moveDirection = Vector3.Reflect(moveDirection, hit.normal);
+                        StartCoroutine(HandleBump());
+                    }
+                }
+
+                // 레이캐스트를 시각적으로 표현
+                Debug.DrawRay(transform.position, moveDirection * wallCheckDistance, Color.red, 0.1f);
+
+                // 스트레스 임계치 도달 시 스트레스 상태로 전환
+                if (stress >= stressThreshold)
+                {
+                    EnterStressState();
+                }
+            }
+            else if (isStressed)
+            {
+                // 스트레스 상태에서 목적지에 도달하면 스트레스 상태 종료
+                if (!agent.pathPending && agent.remainingDistance < 0.5f)
+                {
+                    ExitStressState();
+                }
+            }
+            yield return null;
+        }
     }
 } 

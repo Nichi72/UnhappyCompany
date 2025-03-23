@@ -6,4 +6,6 @@ public class MooAIData : BaseEnemyAIData
     [Header("Moo Settings")]
     public float slimeDuration = 5f;
     public GameObject slimePrefab;
+
+    public float checkDistance = 10f;
 } 

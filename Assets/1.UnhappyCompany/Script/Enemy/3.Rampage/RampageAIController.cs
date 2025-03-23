@@ -19,7 +19,8 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     private int consecutiveCollisions = 0;// 연속 충돌 카운트
     private const int MAX_CONSECUTIVE_COLLISIONS = 10; // 최대 연속 충돌 횟수
     [Header("Panel State")]
-    public int currentPanelHealth { get; set; }
+    [SerializeField] private int currentPanelHealth;
+    public int CurrentPanelHealth { get => currentPanelHealth; set => currentPanelHealth = value; }
     // 쿠션 충돌 시 노출될 패널 수 / 쿠션 없이 충돌 시 노출될 패널 수
     private int cushionPanelCount => enemyData.cushionPanelCount;
     private int noCushionPanelCount => enemyData.noCushionPanelCount;
@@ -39,7 +40,7 @@ public class RampageAIController : EnemyAIController<RampageAIData>
         base.Start();
         // 초기 HP 세팅
         Hp = enemyData.maxHP;
-        currentPanelHealth = enemyData.maxPanelHealth;
+        CurrentPanelHealth = enemyData.maxPanelHealth;
         chargeCount = enemyData.maxChargeCount;
         // 초기 상태는 Idle이라고 가정
         ChangeState(new RampageIdleState(this,"Start에서 실행"));
@@ -53,7 +54,6 @@ public class RampageAIController : EnemyAIController<RampageAIData>
         lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
         lineRenderer.startColor = Color.green;
         lineRenderer.endColor = Color.green;
-
     }
 
     protected override void Update()
@@ -61,6 +61,12 @@ public class RampageAIController : EnemyAIController<RampageAIData>
         base.Update();
         UpdateLineRenderer();
         currentStateName = currentState.GetType().Name;
+
+        // currentPanelHealth가 0이 되면 RampageDisabledState로 전환
+        if (CurrentPanelHealth <= 0 && !(currentState is RampageDisabledState))
+        {
+            ChangeState(new RampageDisabledState(this));
+        }
     }
 
     void LateUpdate()
@@ -112,18 +118,9 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     /// </summary>
     public override void TakeDamage(int damage, DamageType damageType)
     {
-        Hp -= damage;
-        if (Hp <= 0)
-        {
-            // HP가 0 이하로 떨어졌다면 자폭으로 전환
-            ChangeState(new RampageExplodeState(this));
-        }
-        else
-        {
-            // 패널이 열려있다면 panelHealth에 영향이 있을 수도 있으니
-            // RampagePanelOpenState에서 takeDamage를 확인하도록 구성해도 됩니다.
-            // 상황에 따라 원하는 로직 추가
-        }
+        // Rampage는 기본적으로 무적입니다. 돌진에 의해 벽에 박았을 때만 데미지를 입습니다.
+        // 따라서 플레이어에 의해 데미지는 입지 않습니다. 그래서 데미지 계산을 하지않습니다.
+        // 
     }
 
     /// <summary>
@@ -142,7 +139,7 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     /// </summary>
     public void ResetPanelHealth(int panelCount)
     {
-        currentPanelHealth = enemyData.maxPanelHealth;
+        CurrentPanelHealth = enemyData.maxPanelHealth;
         // 필요하다면 패널 UI 표시, 애니메이션 트리거 등
     }
 
@@ -191,20 +188,7 @@ public class RampageAIController : EnemyAIController<RampageAIData>
             }
         }
     }
-
-    /// <summary>
-    /// 벽에 끼었을 때 처리하는 함수
-    /// </summary>
-    private void HandleStuck()
-    {
-        Debug.Log("벽에 끼었습니다! 상태를 초기화합니다.");
-        // 현재 위치에서 뒤로 약간 이동
-        // transform.position -= transform.forward * 2f;
-        // Idle 상태로 강제 전환
-        ChangeState(new RampageIdleState(this,"HandleStuck에서 실행"));
-        // 충돌 카운트 초기화
-        chargeCount = 0;
-    }
+    
 
     private void InitPannel()
     {

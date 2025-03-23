@@ -8,8 +8,8 @@ public class ItemsMeleeAttack : Item ,IDamager
     public LayerMask DamageLayer { get => damageLayer; set => damageLayer = value; }
     public float Distance { get => distance; set => distance = value; }
 
-    private LayerMask damageLayer;
-    private float distance;
+    [SerializeField] private LayerMask damageLayer;
+    [SerializeField] private float distance;
 
     public override void Use(Player player)
     {
@@ -29,18 +29,7 @@ public class ItemsMeleeAttack : Item ,IDamager
 
     public void Attack()
     {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-
-        if (Physics.Raycast(ray, out hit, distance, damageLayer))
-        {
-            var damageAbleTemp = hit.transform.GetComponent<IDamageable>();
-            if (damageAbleTemp == null)
-            {
-                return;
-            }
-            DealDamage(damage, damageAbleTemp);
-        }
+        DamageSystem.RaycastDamage(damage, Distance, DamageLayer, DealDamage);
     }
 
     public void DealDamage(int damage, IDamageable target) 

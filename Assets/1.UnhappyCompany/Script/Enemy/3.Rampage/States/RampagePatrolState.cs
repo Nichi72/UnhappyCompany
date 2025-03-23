@@ -13,7 +13,7 @@ public class RampagePatrolState : IState
     {
         this.controller = controller;
         agent = controller.agent;
-        patrolSpeed = controller.enemyData.movementSpeed;
+        patrolSpeed = controller.enemyData.moveSpeed;
     }
 
     public void Enter()

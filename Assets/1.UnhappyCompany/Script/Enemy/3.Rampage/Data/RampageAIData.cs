@@ -5,7 +5,6 @@ public class RampageAIData : BaseEnemyAIData
 {
     [Header("Rampage Settings")]
     public int maxHP = 50;          // 기본 HP
-    public float movementSpeed = 2f;  // 순찰 모드 속도
     public float chargeSpeed = 8f;    // 돌진 모드 속도
 
     [Header("Detection")]
