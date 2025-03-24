@@ -8,7 +8,7 @@ public class OtherGoundChecker : MonoBehaviour
     private Rigidbody rb;
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
@@ -26,8 +26,10 @@ public class OtherGoundChecker : MonoBehaviour
         // rb.linearVelocity = Vector3.zero;
         // rb.angularVelocity = Vector3.zero;
     }
-    void OnCollisionStay(Collision other)
+
+    void OnTriggerStay(Collider other)
     {
+          //Debug.Log("OnCollisionStay");
         if(!RoomGenerator.instance.isGenerating) // 방 생성 중이 아니면 체크 안함
         {
             return;
@@ -45,6 +47,7 @@ public class OtherGoundChecker : MonoBehaviour
         }
         flagCheck = true;
     }
+    
     private bool IsSameParent(GameObject other)
     {
         Transform otherParent = other.transform;
@@ -100,4 +103,15 @@ public class OtherGoundChecker : MonoBehaviour
         EditorUtility.SetDirty(this);
 #endif
     }
+
+    #if UNITY_EDITOR
+    void OnEnable()
+    {
+        // 에디터에서 프리팹 연결 해제
+        if (PrefabUtility.IsPartOfPrefabInstance(gameObject))
+        {
+            PrefabUtility.UnpackPrefabInstance(gameObject, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+        }
+    }
+    #endif
 }
