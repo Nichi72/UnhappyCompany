@@ -84,84 +84,88 @@ public class RoomNode : MonoBehaviour
     /// <summary>
     /// 방의 간선을 정렬하여 먼 문을 선택할지 정렬된 문을 선택할지 확률에 의해 결정
     /// </summary>
-    public void InitSelectedDoors()
+    public void InitSelectedDoors() 
     {
-        if(doorList.Count == 1)
+        // 중복 호출이 가능하다면 누적되지 않도록 매번 초기화
+        SelectedDoors.Clear();
+
+        // doorList를 복사한 뒤 사용하지 않을 문은 제외
+        List<DoorEdge> sortedList = new List<DoorEdge>(doorList);
+        sortedList.Remove(connectToParentDoor);                // 부모와 연결된 문 제거
+        sortedList.RemoveAll(door => !door.gameObject.activeSelf); // 비활성 문 제거
+        // 만약 이미 연결된 문을 제외하려면 아래 주석을 해제하세요
+        // sortedList.RemoveAll(door => door.toRoomNode != null);
+
+        // 남은 문이 없다면 그냥 종료
+        if (sortedList.Count == 0) 
         {
-            SelectedDoors.Add(doorList[0]);
             return;
         }
-        List<DoorEdge> SortedList = new List<DoorEdge>(doorList);
 
-        // SelectedDoors에 parentRoom이 들어있으면 삭제
-        SortedList.Remove(connectToParentDoor);
+        // 남은 문이 하나뿐이면 그대로 선택 후 종료
+        if (sortedList.Count == 1)
+        {
+            SelectedDoors.Add(sortedList[0]);
+            return;
+        }
 
-        // 연결된 간선 제거 후 정렬
-        SortedList.Sort((a, b) => {
+        // 가장 먼 문이 앞으로 오도록 내림차순 정렬
+        sortedList.Sort((a, b) =>
+        {
             float distA = Vector3.Distance(RoomGenerator.instance.startRoomNode.transform.position, a.transform.position);
             float distB = Vector3.Distance(RoomGenerator.instance.startRoomNode.transform.position, b.transform.position);
-            return distB.CompareTo(distA); // 내림차순 정렬 (먼 거리가 앞으로)
+            return distB.CompareTo(distA);
         });
-    
-        // 확률에 따라서 멀리 있는 Door에 방을 생성할지 정렬 
-        float randomValue = Random.Range(0f, 1f);
-        float multipleDoorRandomValue = Random.Range(0f, 1f);
 
-        // 먼 문을 선택할 확률
-        if(randomValue < RoomGenerator.instance.farRoomProbability) // 먼 문을 선택 
+        // 확률 계산을 좀 더 단순화
+        bool isFarDoorArea = (Random.value < RoomGenerator.instance.farRoomProbability);
+        bool isMultiDoor    = (Random.value < multipleDoorProbability);
+
+        Debug.Log($"isFarDoorArea: {isFarDoorArea}, isMultiDoor: {isMultiDoor}");
+
+        if (isFarDoorArea)
         {
-            Debug.Log($"먼 문이 선택됨 - randomValue ({randomValue}) < farRoomProbability({RoomGenerator.instance.farRoomProbability})");
-            // 생성될 문이 여러개일 확률
-            if(multipleDoorRandomValue < multipleDoorProbability)
+            // '먼 문'을 우선해서 선택
+            if (isMultiDoor && sortedList.Count > 1)
             {
-                // 여러개의 방이 생성됨.
-                int randomCount = Random.Range(1, SortedList.Count);
-                if(SortedList.Count <= 1)
-                {
-                   SelectedDoors.Add(SortedList[0]);
-                }
-                else
-                {
-                   SelectedDoors.Add(SortedList[0]);
-                   SelectedDoors.AddRange(SortedList.GetRange(1, randomCount));
-                }
+                // 여러 문을 사용할 확률일 때,
+                // 일단 첫 번째 문(가장 먼 문)을 넣고,
+                // 뒤에서부터 랜덤 개수만큼 추가
+                int randomCount = Random.Range(1, sortedList.Count);
+                SelectedDoors.Add(sortedList[0]); // 가장 먼 문
+                SelectedDoors.AddRange(sortedList.GetRange(1, randomCount));
             }
             else
             {
-                SelectedDoors.Add(SortedList[0]);
+                // '먼 문' 중에서 하나만 선택
+                SelectedDoors.Add(sortedList[0]);
             }
         }
         else
         {
-            Debug.Log("먼 문을 제외한 문이 선택됨");
-            if(multipleDoorRandomValue < multipleDoorProbability)
+            // '그 외(가까운 쪽 포함)' 문을 우선해서 선택
+            if (isMultiDoor && sortedList.Count > 1)
             {
-                if(SortedList.Count <= 1)
-                {
-                    SelectedDoors.Add(SortedList[0]);   
-                }
-                else
-                {
-                    // 여러개의 방이 생성됨.
-                    int randomCount = Random.Range(1, SortedList.Count);
-                    SelectedDoors.AddRange(SortedList.GetRange(1, randomCount));
-                }
+                // 먼 문(0번을 제외한) 중에서 여러 개
+                int randomCount = Random.Range(1, sortedList.Count);
+                SelectedDoors.AddRange(sortedList.GetRange(1, randomCount));
             }
             else
             {
-                // 먼 문을 제외한 문 중에서 랜덤으로 선택
-                if(SortedList.Count <= 1) // 근데 이미 먼 문을 제외한 문이 하나밖에 없으면 먼 문을 선택
+                // 여러 문을 쓰지 않을 때
+                // 예: 가장 가까운 문을 하나만 선택하고 싶은 경우
+                // sortedList[sortedList.Count - 1]가 가장 가까운 문
+                if (sortedList.Count >= 2)
                 {
-                    SelectedDoors.Add(SortedList[0]);
+                    SelectedDoors.Add(sortedList[sortedList.Count - 1]);
                 }
                 else
                 {
-                    SelectedDoors.Add(SortedList[Random.Range(1, SortedList.Count)]);
+                    // 사실상 2개 이하인 경우에는 0번(제일 먼 문)이라도 선택
+                    SelectedDoors.Add(sortedList[0]);
                 }
             }
         }
-
-        
     }
    
 
@@ -178,28 +182,51 @@ public class RoomNode : MonoBehaviour
         doorList.Clear();
         
         // Room의 모든 자식 오브젝트에서 Door 컴포넌트 검색
-        foreach (Transform child in transform)
+        Queue<Transform> queue = new Queue<Transform>();
+        queue.Enqueue(transform);
+
+        while (queue.Count > 0)
         {
-            DoorEdge door = child.GetComponent<DoorEdge>();
-            if (door != null)
+            Transform current = queue.Dequeue();
+            foreach (Transform child in current)
             {
-                doorList.Add(door);
+                DoorEdge door = child.GetComponent<DoorEdge>();
+                if (door != null)
+                {
+                    doorList.Add(door);
+                }
+                queue.Enqueue(child);
             }
         }
 
-#if UNITY_EDITOR
+        #if UNITY_EDITOR
         EditorUtility.SetDirty(this);
-#endif
+        #endif
    }
 
    [ContextMenu("SetRoomGeneratorZones")]
    public void SetRoomGeneratorZones()
    {
-        var temp = GetComponent<OtherGoundChecker>();
-        if(temp != null)
+        roomGeneratorZones.Clear();
+        Queue<Transform> queue = new Queue<Transform>();
+        queue.Enqueue(transform);
+
+        while (queue.Count > 0)
         {
-            roomGeneratorZones.Add(temp);
+            Transform current = queue.Dequeue();
+            OtherGoundChecker checker = current.GetComponent<OtherGoundChecker>();
+            if (checker != null)
+            {
+                roomGeneratorZones.Add(checker);
+            }
+            foreach (Transform child in current)
+            {
+                queue.Enqueue(child);
+            }
         }
+        #if UNITY_EDITOR
+        EditorUtility.SetDirty(this);
+        #endif
    }
 
     public List<DoorEdge> GetUnconnectedDoors()
@@ -209,6 +236,7 @@ public class RoomNode : MonoBehaviour
         {
             if (door.toRoomNode == null)
             {
+                Debug.Log($"RoomNode : {name} 에 있는 Unconnected Door : {door.name}");
                 unconnectedDoors.Add(door);
             }
         }
