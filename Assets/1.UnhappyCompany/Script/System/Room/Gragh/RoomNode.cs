@@ -126,6 +126,7 @@ public class RoomNode : MonoBehaviour
         if (isFarDoorArea)
         {
             // '먼 문'을 우선해서 선택
+            Debug.Log("먼 문을 우선해서 선택");
             if (isMultiDoor && sortedList.Count > 1)
             {
                 // 여러 문을 사용할 확률일 때,
@@ -144,6 +145,7 @@ public class RoomNode : MonoBehaviour
         else
         {
             // '그 외(가까운 쪽 포함)' 문을 우선해서 선택
+            Debug.Log("가까운 문을 우선해서 선택");
             if (isMultiDoor && sortedList.Count > 1)
             {
                 // 먼 문(0번을 제외한) 중에서 여러 개
