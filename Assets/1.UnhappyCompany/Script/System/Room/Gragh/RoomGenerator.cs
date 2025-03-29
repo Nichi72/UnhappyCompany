@@ -58,7 +58,7 @@ public class RoomGenerator : MonoBehaviour
     }   
     void Start()
     {
-        GenerateRoomFirstTime();
+        StartCoroutine(GenerateRoomFirstTime());
     }
 
     // Update is called once per frame
@@ -67,7 +67,7 @@ public class RoomGenerator : MonoBehaviour
        
     }
    
-    private void GenerateRoomFirstTime()
+    private IEnumerator GenerateRoomFirstTime()
     {
         foreach(var startDoor in doorGenerationSettings)
         {
@@ -76,6 +76,20 @@ public class RoomGenerator : MonoBehaviour
                 // 일단 방 생성
                 var newRoom = Instantiate(GetRoomNodePrefab(RoomNode.RoomType.KoreaRoom));
                 newRoom.depth = 0; // 시작 방의 깊이를 0으로 설정
+                
+                // 겹침 체크 전에 대기
+                yield return new WaitForFixedUpdate();
+                yield return new WaitForSeconds(createRoomTime);
+                
+                // 겹침 체크
+                if (newRoom.isOverlap)
+                {
+                    Debug.LogWarning("초기 방 생성 중 겹침이 발생했습니다. 다음 문으로 넘어갑니다.");
+                    Destroy(newRoom.gameObject);
+                    continue;
+                }
+                yield return new WaitForFixedUpdate();
+                yield return new WaitForSeconds(createRoomTime);
                 // 부모 노드를 할당 해주고 부모와 연결 할 문을 선택
                 newRoom.ConnectToParentRoom(startRoomNode);
                 startRoomNode.ConnectToChildRoom(newRoom);
@@ -133,6 +147,7 @@ public class RoomGenerator : MonoBehaviour
 
         Queue<DoorEdge> doorQueue = new Queue<DoorEdge>();
         Queue<RoomNode> roomQueue = new Queue<RoomNode>();
+        List<RoomNode> createdRooms = new List<RoomNode>(); // 이번 생성에서 추가된 방들
 
         // 시작 방의 문을 큐에 추가
         foreach (var door in startRoomNode.GetUnconnectedDoors())
@@ -144,73 +159,119 @@ public class RoomGenerator : MonoBehaviour
         roomQueue.Enqueue(startRoomNode);
 
         int currentRoomCount = 0;
+        int totalAttempts = 0; // 전체 시도 횟수 (무한 루프 방지용)
+        int maxTotalAttempts = maxRoomCount * 3; // 최대 전체 시도 횟수
 
-        while (doorQueue.Count > 0 && currentRoomCount < maxRoomCount)
+        // doorQueue가 비어있어도 목표 방 개수에 도달하지 못했다면 계속 시도
+        while (currentRoomCount < maxRoomCount && totalAttempts < maxTotalAttempts)
         {
-            int currentDoorCount = doorQueue.Count;
-
-            for (int i = 0; i < currentDoorCount; i++)
+            totalAttempts++;
+            
+            // 문 큐가 비었는데 방 개수가 부족하면 모든 방의 연결되지 않은 문을 다시 수집
+            if (doorQueue.Count == 0)
             {
-                DoorEdge beforeDoor = doorQueue.Dequeue();
-                RoomNode beforeRoom = beforeDoor.formRoomNode;
-
-                // 새로 추가된 코드 시작
-                bool roomCreated = false;
+                Debug.Log("문 큐가 비었습니다. 모든 방의 연결되지 않은 문을 다시 수집합니다.");
                 
-                int tryCount = 0;
-
-                while (!roomCreated && tryCount < maxTryCount)
+                // 이미 생성된 모든 방들(시작 방 + 새로 생성된 방들)에서 연결되지 않은 문 수집
+                foreach (var room in roomQueue)
                 {
-                    // 새 RoomNode 생성 및 연결
-                    RoomNode newRoom = Instantiate(GetRoomNodePrefab(roomType));
-                    newRoom.ConnectToParentRoom(beforeRoom);
-                    DoorEdge childDoor = beforeRoom.ConnectToChildRoom(newRoom);
-                    currentRoomCount++;
-                    ConnectRooms(newRoom.gameObject, childDoor, newRoom.connectToParentDoor);
-
-                    yield return new WaitForFixedUpdate();
-                    yield return new WaitForSeconds(createRoomTime);
-
-                    if (!newRoom.isOverlap)
+                    var unusedDoors = room.GetUnconnectedDoors();
+                    foreach (var door in unusedDoors)
                     {
-                        roomQueue.Enqueue(newRoom);
-
-                        // 새롭게 생성된 방의 문을 큐에 추가
-                        foreach (var door in newRoom.GetUnconnectedDoors())
-                        {
-                            doorQueue.Enqueue(door);
-                        }
-
-                        roomCreated = true; // 겹치지 않았으므로 방 생성 성공
-                    }
-                    else
-                    {
-                        // 겹쳤다면 방 연결 취소 후 방 제거
-                        Debug.Log($"겹쳤다면 방 연결 취소 후 방 제거 {tryCount} 번째 시도");
-                        CancelConnectRooms(beforeDoor, childDoor);
-                        Destroy(newRoom.gameObject);
-                        currentRoomCount--;
-
-                        tryCount++;
+                        doorQueue.Enqueue(door);
                     }
                 }
-                // 새로 추가된 코드 끝
+                
+                // 만약 문이 없다면 더 이상 생성 불가능
+                if (doorQueue.Count == 0)
+                {
+                    Debug.LogWarning($"더 이상 사용 가능한 문이 없습니다. 방 {currentRoomCount}/{maxRoomCount}개만 생성했습니다.");
+                    break;
+                }
+                
+                yield return new WaitForSeconds(0.5f);
             }
-            yield return new WaitForSeconds(createRoomTime);
+
+            DoorEdge beforeDoor = doorQueue.Dequeue();
+            RoomNode beforeRoom = beforeDoor.formRoomNode;
+
+            bool roomCreated = false;
+            int tryCount = 0;
+
+            while (!roomCreated && tryCount < maxTryCount)
+            {
+                // 새 RoomNode 생성 및 연결
+                RoomNode newRoom = Instantiate(GetRoomNodePrefab(roomType));
+                newRoom.ConnectToParentRoom(beforeRoom);
+                DoorEdge childDoor = beforeRoom.ConnectToChildRoom(newRoom);
+                
+                ConnectRooms(newRoom.gameObject, childDoor, newRoom.connectToParentDoor);
+
+                yield return new WaitForFixedUpdate();
+                yield return new WaitForSeconds(createRoomTime);
+
+                if (!newRoom.isOverlap)
+                {
+                    roomQueue.Enqueue(newRoom);
+                    createdRooms.Add(newRoom); // 생성된 방 추가
+                    currentRoomCount++;
+                    
+                    // 새롭게 생성된 방의 문을 큐에 추가
+                    foreach (var door in newRoom.GetUnconnectedDoors())
+                    {
+                        doorQueue.Enqueue(door);
+                    }
+
+                    roomCreated = true; // 겹치지 않았으므로 방 생성 성공
+                    Debug.Log($"방 생성 성공: {currentRoomCount}/{maxRoomCount}");
+                }
+                else
+                {
+                    // 겹쳤다면 방 연결 취소 후 방 제거
+                    Debug.Log($"겹쳤다면 방 연결 취소 후 방 제거 {tryCount + 1} 번째 시도");
+                    CancelConnectRooms(beforeDoor, childDoor);
+                    Destroy(newRoom.gameObject);
+
+                    tryCount++;
+                }
+            }
+            
+            // 최대 시도 횟수를 초과했다면, 해당 문을 다시 큐에 넣을지 결정
+            if (!roomCreated && tryCount >= maxTryCount)
+            {
+                Debug.Log($"문 {beforeDoor.name}에서 최대 시도 횟수를 초과했습니다.");
+                
+                // 50% 확률로 나중에 다시 시도하기 위해 큐의 맨 뒤에 추가
+                // 이를 통해 다른 방향으로 방을 생성한 후 다시 시도할 기회를 줌
+                if (Random.value < 0.5f && doorQueue.Count > 0) 
+                {
+                    Debug.Log("해당 문을 나중에 다시 시도하기 위해 큐에 다시 추가합니다.");
+                    doorQueue.Enqueue(beforeDoor);
+                }
+            }
+            
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        // 목표 방 개수에 도달했는지 확인
+        if (currentRoomCount < maxRoomCount)
+        {
+            Debug.LogWarning($"목표 방 개수({maxRoomCount})에 도달하지 못했습니다. 현재 생성된 방: {currentRoomCount}개");
+        }
+        else
+        {
+            Debug.Log($"목표 방 개수({maxRoomCount})에 성공적으로 도달했습니다!");
         }
 
         // 문이 남아 있는 방만 roomList에 추가
         foreach (var room in roomQueue)
         {
-            if (room.GetUnconnectedDoors().Count > 0)
+            if (room.GetUnconnectedDoors().Count > 0 && !roomList.Contains(room))
             {
                 roomList.Add(room);
             }
-            else
-            {
-                roomList.Remove(room);
-            }
         }
+        
         isGenerating = false;
     }
     private void CancelConnectRooms(DoorEdge parentDoor, DoorEdge childDoor)
@@ -343,5 +404,12 @@ public class RoomGenerator : MonoBehaviour
         return RoomRandomGenerationTemp[RoomRandomGenerationTemp.Count-1].room;
     }
   
+    [ContextMenu("ExpandRoomForTest")]
+    public void ExpandRoomForTest()
+    {
+        ExpandRoom();
+    }
 }
+
+ 
 
