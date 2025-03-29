@@ -25,7 +25,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3896109424331994217}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1.25, y: 1, z: 1.25}
   m_ConstrainProportionsScale: 0
@@ -57,7 +57,7 @@ MonoBehaviour:
   roomGeneratorZones:
   - {fileID: 5727645536387017477}
   isOverlap: 0
-  multipleDoorProbability: 0.6
+  multipleDoorProbability: 1
   depth: 0
 --- !u!1 &4252183109414344565
 GameObject:
@@ -1432,6 +1432,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 8603909294388457899}
     m_Modifications:
+    - target: {fileID: 1258184892947426722, guid: d05c5467a9e99cd41b7e10ef2f665f67, type: 3}
+      propertyPath: m_VersionIndex
+      value: 6937
+      objectReference: {fileID: 0}
     - target: {fileID: 7171272440119562715, guid: d05c5467a9e99cd41b7e10ef2f665f67, type: 3}
       propertyPath: m_Name
       value: DoorFixed (3)
@@ -3373,6 +3377,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 8603909294388457899}
     m_Modifications:
+    - target: {fileID: 1258184892947426722, guid: d05c5467a9e99cd41b7e10ef2f665f67, type: 3}
+      propertyPath: m_VersionIndex
+      value: 6937
+      objectReference: {fileID: 0}
     - target: {fileID: 2223084839709856045, guid: d05c5467a9e99cd41b7e10ef2f665f67, type: 3}
       propertyPath: m_LocalRotation.w
       value: 0
