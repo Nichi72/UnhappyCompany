@@ -16,7 +16,7 @@ public class CenterBattery : MonoBehaviour
         centralBatterySystem = CentralBatterySystem.Instance;
         // 배터리 레벨에 따라 배터리 위치 보간
         UpdateBatteryPosition();
-       
+        
     }
 
     // Update is called once per frame

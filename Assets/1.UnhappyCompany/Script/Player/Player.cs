@@ -4,6 +4,8 @@ using UnityEngine;
 public class Player : MonoBehaviour , IDamageable
 {
     public Transform rightHandPos;
+    public Transform noneModelHandTransform;
+    public Transform modelHandTransform;
     public StarterAssets.FirstPersonController firstPersonController;
     public InteractionSystem interactionSystem;
     public QuickSlotSystem quickSlotSystem;
@@ -45,7 +47,7 @@ public class Player : MonoBehaviour , IDamageable
         {
             quickSlotSystem.DropItem();
         }
-        // if(Input.GetKeyDown(KeyCode.Mouse1))
+       
 
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
@@ -60,5 +62,17 @@ public class Player : MonoBehaviour , IDamageable
             tempItem.Use(this);
         }
         
+    }
+
+    public void SetModelHandTransform(bool isModelHandAnimation)
+    {
+        if(isModelHandAnimation)
+        {
+            rightHandPos = modelHandTransform;
+        }
+        else
+        {
+            rightHandPos = noneModelHandTransform;
+        }
     }
 }

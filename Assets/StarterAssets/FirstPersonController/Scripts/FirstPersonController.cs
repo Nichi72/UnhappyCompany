@@ -88,7 +88,9 @@ namespace StarterAssets
 		private PlayerStatus _playerStatus;
 
 		[Header("Hand Follow")]
-		public Transform handTransform;   // 손 오브젝트의 Transform
+		public Transform pivotNoneModelHandTransform;   // 손 오브젝트의 Transform
+		public Transform pivotModelHandTransform;   // 왼손 오브젝트의 Transform
+		[ReadOnly] [SerializeField] private Transform currentPivotHandTransform;   // 손 오브젝트의 Transform
 		public float handSmoothSpeed = 5.0f;  // 손 회전의 부드러움 정도
 
 		private bool IsCurrentDeviceMouse
@@ -339,7 +341,7 @@ namespace StarterAssets
 		public float handClampAngle = 45f;
 		private void HandFollowCamera()
 		{
-			if (handTransform != null && _mainCamera != null)
+			if (currentPivotHandTransform != null && _mainCamera != null)
 			{
 				//
 				// Quaternion targetRotation = _mainCamera.transform.rotation * Quaternion.Euler(new Vector3(0f, -34.203f, 0f));
@@ -350,7 +352,7 @@ namespace StarterAssets
 				eulerRotation.x = Mathf.Clamp(eulerRotation.x, -handClampAngle, handClampAngle); // 위아래 회전 각도 제한
 				targetRotation = Quaternion.Euler(eulerRotation);
 
-				handTransform.rotation = Quaternion.Slerp(handTransform.rotation, targetRotation, handSmoothSpeed * Time.deltaTime);
+				currentPivotHandTransform.rotation = Quaternion.Slerp(currentPivotHandTransform.rotation, targetRotation, handSmoothSpeed * Time.deltaTime);
 			}
 		}
 
@@ -364,6 +366,18 @@ namespace StarterAssets
 		{
 			MoveSpeed = originalMoveSpeed;
 			SprintSpeed = originalSprintSpeed;
+		}
+
+		public void SetPivotHandTransform(bool isModelHandAnimation)
+		{
+			if(isModelHandAnimation)
+			{
+				currentPivotHandTransform = pivotModelHandTransform;
+			}
+			else
+			{
+				currentPivotHandTransform = pivotNoneModelHandTransform;
+			}
 		}
 	}
 }

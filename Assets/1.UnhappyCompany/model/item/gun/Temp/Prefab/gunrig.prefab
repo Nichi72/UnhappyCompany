@@ -22,15 +22,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 4573bfeb25b13e641a49a896cbe75940, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -4.7830534
+      value: -4.17
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 4573bfeb25b13e641a49a896cbe75940, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.86
+      value: 7.64
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 4573bfeb25b13e641a49a896cbe75940, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.3221333
+      value: 3.69
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 4573bfeb25b13e641a49a896cbe75940, type: 3}
       propertyPath: m_LocalRotation.w
@@ -144,6 +144,18 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 6
       objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 4573bfeb25b13e641a49a896cbe75940, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 4573bfeb25b13e641a49a896cbe75940, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 9c5b74b4309795f44a9e14164b8bffca, type: 2}
+    - target: {fileID: 5866666021909216657, guid: 4573bfeb25b13e641a49a896cbe75940, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6540813633435672155, guid: 4573bfeb25b13e641a49a896cbe75940, type: 3}
       propertyPath: m_Layer
       value: 6
@@ -182,6 +194,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 3393181941467877394}
   m_SourcePrefab: {fileID: 100100000, guid: 4573bfeb25b13e641a49a896cbe75940, type: 3}
+--- !u!95 &322153750599199575 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 4573bfeb25b13e641a49a896cbe75940, type: 3}
+  m_PrefabInstance: {fileID: 6129980222869001926}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &6472650512692669335 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 4573bfeb25b13e641a49a896cbe75940, type: 3}
@@ -224,11 +241,16 @@ MonoBehaviour:
   uniqueInstanceID: 
   useItemDataPosition: 0
   useItemDataRotation: 0
-  playerArmAnimator: {fileID: 0}
+  isModelHandAnimation: 1
   damageLayer:
     serializedVersion: 2
     m_Bits: 264
   distance: 9999
+  maxAmmo: 6
+  currentAmmo: 0
+  isCocking: 0
+  playerArmAnimator: {fileID: 0}
+  playerItemAnimator: {fileID: 322153750599199575}
 --- !u!54 &3393181941467877394
 Rigidbody:
   m_ObjectHideFlags: 0

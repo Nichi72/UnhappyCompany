@@ -103,7 +103,12 @@ public class QuickSlotSystem : MonoBehaviour
 
             selectedSlotIndex = slotIndex;
             quickSlots[selectedSlotIndex].Select();
-            if(currentItemObject != null) Destroy(currentItemObject); 
+            if(currentItemObject != null)
+            {
+                currentItemObject.GetComponent<Item>().UnMount();
+                Debug.Log("슬롯 변경으로 다른 아이템으로 변경되면서 삭제됨. Destroy currentItemObject");
+                Destroy(currentItemObject);
+            }
             currentItem = GetCurrentItemInSlot();
             object state = GetCurrentItemStateInSlot();
             if (currentItem == null)
@@ -144,7 +149,7 @@ public class QuickSlotSystem : MonoBehaviour
     public void MountItem(ItemData itemData , object state = null)
     {
         currentItemObject = Instantiate(itemData.prefab);
-        currentItemObject.transform.SetParent(player.rightHandPos);
+        // currentItemObject.transform.SetParent(player.rightHandPos); // Mount로 옮겨짐
         currentItemObject.GetComponent<Item>().itemData = itemData;
         currentItemObject.GetComponent<Item>().Mount(player, state);
         currentItemObject.GetComponent<Rigidbody>().isKinematic = true;
@@ -180,14 +185,15 @@ public class QuickSlotSystem : MonoBehaviour
 
     public void DestroyCurrentItem()
     {
+        ClearCurrentItemSlot();
         if (currentItemObject != null)
         {
             Destroy(currentItemObject);
         }
-        ClearCurrentItemSlot();
     }
     public void ClearCurrentItemSlot()
     {
+        Debug.Log("ClearCurrentItemSlot");
         var tempQuickSlot = GetCurrentQuickSlot();
         currentItemObject.GetComponent<Item>().UnMount();
         if (currentItemObject != null)
