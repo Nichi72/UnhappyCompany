@@ -17,6 +17,11 @@ public abstract class Item : MonoBehaviour , IInteractable , IToolTip
 
     public bool useItemDataPosition = false;
     public bool useItemDataRotation = false;
+    /// <summary>
+    /// 모델 손을 사용할건지 여부
+    /// Mount 함수 이전에 설정해야 함.
+    /// </summary>
+    public bool isModelHandAnimation = false;
 
     void Awake()
     {
@@ -84,29 +89,45 @@ public abstract class Item : MonoBehaviour , IInteractable , IToolTip
         {
             DeserializeState(state);
         }
-
+        ExceptionItem();
+        player.SetModelHandTransform(isModelHandAnimation);
+        player.firstPersonController.SetPivotHandTransform(isModelHandAnimation);
+        transform.SetParent(player.rightHandPos);
         ToolTipUI.instance.SetToolTip(this);
     }
 
     public virtual void UnMount()
     {
         ToolTipUI.instance.SetToolTip(null);
+        ResetAnimatorLayers();
     }
 
+    private void ResetAnimatorLayers()
+    {
+        var animator = GetComponent<Animator>();
+        // Debug.Log($"ResetAnimatorLayers{animator.isActiveAndEnabled}");
+        if(animator != null)
+        {
+            for (int i = 0; i < animator.layerCount; i++)
+            {
+                animator.SetLayerWeight(i, 0);
+            }
+        }
+    }
 
     public void ExceptionItem()
     {
         if(gameObject.layer != LayerMask.NameToLayer("PlayerRaycastHit"))
         {
             // gameObject.layer = LayerMask.NameToLayer("PlayerRaycastHit");
-            Debug.LogError("Item은 PlayerRaycastHit가 일반적입니다. " + gameObject.layer);
+            // Debug.LogError("Item은 PlayerRaycastHit가 일반적입니다. " + gameObject.layer);
         }
 
         if(gameObject.GetComponent<Rigidbody>() == null)
         {
             Debug.LogError("Item은 Rigidbody가 일반적입니다. " + gameObject.name);
-            Rigidbody rigidbody = gameObject.AddComponent<Rigidbody>();
-            rigidbody.isKinematic = true;
+            // Rigidbody rigidbody = gameObject.AddComponent<Rigidbody>();
+            // rigidbody.isKinematic = true;
         }
 
 
@@ -133,6 +154,15 @@ public abstract class Item : MonoBehaviour , IInteractable , IToolTip
     public void AssignUniqueInstanceID(string newID)
     {
         uniqueInstanceID = newID;
+    }
+    [ContextMenu("SetEditorItemComponent")]
+    public void SetEditorItemComponent()
+    {
+        var rigidbody = gameObject.AddComponent<Rigidbody>();
+        rigidbody.isKinematic = false;
+
+        var boxCollider = gameObject.AddComponent<BoxCollider>();
+        // boxCollider.isTrigger = true;
     }
 }
 

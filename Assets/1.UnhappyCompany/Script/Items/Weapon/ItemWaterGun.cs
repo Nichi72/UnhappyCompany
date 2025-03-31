@@ -104,6 +104,7 @@ public class ItemWaterGun : Item, IDamager, IItemOverrideUpdate
 
     public override void Mount(Player player, object state)
     {
+        isModelHandAnimation = true;
         base.Mount(player, state);
         if(state != null)
         {
@@ -138,8 +139,8 @@ public class ItemWaterGun : Item, IDamager, IItemOverrideUpdate
     {
         base.UnMount();
         Debug.Log("ItemWaterGun UnMount");
-        int layerIndex = playerArmAnimator.GetLayerIndex(animatorLayerName);
-        playerArmAnimator.SetLayerWeight(layerIndex, 0);
+        // int layerIndex = playerArmAnimator.GetLayerIndex(animatorLayerName);
+        // playerArmAnimator.SetLayerWeight(layerIndex, 0);
     }
 
     public void Shoot()
