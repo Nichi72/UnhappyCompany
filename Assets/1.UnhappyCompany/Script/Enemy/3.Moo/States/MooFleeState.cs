@@ -8,6 +8,7 @@ public class MooFleeState : IState
     private MooAIController controller; // MooAIController 인스턴스
     private float fleeDuration = 3f; // 도망 상태 지속 시간
     private float fleeStartTime; // 도망 상태 시작 시간
+    private bool isShowDebug = false;
 
     /// <summary>
     /// MooFleeState의 생성자. MooAIController를 매개변수로 받습니다.
@@ -23,7 +24,7 @@ public class MooFleeState : IState
     /// </summary>
     public void Enter()
     {
-        Debug.Log("Moo: Flee 상태 시작");
+        DebugManager.Log("Moo: Flee 상태 시작", isShowDebug);
         controller.PlayAnimation("Flee"); // 도망 애니메이션 재생
         fleeStartTime = Time.time; // 도망 시작 시간 기록
         SetFleeDestination(); // 도망 목적지 설정
@@ -54,7 +55,7 @@ public class MooFleeState : IState
     /// </summary>
     public void Exit()
     {
-        Debug.Log("Moo: Flee 상태 종료");
+        DebugManager.Log("Moo: Flee 상태 종료", isShowDebug);
     }
 
     /// <summary>

@@ -9,6 +9,7 @@ public class MooAIController : EnemyAIController<MooAIData>
 {
     [Header("Debug")]
     [ReadOnly] [SerializeField] public string CurrentStateName = "";
+    [SerializeField] private bool isShowDebug = false;
     // 점액 배출 간격
     public float slimeEmitInterval = 10f;
     private float lastSlimeEmitTime;
@@ -69,13 +70,21 @@ public class MooAIController : EnemyAIController<MooAIData>
         CurrentStateName = currentState.GetType().Name;
     }
 
+    // private void AfternoonUpdate()
+    // {
+    //     if(TimeManager.instance.IsDay)
+    //     {
+    //         ChangeState(new MooAfternoonState(this));
+    //     }
+    // }
+
     /// <summary>
     /// 애니메이터의 Speed 파라미터를 업데이트합니다.
     /// </summary>
     private void UpdateAnimatorSpeed()
     {
-        // Debug.Log($"characterController.velocity.magnitude : {characterController.velocity.magnitude}, moveSpeed : {moveSpeed}");
-        animatorSpeed = characterController.velocity.magnitude / moveSpeed; // 현재 속도를 0~1 범위로 정규화
+        DebugManager.Log($"characterController.velocity.magnitude : {characterController.velocity.magnitude}, moveSpeed : {moveSpeed}", isShowDebug);
+        animatorSpeed = characterController.velocity.magnitude / moveSpeed;
         animator.SetFloat("Speed", animatorSpeed);
     }
 
@@ -168,7 +177,7 @@ public class MooAIController : EnemyAIController<MooAIData>
     {
         if (other.CompareTag("Player"))
         {
-            Debug.Log("MooAIController OnCollisionEnter");
+            DebugManager.Log("MooAIController OnCollisionEnter", isShowDebug);
             Player player = other.GetComponent<Player>();
             if (player != null)
             {

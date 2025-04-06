@@ -29,18 +29,7 @@ public class SaveManager : MonoBehaviour
     }
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.F1))
-        {
-            SaveGame();
-        }
-        if (Input.GetKeyDown(KeyCode.F2))
-        {
-            LoadGame();
-        }
-        if (Input.GetKeyDown(KeyCode.F3))
-        {
-            itemLoader.ClearSceneItems();
-        }
+       
     }
 
     // 게임 사이클 종료 시 호출하여 자동 저장 처리

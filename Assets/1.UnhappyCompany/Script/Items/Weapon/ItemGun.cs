@@ -97,6 +97,8 @@ public class ItemGun : Item, IDamager, IItemOverrideUpdate
         transform.localPosition = gunPosition;
         transform.localRotation = Quaternion.Euler(gunRotation);
         transform.localScale = gunScale;
+
+        
     }
     
     public void OverrideUpdate()

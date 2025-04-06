@@ -126,4 +126,4 @@ public class ItemLoader : MonoBehaviour
         }
         Debug.Log("씬 내 기존 아이템 오브젝트 정리 완료");
     }
-} 
+}

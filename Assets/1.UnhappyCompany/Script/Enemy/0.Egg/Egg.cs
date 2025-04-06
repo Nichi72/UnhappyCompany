@@ -37,7 +37,7 @@ public class Egg : MonoBehaviour, IDamageable
     public ParticleSystem stageTransitionEffect;
     
     private EggStage currentStage = EggStage.Stage1;
-    public int Hp { get; set; } = 100;
+    public int hp { get; set; } = 100;
     public int id;
     public bool isScanning = false;
     public bool isScanningOver = false;
@@ -133,11 +133,11 @@ public class Egg : MonoBehaviour, IDamageable
                 return;
             }
 
-            Hp -= damage;
-            Debug.Log($"{gameObject.name}({eggType}) Take Damage {damage} from {damageType} _ Left HP :{Hp}");
+            hp -= damage;
+            Debug.Log($"{gameObject.name}({eggType}) Take Damage {damage} from {damageType} _ Left HP :{hp}");
             AudioManager.instance.PlayOneShot(FMODEvents.instance.damage, transform);
             
-            if(Hp <= 0)
+            if(hp <= 0)
             {
                 DestroyEgg();
             }

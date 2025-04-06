@@ -3,6 +3,7 @@ using UnityEngine;
 public class MooSlimeEmitState : IState
 {
     private MooAIController controller;
+    private bool isShowDebug = false;
 
     public MooSlimeEmitState(MooAIController controller)
     {
@@ -11,7 +12,7 @@ public class MooSlimeEmitState : IState
 
     public void Enter()
     {
-        Debug.Log("Moo: Slime Emit 상태 시작");
+        DebugManager.Log("Moo: Slime Emit 상태 시작", isShowDebug);
         controller.PlayAnimation("SlimeEmit");
         EmitSlime();
     }
@@ -28,7 +29,7 @@ public class MooSlimeEmitState : IState
 
     public void Exit()
     {
-        Debug.Log("Moo: Slime Emit 상태 종료");
+        DebugManager.Log("Moo: Slime Emit 상태 종료", isShowDebug);
     }
 
     private void EmitSlime()

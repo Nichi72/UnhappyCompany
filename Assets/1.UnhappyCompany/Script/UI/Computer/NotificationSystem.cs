@@ -31,7 +31,7 @@ public class NotificationSystem : MonoBehaviour
     }
 
     
-    public void ReceiveEnemyData(Dictionary<Transform, EnemyAIData> detectedEnemies, Dictionary<Transform, Egg> detectedEggs)
+    public void ReceiveEnemyData(Dictionary<Transform, BaseEnemyAIData> detectedEnemies, Dictionary<Transform, Egg> detectedEggs)
     {
         // foreach (var enemy in detectedEnemies)
         // {

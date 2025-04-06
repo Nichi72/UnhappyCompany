@@ -33,7 +33,7 @@ public interface ICentralBatteryConsumer
 /// </summary>
 public interface IDamageable
 {
-    int Hp { get; set; }
+    int hp { get; set; }
     void TakeDamage(int damage, DamageType damageType);
 }
 
