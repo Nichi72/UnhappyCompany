@@ -13,7 +13,7 @@ public class RampagePatrolState : IState
     {
         this.controller = controller;
         agent = controller.agent;
-        patrolSpeed = controller.enemyData.moveSpeed;
+        patrolSpeed = controller.EnemyData.moveSpeed;
     }
 
     public void Enter()
@@ -67,7 +67,7 @@ public class RampagePatrolState : IState
         float distance = toPlayer.magnitude;
         float angle = Vector3.Angle(controller.transform.forward, toPlayer);
 
-        if (distance <= controller.enemyData.detectRange && angle <= controller.enemyData.detectAngle)
+        if (distance <= controller.EnemyData.detectRange && angle <= controller.EnemyData.detectAngle)
         {
             return true;
         }
@@ -76,12 +76,12 @@ public class RampagePatrolState : IState
 
     private void SetRandomPatrolDestination()
     {
-        Vector3 randomDir = Random.insideUnitSphere * controller.enemyData.patrolRadius;
+        Vector3 randomDir = Random.insideUnitSphere * controller.EnemyData.patrolRadius;
         randomDir += controller.transform.position;
         NavMeshHit hit;
-        if (NavMesh.SamplePosition(randomDir, out hit, controller.enemyData.patrolRadius, 1))
+        if (NavMesh.SamplePosition(randomDir, out hit, controller.EnemyData.patrolRadius, 1))
         {
             agent.SetDestination(hit.position);
         }
     }
-} 
+}

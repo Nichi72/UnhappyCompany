@@ -83,7 +83,7 @@ public class RegionManager : MonoBehaviour
             {
                 // 예산에 추가된 상태로 플래그를 변경하고 예산에 크리처의 비용을 더한다.
                 selectedCreatures.Add(enemyController);
-                budget += enemyController.enemyData.Cost;
+                budget += enemyController.EnemyData.Cost;
                 Debug.Log($" EnemyBudgetFlag.Created :{enemy.name} 이 Budget&selectedCreatures에 추가되었습니다.");
 
                 enemyController.budgetFlag = EnemyBudgetFlag.AddedToBudget;
@@ -94,7 +94,7 @@ public class RegionManager : MonoBehaviour
             {
                 // 예산에 크리처의 비용을 더한다.
                 selectedCreatures.Add(enemyController);
-                budget += enemyController.enemyData.Cost;
+                budget += enemyController.EnemyData.Cost;
                 Debug.Log($" EnemyBudgetFlag.AddedToBudget :{enemy.name} 이 Budget&selectedCreatures에 추가되었습니다.");
 
             }
@@ -117,9 +117,9 @@ public class RegionManager : MonoBehaviour
             {
                 if (remainingCost > 0)
                 {
-                    if (enemy.enemyData.Cost <= remainingCost)
+                    if (enemy.EnemyData.Cost <= remainingCost)
                     {
-                        remainingCost -= enemy.enemyData.Cost;
+                        remainingCost -= enemy.EnemyData.Cost;
                         enemy.budgetFlag = EnemyBudgetFlag.SubtractedFromBudget;
                         enemy.AttackCenter();
                         Debug.Log($" 특별 크리처 : {enemy.name} / 남은 비용 : {remainingCost}");
@@ -145,7 +145,7 @@ public class RegionManager : MonoBehaviour
             if(randomEnemyController.budgetFlag != EnemyBudgetFlag.SubtractedFromBudget)
             {
                 // 예산에서 해당 적을 뺍니다.
-                remainingCost -= randomEnemyController.enemyData.Cost;
+                remainingCost -= randomEnemyController.EnemyData.Cost;
                 randomEnemyController.budgetFlag = EnemyBudgetFlag.SubtractedFromBudget;
                 randomEnemyController.AttackCenter();
                 // 디버그 로그를 출력합니다.

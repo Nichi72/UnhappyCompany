@@ -9,6 +9,7 @@ using System.Collections.Generic;
 /// </summary>
 public class RampageAIController : EnemyAIController<RampageAIData>
 {
+    public new RampageAIData EnemyData => enemyData;
     [Header("DEBUG")]
     public string currentStateName;
     

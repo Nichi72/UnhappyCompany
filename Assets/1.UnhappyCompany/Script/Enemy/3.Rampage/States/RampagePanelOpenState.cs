@@ -16,7 +16,7 @@ public class RampagePanelOpenState : IState
         this.controller = controller;
         this.panelCount = panelCount;
 
-        panelOpenDuration = controller.enemyData.panelOpenTime;
+        panelOpenDuration = controller.EnemyData.panelOpenTime;
         controller.chargeCount--;
     }
 

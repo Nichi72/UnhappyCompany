@@ -61,7 +61,7 @@ public class RampageIdleState : IState
         float distance = toPlayer.magnitude;
         float angle = Vector3.Angle(controller.transform.forward, toPlayer);
 
-        if (distance <= controller.enemyData.detectRange && angle <= controller.enemyData.detectAngle)
+        if (distance <= controller.EnemyData.detectRange && angle <= controller.EnemyData.detectAngle)
         {
             // 레이캐스트를 사용하여 시야에 장애물이 있는지 확인
             RaycastHit hit;

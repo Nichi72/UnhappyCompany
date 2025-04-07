@@ -20,7 +20,7 @@ public class RampageChargeState : IState
         DebugManager.Log($"{beforeState} 상태에서 돌진 시작", isShowDebug);
         this.controller = controller;
         this.rb = controller.GetComponent<Rigidbody>();
-        chargeSpeed = controller.enemyData.rushSpeed;
+        chargeSpeed = controller.EnemyData.rushSpeed;
         
     }
     public void Enter()
@@ -94,8 +94,8 @@ public class RampageChargeState : IState
             controller.agent.SetDestination(playerPosition);
 
             float distance = Vector3.Distance(controller.transform.position, playerPosition);
-            DebugManager.Log($"Vector3.Distance(controller.transform.position, playerPosition): {distance} <= {controller.enemyData.attackRadius}", isShowDebug);
-            if (distance <= controller.enemyData.attackRadius)
+            DebugManager.Log($"Vector3.Distance(controller.transform.position, playerPosition): {distance} <= {controller.EnemyData.attackRadius}", isShowDebug);
+            if (distance <= controller.EnemyData.attackRadius)
             {
                 if(isPlayerInRange)
                 {
@@ -143,7 +143,7 @@ public class RampageChargeState : IState
         }
         else
         {
-            controller.chargeCount = controller.enemyData.maxChargeCount;
+            controller.chargeCount = controller.EnemyData.maxChargeCount;
             controller.ChangeState(new  RampageIdleState(controller,"ChargeState(연속 돌진)"));
         }
         
@@ -174,6 +174,6 @@ public class RampageChargeState : IState
         Vector3 toPlayer = controller.player.position - controller.transform.position;
         float distance = toPlayer.magnitude;
 
-        return distance <= controller.enemyData.patrolRadius;
+        return distance <= controller.EnemyData.patrolRadius;
     }
 }

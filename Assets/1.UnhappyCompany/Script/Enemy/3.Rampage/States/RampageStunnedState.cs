@@ -15,7 +15,7 @@ public class RampageStunnedState : IState
     {
         Debug.Log("Rampage: Stunned 상태 시작");
         // 지정된 스턴 지속 시간
-        stunEndTime = Time.time + controller.enemyData.stunDuration;
+        stunEndTime = Time.time + controller.EnemyData.stunDuration;
         // TODO: 스턴 애니메이션 재생, 사운드 재생
     }
 

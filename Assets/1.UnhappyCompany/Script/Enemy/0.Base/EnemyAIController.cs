@@ -13,12 +13,14 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
     public Transform player; // 플레이어의 Transform 참조
     
     [Header("AI Settings")]
-    [SerializeField] public BaseEnemyAIData enemyData;
+    [SerializeField] protected BaseEnemyAIData enemyData;
+    
+    public virtual BaseEnemyAIData EnemyData => enemyData;
     
     // 공통 프로퍼티
-    public float PatrolRadius => enemyData.patrolRadius;
-    public float ChaseRadius => enemyData.chaseRadius;
-    public float AttackRadius => enemyData.attackRadius;
+    public float PatrolRadius => EnemyData.patrolRadius;
+    public float ChaseRadius => EnemyData.chaseRadius;
+    public float AttackRadius => EnemyData.attackRadius;
 
     [Header("AI GizmoRange Settings")]
     public Color patrolGizmoRangeColor = Color.green;
@@ -172,5 +174,7 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
 /// </summary>
 public abstract class EnemyAIController<T> : EnemyAIController where T : BaseEnemyAIData
 {
-    [SerializeField] public new T enemyData;
+    [SerializeField] protected new T enemyData;
+    
+    public override BaseEnemyAIData EnemyData => enemyData;
 }
