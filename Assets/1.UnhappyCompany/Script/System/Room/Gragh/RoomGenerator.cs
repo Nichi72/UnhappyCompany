@@ -4,6 +4,7 @@ using System.Collections;
 using System.Linq;
 using System;
 using Random = UnityEngine.Random;
+using Unity.VisualScripting;
 public class RoomGenerator : MonoBehaviour
 {
     [System.Serializable]
@@ -18,7 +19,8 @@ public class RoomGenerator : MonoBehaviour
         public float probability = 0.5f;
     }
     [System.Serializable]
-    public class RoomTypeGeneration{
+    public class RoomTypeGeneration
+    {
         public RoomNode.RoomType roomType;
         public List<RoomRandomGeneration> roomPrefabList = new List<RoomRandomGeneration>();
     }
@@ -113,7 +115,9 @@ public class RoomGenerator : MonoBehaviour
                 doorGenerationSettings[2].stair = 1;
                 doorGenerationSettings[3].stair = 2;
 
-                StartCoroutine(GenerateRoom(newRoom, roomCountFirstTime,RoomNode.RoomType.KoreaRoom));
+                // 첫 번째 방 생성
+                RoomNode.RoomType randomRoomType = (RoomNode.RoomType)Random.Range(0, System.Enum.GetValues(typeof(RoomNode.RoomType)).Length);
+                StartCoroutine(GenerateRoom(newRoom, roomCountFirstTime));
             }
         }
     }
@@ -135,12 +139,12 @@ public class RoomGenerator : MonoBehaviour
                 tempRoomList.Add(randomIndex);
                 
                 // 선택된 방을 기준으로 확장
-                StartCoroutine(GenerateRoom(roomToExpand, roomCountPerDepth, roomToExpand.currentRoomType));
+                StartCoroutine(GenerateRoom(roomToExpand, roomCountPerDepth));
             }
         }
     }
 
-    private IEnumerator GenerateRoom(RoomNode startRoomNode, int maxRoomCount, RoomNode.RoomType roomType)
+    private IEnumerator GenerateRoom(RoomNode startRoomNode, int maxRoomCount)
     {
         isGenerating = true;
         yield return new WaitForSeconds(2f);
@@ -200,8 +204,13 @@ public class RoomGenerator : MonoBehaviour
 
             while (!roomCreated && tryCount < maxTryCount)
             {
+               
+                // 첫 번째 방 생성
+                // RoomNode.RoomType randomRoomType = (RoomNode.RoomType)Random.Range(0, System.Enum.GetValues(typeof(RoomNode.RoomType)).Length);
                 // 새 RoomNode 생성 및 연결
-                RoomNode newRoom = Instantiate(GetRoomNodePrefab(roomType));
+                RoomNode.RoomType randomRoomType = RoomNode.RoomType.HospitalRoom;
+                RoomNode newRoom = Instantiate(GetRoomNodePrefab(randomRoomType));
+                // newRoom.transform.position = beforeRoom.transform.position + new Vector3(0,1000,0);
                 newRoom.ConnectToParentRoom(beforeRoom);
                 DoorEdge childDoor = beforeRoom.ConnectToChildRoom(newRoom);
                 
@@ -285,7 +294,7 @@ public class RoomGenerator : MonoBehaviour
         {
             // doorA.GetComponent<MeshRenderer>().material.color = Color.red;
             // doorB.GetComponent<MeshRenderer>().material.color = Color.blue;
-            
+            roomB.transform.position = new Vector3(0,0,0);
             // 문 A와 문 B의 방향 벡터
             Vector3 doorADir = doorA.transform.rotation.eulerAngles;
             Vector3 doorBDir = doorB.transform.rotation.eulerAngles;
@@ -294,28 +303,38 @@ public class RoomGenerator : MonoBehaviour
             // 두 문의 Y축 회전 차이 계산
             float rotationDifference = Mathf.DeltaAngle(doorADir.y, doorBDir.y);
             // Debug.Log($"두 문의 회전 차이: {rotationDifference}도");
-            if((int)rotationDifference == 0)
+            
+            const float ANGLE_TOLERANCE = 5f; // 허용 오차 범위
+            float absDifference = Mathf.Abs(rotationDifference); // 절대값 계산
+            
+            if(absDifference <= ANGLE_TOLERANCE || Mathf.Abs(absDifference - 360) <= ANGLE_TOLERANCE)
             {
-                // Debug.Log("회전값이 같은 경우");
+                Debug.Log("회전값이 같은 경우 (0도 또는 360도)");
                 roomB.transform.Rotate(0, 180, 0);
                 SetRoom();
             }
-            else if ((int)rotationDifference == 180)
+            else if (Mathf.Abs(absDifference - 180) <= ANGLE_TOLERANCE)
             {
-                // Debug.Log("회전값이 180도 차이나는 경우");
+                Debug.Log("회전값이 180도 차이나는 경우 (180도 또는 -180도)");
                 SetRoom();
             }
-            else if ((int)rotationDifference == 90)
+            else if (Mathf.Abs(absDifference - 90) <= ANGLE_TOLERANCE || Mathf.Abs(absDifference - 270) <= ANGLE_TOLERANCE)
             {
-                // Debug.Log("회전값이 90도 차이나는 경우");
-                roomB.transform.Rotate(0, 90, 0);
+                Debug.Log("회전값이 90도 차이나는 경우 (90도 또는 -90도 또는 270도 또는 -270도)");
+                if (rotationDifference > 0)
+                {
+                    roomB.transform.Rotate(0, 90, 0);
+                }
+                else
+                {
+                    roomB.transform.Rotate(0, -90, 0);
+                }
                 SetRoom();
             }
-            else if ((int)rotationDifference == -90)
+            else
             {
-                // Debug.Log("회전값이 -90도 차이나는 경우");
-                roomB.transform.Rotate(0, -90, 0);
-                SetRoom();
+                Debug.LogError($"회전값이 다른 경우 {rotationDifference} (절대값: {absDifference})");
+                Debug.Break();
             }
             Debug.Log("방 연결 완료: " + roomB.name + "가 연결되었습니다.");
         }
