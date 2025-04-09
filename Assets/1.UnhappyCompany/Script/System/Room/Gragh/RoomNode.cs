@@ -11,9 +11,7 @@ public class RoomNode : MonoBehaviour
     public enum RoomType
     {
         KoreaRoom,
-        BunkerRoom,
-        OfficeRoom,
-        WarehouseRoom,
+        HospitalRoom,
     }
     public RoomType currentRoomType;
     // [ReadOnly] public RoomNode parentRoom;

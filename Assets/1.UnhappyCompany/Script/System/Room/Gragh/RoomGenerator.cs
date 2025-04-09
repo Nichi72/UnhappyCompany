@@ -4,6 +4,7 @@ using System.Collections;
 using System.Linq;
 using System;
 using Random = UnityEngine.Random;
+using Unity.VisualScripting;
 public class RoomGenerator : MonoBehaviour
 {
     [System.Serializable]
@@ -18,9 +19,17 @@ public class RoomGenerator : MonoBehaviour
         public float probability = 0.5f;
     }
     [System.Serializable]
-    public class RoomTypeGeneration{
+    public class RoomTypeGeneration
+    {
         public RoomNode.RoomType roomType;
         public List<RoomRandomGeneration> roomPrefabList = new List<RoomRandomGeneration>();
+    }
+    [System.Serializable]
+    public class DoorRetryInfo
+    {
+        public DoorEdge door;
+        public int failCount = 0;
+        public float lastTryTime = 0f;
     }
     public static RoomGenerator instance;
     [ReadOnly] public List<RoomNode> roomList = new List<RoomNode>(); // 생성된 방 리스트
@@ -47,7 +56,18 @@ public class RoomGenerator : MonoBehaviour
     public float stairProbability = 0.5f; // 계단을 생성할 확률을 조절하는 함수
     [Header("방 생성 시도 횟수")]
     public int maxTryCount = 10; // 방 생성 시도 횟수
+    [Header("문 재시도 설정")]
+    [Tooltip("실패한 문을 다시 큐에 추가할 확률 (0-1)")]
+    public float doorRetryProbability = 0.5f;
+    [Tooltip("실패 횟수에 따른 재시도 확률 감소 계수 (0-1)")]
+    public float failPenaltyFactor = 0.1f;
+    [Tooltip("문 재시도 간 최소 대기 시간 (초)")]
+    public float doorRetryDelay = 5.0f;
+    [Tooltip("최대 실패 허용 횟수, 이 이상 실패하면 문은 영구히 제외됨")]
+    public int maxDoorFailCount = 3;
 
+    private Dictionary<DoorEdge, DoorRetryInfo> doorRetryData = new Dictionary<DoorEdge, DoorRetryInfo>();
+    private float gameStartTime;
 
     void Awake()
     {
@@ -55,6 +75,8 @@ public class RoomGenerator : MonoBehaviour
         {
             instance = this;
         }
+        gameStartTime = Time.time;
+        doorRetryData.Clear();
     }   
     void Start()
     {
@@ -113,7 +135,9 @@ public class RoomGenerator : MonoBehaviour
                 doorGenerationSettings[2].stair = 1;
                 doorGenerationSettings[3].stair = 2;
 
-                StartCoroutine(GenerateRoom(newRoom, roomCountFirstTime,RoomNode.RoomType.KoreaRoom));
+                // 첫 번째 방 생성
+                RoomNode.RoomType randomRoomType = (RoomNode.RoomType)Random.Range(0, System.Enum.GetValues(typeof(RoomNode.RoomType)).Length);
+                StartCoroutine(GenerateRoom(newRoom, roomCountFirstTime));
             }
         }
     }
@@ -135,17 +159,18 @@ public class RoomGenerator : MonoBehaviour
                 tempRoomList.Add(randomIndex);
                 
                 // 선택된 방을 기준으로 확장
-                StartCoroutine(GenerateRoom(roomToExpand, roomCountPerDepth, roomToExpand.currentRoomType));
+                StartCoroutine(GenerateRoom(roomToExpand, roomCountPerDepth));
             }
         }
     }
 
-    private IEnumerator GenerateRoom(RoomNode startRoomNode, int maxRoomCount, RoomNode.RoomType roomType)
+    private IEnumerator GenerateRoom(RoomNode startRoomNode, int maxRoomCount)
     {
         isGenerating = true;
         yield return new WaitForSeconds(2f);
 
         Queue<DoorEdge> doorQueue = new Queue<DoorEdge>();
+        List<DoorEdge> failedDoorList = new List<DoorEdge>(); // 실패한 문들을 저장할 리스트
         Queue<RoomNode> roomQueue = new Queue<RoomNode>();
         List<RoomNode> createdRooms = new List<RoomNode>(); // 이번 생성에서 추가된 방들
 
@@ -200,8 +225,13 @@ public class RoomGenerator : MonoBehaviour
 
             while (!roomCreated && tryCount < maxTryCount)
             {
+               
+                // 첫 번째 방 생성
+                // RoomNode.RoomType randomRoomType = (RoomNode.RoomType)Random.Range(0, System.Enum.GetValues(typeof(RoomNode.RoomType)).Length);
                 // 새 RoomNode 생성 및 연결
-                RoomNode newRoom = Instantiate(GetRoomNodePrefab(roomType));
+                RoomNode.RoomType randomRoomType = RoomNode.RoomType.HospitalRoom;
+                RoomNode newRoom = Instantiate(GetRoomNodePrefab(randomRoomType));
+                // newRoom.transform.position = beforeRoom.transform.position + new Vector3(0,1000,0);
                 newRoom.ConnectToParentRoom(beforeRoom);
                 DoorEdge childDoor = beforeRoom.ConnectToChildRoom(newRoom);
                 
@@ -241,12 +271,57 @@ public class RoomGenerator : MonoBehaviour
             {
                 Debug.Log($"문 {beforeDoor.name}에서 최대 시도 횟수를 초과했습니다.");
                 
-                // 50% 확률로 나중에 다시 시도하기 위해 큐의 맨 뒤에 추가
-                // 이를 통해 다른 방향으로 방을 생성한 후 다시 시도할 기회를 줌
-                if (Random.value < 0.5f && doorQueue.Count > 0) 
+                // 문 재시도 데이터 업데이트
+                if (!doorRetryData.ContainsKey(beforeDoor))
                 {
-                    Debug.Log("해당 문을 나중에 다시 시도하기 위해 큐에 다시 추가합니다.");
-                    doorQueue.Enqueue(beforeDoor);
+                    doorRetryData.Add(beforeDoor, new DoorRetryInfo { door = beforeDoor });
+                }
+                
+                DoorRetryInfo retryInfo = doorRetryData[beforeDoor];
+                retryInfo.failCount++;
+                retryInfo.lastTryTime = Time.time;
+                
+                // 실패 횟수가 최대 허용치를 넘지 않았고, 적절한 확률로 재시도가 결정된 경우
+                float adjustedProbability = doorRetryProbability - (retryInfo.failCount * failPenaltyFactor);
+                adjustedProbability = Mathf.Clamp01(adjustedProbability); // 0-1 사이로 제한
+                
+                if (retryInfo.failCount < maxDoorFailCount && Random.value < adjustedProbability)
+                {
+                    Debug.Log($"문 {beforeDoor.name}을(를) 나중에 다시 시도하기 위해 실패 목록에 추가합니다. (실패 횟수: {retryInfo.failCount}, 재시도 확률: {adjustedProbability:P0})");
+                    failedDoorList.Add(beforeDoor); // 실패 목록에 추가
+                }
+                else
+                {
+                    Debug.Log($"문 {beforeDoor.name}은(는) 실패 횟수({retryInfo.failCount})가 너무 많거나 확률({adjustedProbability:P0})에 의해 재시도하지 않습니다.");
+                }
+            }
+            
+            // 큐가 비었는데 실패 목록에 문이 있고, 충분한 방이 생성되지 않았으면 실패한 문 중 일부를 다시 시도
+            if (doorQueue.Count == 0 && failedDoorList.Count > 0 && currentRoomCount < maxRoomCount)
+            {
+                Debug.Log($"문 큐가 비었습니다. 실패한 문 중 일부를 다시 시도합니다. (실패 문 개수: {failedDoorList.Count})");
+                
+                // 실패 목록에서 시간이 충분히 지난 문들을 필터링
+                float currentTime = Time.time;
+                List<DoorEdge> eligibleDoors = failedDoorList.Where(door => 
+                    currentTime - doorRetryData[door].lastTryTime >= doorRetryDelay).ToList();
+                
+                if (eligibleDoors.Count > 0)
+                {
+                    // 실패 횟수가 적은 문부터 정렬 (우선 시도)
+                    eligibleDoors.Sort((a, b) => doorRetryData[a].failCount.CompareTo(doorRetryData[b].failCount));
+                    
+                    // 최대 3개의 문만 다시 큐에 추가 (너무 많은 재시도 방지)
+                    int doorToRetry = Mathf.Min(3, eligibleDoors.Count);
+                    for (int i = 0; i < doorToRetry; i++)
+                    {
+                        doorQueue.Enqueue(eligibleDoors[i]);
+                        failedDoorList.Remove(eligibleDoors[i]);
+                        Debug.Log($"문 {eligibleDoors[i].name}을(를) 다시 큐에 추가합니다. (실패 횟수: {doorRetryData[eligibleDoors[i]].failCount})");
+                    }
+                    
+                    // 잠시 대기하여 재시도 과정 시각화 
+                    yield return new WaitForSeconds(0.5f);
                 }
             }
             
@@ -285,7 +360,7 @@ public class RoomGenerator : MonoBehaviour
         {
             // doorA.GetComponent<MeshRenderer>().material.color = Color.red;
             // doorB.GetComponent<MeshRenderer>().material.color = Color.blue;
-            
+            roomB.transform.position = new Vector3(0,0,0);
             // 문 A와 문 B의 방향 벡터
             Vector3 doorADir = doorA.transform.rotation.eulerAngles;
             Vector3 doorBDir = doorB.transform.rotation.eulerAngles;
@@ -294,28 +369,38 @@ public class RoomGenerator : MonoBehaviour
             // 두 문의 Y축 회전 차이 계산
             float rotationDifference = Mathf.DeltaAngle(doorADir.y, doorBDir.y);
             // Debug.Log($"두 문의 회전 차이: {rotationDifference}도");
-            if((int)rotationDifference == 0)
+            
+            const float ANGLE_TOLERANCE = 5f; // 허용 오차 범위
+            float absDifference = Mathf.Abs(rotationDifference); // 절대값 계산
+            
+            if(absDifference <= ANGLE_TOLERANCE || Mathf.Abs(absDifference - 360) <= ANGLE_TOLERANCE)
             {
-                // Debug.Log("회전값이 같은 경우");
+                Debug.Log("회전값이 같은 경우 (0도 또는 360도)");
                 roomB.transform.Rotate(0, 180, 0);
                 SetRoom();
             }
-            else if ((int)rotationDifference == 180)
+            else if (Mathf.Abs(absDifference - 180) <= ANGLE_TOLERANCE)
             {
-                // Debug.Log("회전값이 180도 차이나는 경우");
+                Debug.Log("회전값이 180도 차이나는 경우 (180도 또는 -180도)");
                 SetRoom();
             }
-            else if ((int)rotationDifference == 90)
+            else if (Mathf.Abs(absDifference - 90) <= ANGLE_TOLERANCE || Mathf.Abs(absDifference - 270) <= ANGLE_TOLERANCE)
             {
-                // Debug.Log("회전값이 90도 차이나는 경우");
-                roomB.transform.Rotate(0, 90, 0);
+                Debug.Log("회전값이 90도 차이나는 경우 (90도 또는 -90도 또는 270도 또는 -270도)");
+                if (rotationDifference > 0)
+                {
+                    roomB.transform.Rotate(0, 90, 0);
+                }
+                else
+                {
+                    roomB.transform.Rotate(0, -90, 0);
+                }
                 SetRoom();
             }
-            else if ((int)rotationDifference == -90)
+            else
             {
-                // Debug.Log("회전값이 -90도 차이나는 경우");
-                roomB.transform.Rotate(0, -90, 0);
-                SetRoom();
+                Debug.LogError($"회전값이 다른 경우 {rotationDifference} (절대값: {absDifference})");
+                Debug.Break();
             }
             Debug.Log("방 연결 완료: " + roomB.name + "가 연결되었습니다.");
         }
