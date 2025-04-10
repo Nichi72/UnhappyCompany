@@ -32,7 +32,7 @@ public class ScanningSystem : MonoBehaviour
         int totalRays = horizontalSamples * verticalSamples;
         int hitCount = 0;
 
-        Dictionary<Transform, EnemyAIData> detectedEnemies = new Dictionary<Transform, EnemyAIData>();
+        Dictionary<Transform, BaseEnemyAIData> detectedEnemies = new Dictionary<Transform, BaseEnemyAIData>();
         Dictionary<Transform, Egg> detectedEggs = new Dictionary<Transform, Egg>();
         for (int i = 0; i < horizontalSamples; i++)
         {

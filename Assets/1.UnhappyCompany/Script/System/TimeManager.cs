@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using System;
 using System.Collections.Generic;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public enum TimeOfDay
 {
@@ -28,7 +31,8 @@ public class TimeManager : MonoBehaviour
     private TimeSpan lastGameTime;
     private float timeMultiplier;
     private readonly TimeSpan oneDay = TimeSpan.FromHours(24);
-
+    public TimeSpan SunriseTime { get => sunriseTime;}
+    public TimeSpan SunsetTime { get => sunsetTime;}
     private TimeSpan sunriseTime = TimeSpan.FromHours(6);  // 해 뜨는 시간
     private TimeSpan sunsetTime = TimeSpan.FromHours(18);  // 해 지는 시간
 
@@ -48,22 +52,27 @@ public class TimeManager : MonoBehaviour
     public event Action OnDayPassed;
 
     private Dictionary<TimeSpan, Action> timeEvents = new Dictionary<TimeSpan, Action>();
+    private Dictionary<TimeSpan, Action> enemyScheduleEvents = new Dictionary<TimeSpan, Action>();
 
-    private bool isDay;
-    private bool isStop;
+    /// <summary>
+    /// true 일 때 낮, false 일 때 밤
+    /// </summary>
+    private bool IsDay;
+    public bool isStop;
 
     // 새로운 변수 추가: 하루가 지났는지 여부를 나타내는 플래그
     public bool HasDayPassed { get; private set; } = false;
-    public bool IsStop 
-    { 
-        get => isStop; 
-        set 
+    public bool IsStop
+    {
+        get => isStop;
+        set
         {
             isStop = value;
             Debug.Log($"isStop: {isStop}");
         }
     }
 
+   
 
     private void Awake()
     {
@@ -84,7 +93,7 @@ public class TimeManager : MonoBehaviour
         GameTime = TimeSpan.Zero;
         GameTime = GameTime.Add(TimeSpan.FromHours(startTime));
         lastGameTime = GameTime;
-        isDay = IsCurrentTimeDay();
+        IsDay = IsCurrentTimeDay();
 
         // 이벤트 초기화
         OnDayPassed += () =>
@@ -133,6 +142,8 @@ public class TimeManager : MonoBehaviour
 
             // 시간 이벤트 체크
             CheckTimeEvents();
+            // 적 스케줄 이벤트 체크
+            CheckEnemyScheduleEvents();
 
             // 낮밤 상태 체크
             UpdateDayNightCycle();
@@ -168,12 +179,34 @@ public class TimeManager : MonoBehaviour
     /// </summary>
     /// <param name="targetTime"></param>
     /// <param name="callback"></param>
-    public void RegisterTimeEvent(TimeSpan targetTime, Action callback)
+    public void AddTimeEvent(TimeSpan targetTime, Action callback)
     {
         if (!timeEvents.ContainsKey(targetTime))
         {
             timeEvents.Add(targetTime, callback);
         }
+    }
+
+    /// <summary>
+    /// 적 스케줄 이벤트 생성
+    /// </summary>
+    /// <param name="targetTime">이벤트가 발생할 시간</param>
+    /// <param name="callback">이벤트 발생 시 실행할 콜백 함수</param>
+    public void AddEnemyScheduleEvent(TimeSpan targetTime, Action callback)
+    {
+        if (!enemyScheduleEvents.ContainsKey(targetTime))
+        {
+            enemyScheduleEvents.Add(targetTime, callback);
+        }
+        else
+        {
+            Debug.LogError($"이미 존재하는 이벤트입니다. {targetTime}");
+        }
+    }
+
+    public int GetEnemyScheduleEventCount()
+    {
+        return enemyScheduleEvents.Count;
     }
 
     private void CheckTimeEvents()
@@ -192,6 +225,27 @@ public class TimeManager : MonoBehaviour
         foreach (var key in keysToRemove)
         {
             timeEvents.Remove(key);
+        }
+
+        
+    }
+
+    private void CheckEnemyScheduleEvents()
+    {
+        List<TimeSpan> keysToRemove = new List<TimeSpan>();
+        foreach (var scheduleEvent in enemyScheduleEvents)
+        {
+            if (IsTimeEventTriggered(scheduleEvent.Key))
+            {
+                scheduleEvent.Value.Invoke();
+                keysToRemove.Add(scheduleEvent.Key);
+            }
+        }
+
+        // 적 스케줄 이벤트 체크 후 불필요한 이벤트 제거
+        foreach (var key in keysToRemove)
+        {
+            enemyScheduleEvents.Remove(key);
         }
     }
 
@@ -221,10 +275,10 @@ public class TimeManager : MonoBehaviour
     {
         bool currentIsDay = IsCurrentTimeDay();
 
-        if (currentIsDay != isDay)
+        if (currentIsDay != IsDay)
         {
-            isDay = currentIsDay;
-            if (isDay)
+            IsDay = currentIsDay;
+            if (IsDay)
             {
                 OnMorningStarted?.Invoke(); // 낮 시작
             }
@@ -266,4 +320,87 @@ public class TimeManager : MonoBehaviour
     {
         return GameTime.ToString(@"hh\:mm\:ss");
     }
+
+    /// <summary>
+    /// 등록된 모든 적 스케줄을 콘솔에 출력합니다.
+    /// </summary>
+    public void PrintEnemySchedules()
+    {
+        if (enemyScheduleEvents.Count == 0)
+        {
+            Debug.Log("등록된 적 스케줄이 없습니다.");
+            return;
+        }
+
+        Debug.Log("=== 등록된 적 스케줄 목록 ===");
+        foreach (var schedule in enemyScheduleEvents)
+        {
+            Debug.Log($"시간: {schedule.Key.ToString(@"hh\:mm\:ss")}");
+        }
+        Debug.Log("=========================");
+    }
+
+    /// <summary>
+    /// 가장 가까운 스케줄 이벤트의 5초 전까지 시간을 빠르게 진행합니다.
+    /// </summary>
+    public void FastForwardToNearestSchedule()
+    {
+        if (enemyScheduleEvents.Count == 0)
+        {
+            Debug.Log("등록된 스케줄 이벤트가 없습니다.");
+            return;
+        }
+
+        // 가장 가까운 스케줄 시간 찾기
+        TimeSpan nearestSchedule = TimeSpan.MaxValue;
+        foreach (var schedule in enemyScheduleEvents.Keys)
+        {
+            if (schedule > GameTime && schedule < nearestSchedule)
+            {
+                nearestSchedule = schedule;
+            }
+        }
+
+        if (nearestSchedule == TimeSpan.MaxValue)
+        {
+            Debug.Log("다음 스케줄 이벤트가 없습니다.");
+            return;
+        }
+
+        // 5초 전 시간으로 설정
+        TimeSpan targetTime = nearestSchedule.Subtract(TimeSpan.FromSeconds(5));
+        if (targetTime < GameTime)
+        {
+            targetTime = targetTime.Add(oneDay);
+        }
+
+        // 시간 설정
+        GameTime = targetTime;
+        lastGameTime = GameTime;
+        Debug.Log($"시간이 {targetTime}로 설정되었습니다. 다음 스케줄까지 5초 남았습니다.");
+    }
 }
+
+#if UNITY_EDITOR
+[CustomEditor(typeof(TimeManager))]
+public class TimeManagerEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+        base.OnInspectorGUI();
+
+        TimeManager timeManager = (TimeManager)target;
+
+        EditorGUILayout.Space();
+        if (GUILayout.Button("스케줄 목록 출력"))
+        {
+            timeManager.PrintEnemySchedules();
+        }
+
+        if (GUILayout.Button("가장 가까운 스케줄로 이동"))
+        {
+            timeManager.FastForwardToNearestSchedule();
+        }
+    }
+}
+#endif

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 /// </summary>
 public class RampageAIController : EnemyAIController<RampageAIData>
 {
+    public new RampageAIData EnemyData => enemyData;
     [Header("DEBUG")]
     public string currentStateName;
     
@@ -39,7 +40,7 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     {
         base.Start();
         // 초기 HP 세팅
-        Hp = enemyData.maxHP;
+        hp = enemyData.maxHP;
         CurrentPanelHealth = enemyData.maxPanelHealth;
         chargeCount = enemyData.maxChargeCount;
         // 초기 상태는 Idle이라고 가정
@@ -128,8 +129,8 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     /// </summary>
     public void ReduceHP(int amount)
     {
-        Hp -= amount;
-        if (Hp <= 0)
+        hp -= amount;
+        if (hp <= 0)
         {
             ChangeState(new RampageExplodeState(this));
         }

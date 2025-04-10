@@ -3,8 +3,8 @@ using UnityEngine;
 public class RampagePanel : MonoBehaviour , IDamageable
 {
     public RampageAIController controller;
-    private int hp = 1;
-    public int Hp { get => hp; set => hp = value; }
+    private int _hp = 1;
+    public int hp { get => _hp; set => _hp = value; }
     // 데미지 입은 후 한번만 패널 닫기
     private bool onceDamage = false;
 
@@ -12,7 +12,7 @@ public class RampagePanel : MonoBehaviour , IDamageable
     {
         // Debug.Break();
         Debug.Log("Panel 데미지 입음");
-        Hp -= damage;
+        hp -= damage;
     }
     void Update()
     {
@@ -21,7 +21,7 @@ public class RampagePanel : MonoBehaviour , IDamageable
             return;
         }
         
-        if(Hp <= 0)
+        if(hp <= 0)
         {
             ClosePanel();
         }
@@ -29,12 +29,12 @@ public class RampagePanel : MonoBehaviour , IDamageable
 
     public void OpenPanel()
     {
-        Hp = 1;
+        hp = 1;
     }
 
     private void ClosePanel()
     {
-        Hp = 0;
+        hp = 0;
         onceDamage = true;
         controller.CurrentPanelHealth--;
     }

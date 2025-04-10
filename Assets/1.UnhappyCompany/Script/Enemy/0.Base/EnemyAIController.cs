@@ -1,10 +1,11 @@
+using System;
 using UnityEngine;
 using UnityEngine.AI;
 
 /// <summary>
 /// EnemyAIController는 적의 기본 AI 동작을 정의하는 추상 클래스입니다.
 /// </summary>
-public abstract class EnemyAIController<T> : MonoBehaviour , IDamageable, IDamager where T : BaseEnemyAIData 
+public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
 {
     [SerializeField] protected IState currentState; // 현재 활성화된 상태
     protected UtilityCalculator utilityCalculator; // 유틸리티 계산기
@@ -12,12 +13,14 @@ public abstract class EnemyAIController<T> : MonoBehaviour , IDamageable, IDamag
     public Transform player; // 플레이어의 Transform 참조
     
     [Header("AI Settings")]
-    [SerializeField] public T enemyData;
+    [SerializeField] protected BaseEnemyAIData enemyData;
+    
+    public virtual BaseEnemyAIData EnemyData => enemyData;
     
     // 공통 프로퍼티
-    public float PatrolRadius => enemyData.patrolRadius;
-    public float ChaseRadius => enemyData.chaseRadius;
-    public float AttackRadius => enemyData.attackRadius;
+    public float PatrolRadius => EnemyData.patrolRadius;
+    public float ChaseRadius => EnemyData.chaseRadius;
+    public float AttackRadius => EnemyData.attackRadius;
 
     [Header("AI GizmoRange Settings")]
     public Color patrolGizmoRangeColor = Color.green;
@@ -26,16 +29,14 @@ public abstract class EnemyAIController<T> : MonoBehaviour , IDamageable, IDamag
 
     public TimeOfDay CurrentTimeOfDay { get; private set; }
     public UtilityCalculator UtilityCalculator { get => utilityCalculator; set => utilityCalculator = value; }
-    public int hp = 0;
-    public int Hp { get => hp; set => hp = value; }
-    public int damage { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
+    private int _hp = 0;
+    public int hp { get => _hp; set => _hp = value; }
 
     [Header("Debug Settings")]
     public bool enableDebugUI = true;
     public GameObject debugUIPrefab;  // Inspector에서 디버그 UI 프리팹 할당
     [SerializeField] protected EnemyStateDebugUI debugUI;
-
-    private bool isExecutingFromUpdate = false; // 실행 컨텍스트 플래그 추가
+    public EnemyBudgetFlag budgetFlag;
 
     protected virtual void Start()
     {
@@ -71,8 +72,15 @@ public abstract class EnemyAIController<T> : MonoBehaviour , IDamageable, IDamag
 
     protected virtual void OnDestroy()
     {
-        TimeManager.instance.OnTimeOfDayChanged -= HandleTimeOfDayChanged;
-        EnemyManager.instance.activeEnemies.Remove(gameObject);
+        if (TimeManager.instance != null)
+        {
+            TimeManager.instance.OnTimeOfDayChanged -= HandleTimeOfDayChanged;
+        }
+
+        if (EnemyManager.instance != null)
+        {
+            EnemyManager.instance.activeEnemies.Remove(gameObject);
+        }
 
         // 디버그 UI 정리
         if (debugUI != null)
@@ -141,8 +149,8 @@ public abstract class EnemyAIController<T> : MonoBehaviour , IDamageable, IDamag
 
     public virtual void TakeDamage(int damage, DamageType damageType)
     {
-        Hp -= damage;
-        if(Hp <= 0)
+        hp -= damage;
+        if(hp <= 0)
         {
             EnemyManager.instance.activeEnemies.Remove(gameObject);
             Debug.Log($"{gameObject.name} 사망");
@@ -154,4 +162,19 @@ public abstract class EnemyAIController<T> : MonoBehaviour , IDamageable, IDamag
     {
         target.TakeDamage(damage, DamageType.Physical);
     }
+
+    public virtual void AttackCenter()
+    {
+        Debug.Log($"{gameObject.name} 센터 공격");
+    }
+}
+
+/// <summary>
+/// EnemyAIController<T>는 EnemyAIController를 상속받아 특정 타입의 AIData를 사용하는 컨트롤러입니다.
+/// </summary>
+public abstract class EnemyAIController<T> : EnemyAIController where T : BaseEnemyAIData
+{
+    [SerializeField] protected new T enemyData;
+    
+    public override BaseEnemyAIData EnemyData => enemyData;
 }

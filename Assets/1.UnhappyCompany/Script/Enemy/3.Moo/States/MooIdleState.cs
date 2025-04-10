@@ -4,6 +4,7 @@ using UnityEngine.AI;
 public class MooIdleState : IState
 {
     private MooAIController controller;
+    private bool isShowDebug = false;
 
     public MooIdleState(MooAIController controller)
     {
@@ -12,7 +13,7 @@ public class MooIdleState : IState
 
     public void Enter()
     {
-        Debug.Log("Moo: Idle 상태 시작");
+        DebugManager.Log("Moo: Idle 상태 시작", isShowDebug);
         controller.PlayAnimation(controller.idleAnimationName);
     }
 
@@ -34,7 +35,7 @@ public class MooIdleState : IState
 
     public void Exit()
     {
-        Debug.Log("Moo: Idle 상태 종료");
+        DebugManager.Log("Moo: Idle 상태 종료", isShowDebug);
     }
 
     private void SetRandomDestination()

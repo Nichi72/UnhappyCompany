@@ -56,5 +56,15 @@ public enum EnemyType
     Animal      // 동물형 (물리 속성)
 }
 
+public enum EnemyBudgetFlag
+{
+    // 생성이 되었음.
+    Created,
+    // Budget에 추가되었음.
+    AddedToBudget,
+    // Budget에서 차감되었음.
+    SubtractedFromBudget,
+}
+
 public enum RSPChoice { Rock, Scissors, Paper }
 public enum RSPResult { Win, Lose, Draw }

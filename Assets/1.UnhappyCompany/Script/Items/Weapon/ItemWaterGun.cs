@@ -151,7 +151,7 @@ public class ItemWaterGun : Item, IDamager, IItemOverrideUpdate
     public void DealDamage(int damage, IDamageable target)
     {
         target.TakeDamage(damage, DamageType.Water); // 물 데미지 타입 사용
-        Debug.Log($"{target.ToString()} Water Damage! _ Left HP { target.Hp}");
+        Debug.Log($"{target.ToString()} Water Damage! _ Left HP { target.hp}");
     }
 
     private void CheckValuesAndStop()

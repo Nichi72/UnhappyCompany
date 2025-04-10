@@ -35,7 +35,7 @@ public class ItemsMeleeAttack : Item ,IDamager
     public void DealDamage(int damage, IDamageable target) 
     {
         target.TakeDamage(damage, DamageType.Physical);
-        Debug.Log($"{target.ToString()} Damage! _ Left HP { target.Hp}");
+        Debug.Log($"{target.ToString()} Damage! _ Left HP { target.hp}");
     }
 
     public override void PickUp(Player player)

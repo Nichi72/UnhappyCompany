@@ -2,7 +2,6 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
-
 public class RampageChargeState : IState
 {
     private RampageAIController controller;
@@ -13,18 +12,20 @@ public class RampageChargeState : IState
 
     private Coroutine chargeCoroutine;
 
+    private bool isShowDebug = false;
+
 
     public RampageChargeState(RampageAIController controller,string beforeState)
     {
-        Debug.Log($"{beforeState} 상태에서 돌진 시작");
+        DebugManager.Log($"{beforeState} 상태에서 돌진 시작", isShowDebug);
         this.controller = controller;
         this.rb = controller.GetComponent<Rigidbody>();
-        chargeSpeed = controller.enemyData.rushSpeed;
+        chargeSpeed = controller.EnemyData.rushSpeed;
         
     }
     public void Enter()
     {
-        Debug.Log("Rampage: Charge 상태 시작");
+        DebugManager.Log("Rampage: Charge 상태 시작", isShowDebug);
         controller.agent.enabled = false;
         rb.isKinematic = true;
 
@@ -48,7 +49,7 @@ public class RampageChargeState : IState
 
     public void Exit()
     {
-        Debug.Log("Rampage: Charge 상태 종료");
+        DebugManager.Log("Rampage: Charge 상태 종료", isShowDebug);
         // TODO: 돌진 종료 시 애니메이션, 사운드 정리 등
     }
 
@@ -70,7 +71,7 @@ public class RampageChargeState : IState
             elapsedTime += Time.deltaTime;
             if (elapsedTime >= waitBeforeCharge)
             {
-                Debug.Log("3초가 지나 루프를 빠져나갑니다.");
+                DebugManager.Log("3초가 지나 루프를 빠져나갑니다.", isShowDebug);
                 controller.onceReduceHP = true;
                 break;
             }
@@ -79,35 +80,35 @@ public class RampageChargeState : IState
             initialDirection.y = 0;
             Quaternion targetRotation = Quaternion.LookRotation(initialDirection);
             controller.transform.rotation = Quaternion.Slerp(controller.transform.rotation, targetRotation, Time.deltaTime * 5f);
-            Debug.Log("플레이어를 향해 회전중 direction " + initialDirection);
+            DebugManager.Log("플레이어를 향해 회전중 direction " + initialDirection, isShowDebug);
             yield return null;
         }
         // 돌진
         Vector3 playerPosition = GameManager.instance.currentPlayer.transform.position;
         rb.isKinematic = true;
         controller.agent.enabled = true;
-        Debug.Log("playerPosition: " + playerPosition);
+        DebugManager.Log("playerPosition: " + playerPosition, isShowDebug);
         while(true)
         {
             // NavMeshAgent를 사용하여 플레이어를 따라감
             controller.agent.SetDestination(playerPosition);
 
             float distance = Vector3.Distance(controller.transform.position, playerPosition);
-            Debug.Log($"Vector3.Distance(controller.transform.position, playerPosition): {distance} <= {controller.enemyData.attackRadius}" );
-            if (distance <= controller.enemyData.attackRadius)
+            DebugManager.Log($"Vector3.Distance(controller.transform.position, playerPosition): {distance} <= {controller.EnemyData.attackRadius}", isShowDebug);
+            if (distance <= controller.EnemyData.attackRadius)
             {
                 if(isPlayerInRange)
                 {
                     isPlayerInRange = false;
                     playerDirection = (playerPosition - controller.transform.position).normalized;
-                    Debug.Log($"남은 경로가 하나 남았습니다. playerDirection {playerDirection}");
+                    DebugManager.Log($"남은 경로가 하나 남았습니다. playerDirection {playerDirection}", isShowDebug);
                     yield return null;
                 }
                 
                 // 플레이어 위치에 도달했는지 확인
                 if (controller.agent.remainingDistance <= controller.agent.stoppingDistance)
                 {
-                    Debug.Log("플레이어 위치에 도달했습니다.");
+                    DebugManager.Log("플레이어 위치에 도달했습니다.", isShowDebug);
                     yield return null;
                     break;
                 }
@@ -126,15 +127,15 @@ public class RampageChargeState : IState
                 rb.angularVelocity = Vector3.zero;
                 
                 
-                Debug.Log("돌진 충돌로 종료");
+                DebugManager.Log("돌진 충돌로 종료", isShowDebug);
                 break;
             }
-            Debug.Log("플레이어 위치에 도달 해당 방향으로 돌진중");
+            DebugManager.Log("플레이어 위치에 도달 해당 방향으로 돌진중", isShowDebug);
             rb.linearVelocity = playerDirection * chargeSpeed;
             yield return null;
         }
 
-        Debug.Log("돌진 충돌로 종료후 처리");
+        DebugManager.Log("돌진 충돌로 종료후 처리", isShowDebug);
         // controller.ChangeState(new RampageIdleState(controller,"ChargeState"));
         if(controller.chargeCount > 0)
         {
@@ -142,7 +143,7 @@ public class RampageChargeState : IState
         }
         else
         {
-            controller.chargeCount = controller.enemyData.maxChargeCount;
+            controller.chargeCount = controller.EnemyData.maxChargeCount;
             controller.ChangeState(new  RampageIdleState(controller,"ChargeState(연속 돌진)"));
         }
         
@@ -173,6 +174,6 @@ public class RampageChargeState : IState
         Vector3 toPlayer = controller.player.position - controller.transform.position;
         float distance = toPlayer.magnitude;
 
-        return distance <= controller.enemyData.patrolRadius;
+        return distance <= controller.EnemyData.patrolRadius;
     }
 }
