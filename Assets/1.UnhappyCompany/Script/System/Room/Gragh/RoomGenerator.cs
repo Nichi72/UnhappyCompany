@@ -96,7 +96,7 @@ public class RoomGenerator : MonoBehaviour
             if(startDoor.shouldGenerate)
             {
                 // 일단 방 생성
-                var newRoom = Instantiate(GetRoomNodePrefab(RoomNode.RoomType.KoreaRoom));
+                var newRoom = Instantiate(GetRoomNodePrefab(RoomNode.RoomType.HospitalRoom));
                 newRoom.depth = 0; // 시작 방의 깊이를 0으로 설정
                 
                 // 겹침 체크 전에 대기
