@@ -15,6 +15,8 @@ public class RoomNode : MonoBehaviour
         KoreaRoom,
         HospitalRoom,
     }
+    public RoomSetting roomSetting;
+
     public RoomType currentRoomType;
     // [ReadOnly] public RoomNode parentRoom;
     [ReadOnly] public DoorEdge connectToParentDoor; // 부모와 연결 할 문
