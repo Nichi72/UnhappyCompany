@@ -66,5 +66,16 @@ public enum EnemyBudgetFlag
     SubtractedFromBudget,
 }
 
+    public enum DoorDirection
+    {
+        North,  // 북쪽(+Z)
+        South,  // 남쪽(-Z)
+        East,   // 동쪽(+X)
+        West,   // 서쪽(-X)
+        Up,     // 위쪽(+Y)
+        Down    // 아래쪽(-Y)
+    }
+    
+
 public enum RSPChoice { Rock, Scissors, Paper }
 public enum RSPResult { Win, Lose, Draw }

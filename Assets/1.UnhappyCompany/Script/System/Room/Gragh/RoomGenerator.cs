@@ -4,15 +4,28 @@ using System.Collections;
 using System.Linq;
 using System;
 using Random = UnityEngine.Random;
-using Unity.VisualScripting;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
+[System.Serializable]
+public class DoorGeneration 
+{
+    public DoorEdge door;
+    public bool shouldGenerate = true;
+    public int stair = 0;
+    [Tooltip("현재 다른 방향으로 생성될 확률")]
+    public float currentOtherDirectionProbability = 0f;
+    public float directionProbabilityIncreaseRate = 0.15f;
+    [Tooltip("처음 생성시 몇번동안 다른 방향으로 생성하지 않을지")]
+    public int initialDirectionChangeDelay = 5; // 
+    public int currentInitialDirectionChangeDelay = 0; // 
+    public bool isGenerating = false;
+}
+
 public class RoomGenerator : MonoBehaviour
 {
-    [System.Serializable]
-    public class DoorGeneration {
-        public DoorEdge door;
-        public bool shouldGenerate = true;
-        public int stair = 0;
-    }
+    
     [System.Serializable]
     public class RoomRandomGeneration {
         public RoomNode room;
@@ -33,16 +46,17 @@ public class RoomGenerator : MonoBehaviour
     }
     public static RoomGenerator instance;
     [ReadOnly] public List<RoomNode> roomList = new List<RoomNode>(); // 생성된 방 리스트
-    public RoomNode startRoomNode;// 시작 방
+    public RoomNode startRoomNode; // 시작 방
     public DoorGeneration[] doorGenerationSettings; // 시작방에서 시작 문 선택
     [SerializeField] private float createRoomTime = 1f;
-    public bool isGenerating = false;
-
     public RoomTypeGeneration[] roomTypeGenerationSettingsForSmallRoom;
     public RoomTypeGeneration[] roomTypeGenerationSettingsForStairRoom;
-
+    [ReadOnly] [SerializeField] private int currentActiveRoomCount = 0;
+    public bool isGenerating = false;
     [Header("==== 밸런스 처리 ====")]
     [Header("각각의 방이 생성 될 확률(!!반드시!!총합이 1이 되어야함)")]
+    [Header("[new Room Generator] 다른 방향으로 생성될 확률")]
+    // public static float directionProbabilityIncreaseRate = 0.15f;
     public RoomTypeGeneration[] roomTypeGenerationSettings;
     [Header("생성 할 방의 개수")]
     public int roomCountFirstTime = 10; // 처음에 생성 될 방의 개수
@@ -52,6 +66,8 @@ public class RoomGenerator : MonoBehaviour
     public int roomCountPerDepth = 6; // 깊이를 반복 할 때마다 생성 될 방의 개수
     [Header("더 먼곳에 있는 방을 먼저 생성할 확률을 조절하는 함수")]
     public float farRoomProbability = 0.5f; // 더 먼곳에 있는 방을 먼저 생성할 확률을 조절하는 함수
+    
+   
     [Header("계단을 생성할 확률을 조절하는 함수")]
     public float stairProbability = 0.5f; // 계단을 생성할 확률을 조절하는 함수
     [Header("방 생성 시도 횟수")]
@@ -66,8 +82,12 @@ public class RoomGenerator : MonoBehaviour
     [Tooltip("최대 실패 허용 횟수, 이 이상 실패하면 문은 영구히 제외됨")]
     public int maxDoorFailCount = 3;
 
+
+
     private Dictionary<DoorEdge, DoorRetryInfo> doorRetryData = new Dictionary<DoorEdge, DoorRetryInfo>();
     private float gameStartTime;
+    
+    // [ReadOnly] [SerializeField] private int currentActiveRoomCount = 0;
 
     void Awake()
     {
@@ -81,24 +101,38 @@ public class RoomGenerator : MonoBehaviour
     void Start()
     {
         StartCoroutine(GenerateRoomFirstTime());
+        // foreach(var doorGeneration in doorGenerationSettings)
+        // {
+        //     if(doorGeneration.shouldGenerate)
+        //     {
+        //         currentActiveRoomCount++;
+        //     }
+        // }
+        
     }
 
-    // Update is called once per frame
     void Update()
     {
-       
+        if(currentActiveRoomCount == 0)
+        {
+            isGenerating = false;
+        }
     }
-   
+
+
     private IEnumerator GenerateRoomFirstTime()
     {
         foreach(var startDoor in doorGenerationSettings)
         {
             if(startDoor.shouldGenerate)
             {
+                // currentActiveRoomCount++;
+                isGenerating = true;
                 // 일단 방 생성
-                var newRoom = Instantiate(GetRoomNodePrefab(RoomNode.RoomType.KoreaRoom));
+                var newRoom = Instantiate(GetRoomNodePrefab(RoomNode.RoomType.HospitalRoom));
                 newRoom.depth = 0; // 시작 방의 깊이를 0으로 설정
-                
+                newRoom.doorDirection = startDoor.door.direction;
+                newRoom.DetermineDirectionDoors();
                 // 겹침 체크 전에 대기
                 yield return new WaitForFixedUpdate();
                 yield return new WaitForSeconds(createRoomTime);
@@ -113,11 +147,13 @@ public class RoomGenerator : MonoBehaviour
                 yield return new WaitForFixedUpdate();
                 yield return new WaitForSeconds(createRoomTime);
                 // 부모 노드를 할당 해주고 부모와 연결 할 문을 선택
-                newRoom.ConnectToParentRoom(startRoomNode);
+                newRoom.ConnectToParentRoom(startRoomNode, startDoor);
                 startRoomNode.ConnectToChildRoom(newRoom);
 
                 // 두 문을 연결 해줌
                 ConnectRooms(newRoom.gameObject, startDoor.door, newRoom.connectToParentDoor);
+                // newRoom.DetermineDirectionDoors();
+
 
                 // doorGenerationSettings를 셔플
                 var tempList = new List<DoorGeneration>(doorGenerationSettings);
@@ -137,7 +173,7 @@ public class RoomGenerator : MonoBehaviour
 
                 // 첫 번째 방 생성
                 RoomNode.RoomType randomRoomType = (RoomNode.RoomType)Random.Range(0, System.Enum.GetValues(typeof(RoomNode.RoomType)).Length);
-                StartCoroutine(GenerateRoom(newRoom, roomCountFirstTime));
+                StartCoroutine(GenerateRoom(newRoom, roomCountFirstTime,startDoor));
             }
         }
     }
@@ -147,6 +183,7 @@ public class RoomGenerator : MonoBehaviour
       
         for(int i = 0; i < depthCount; i++)
         {
+            
             if (roomList.Count > 0)
             {
                 // roomList에서 랜덤으로 방을 선택
@@ -157,22 +194,28 @@ public class RoomGenerator : MonoBehaviour
                 }
                 RoomNode roomToExpand = roomList[randomIndex];
                 tempRoomList.Add(randomIndex);
-                
+                DoorGeneration doorGeneration = GetDoorGeneration(roomToExpand.doorDirection);
                 // 선택된 방을 기준으로 확장
-                StartCoroutine(GenerateRoom(roomToExpand, roomCountPerDepth));
+                StartCoroutine(GenerateRoom(roomToExpand, roomCountPerDepth,doorGeneration));
             }
         }
     }
 
-    private IEnumerator GenerateRoom(RoomNode startRoomNode, int maxRoomCount)
+    private IEnumerator GenerateRoom(RoomNode startRoomNode, int maxRoomCount, DoorGeneration doorGeneration)
     {
+        currentActiveRoomCount++;
         isGenerating = true;
+        doorGeneration.isGenerating = true;
         yield return new WaitForSeconds(2f);
+        
 
         Queue<DoorEdge> doorQueue = new Queue<DoorEdge>();
         List<DoorEdge> failedDoorList = new List<DoorEdge>(); // 실패한 문들을 저장할 리스트
         Queue<RoomNode> roomQueue = new Queue<RoomNode>();
         List<RoomNode> createdRooms = new List<RoomNode>(); // 이번 생성에서 추가된 방들
+        
+        // 여러 문 연결 관리를 위한 사전
+        Dictionary<RoomNode, List<DoorEdge>> roomConnections = new Dictionary<RoomNode, List<DoorEdge>>();
 
         // 시작 방의 문을 큐에 추가
         foreach (var door in startRoomNode.GetUnconnectedDoors())
@@ -225,17 +268,29 @@ public class RoomGenerator : MonoBehaviour
 
             while (!roomCreated && tryCount < maxTryCount)
             {
-               
-                // 첫 번째 방 생성
-                // RoomNode.RoomType randomRoomType = (RoomNode.RoomType)Random.Range(0, System.Enum.GetValues(typeof(RoomNode.RoomType)).Length);
-                // 새 RoomNode 생성 및 연결
+                // 새 RoomNode 생성
                 RoomNode.RoomType randomRoomType = RoomNode.RoomType.HospitalRoom;
                 RoomNode newRoom = Instantiate(GetRoomNodePrefab(randomRoomType));
-                // newRoom.transform.position = beforeRoom.transform.position + new Vector3(0,1000,0);
-                newRoom.ConnectToParentRoom(beforeRoom);
+                newRoom.doorDirection = doorGeneration.door.direction;
+                newRoom.DetermineDirectionDoors();
+                // 부모방과의 연결 설정
+                newRoom.ConnectToParentRoom(beforeRoom, doorGeneration);
                 DoorEdge childDoor = beforeRoom.ConnectToChildRoom(newRoom);
+                // yield return new WaitForFixedUpdate();
+                // Debug.Break();
                 
+                if (childDoor == null)
+                {
+                    Debug.LogWarning("부모 방에서 연결할 문을 찾을 수 없습니다. 방 생성을 취소합니다.");
+                    Destroy(newRoom.gameObject);
+                    tryCount++;
+                    continue;
+                }
+                // 방 위치 조정
                 ConnectRooms(newRoom.gameObject, childDoor, newRoom.connectToParentDoor);
+                // 모든 문 방의 회전에 따라서 다시 조정 
+                newRoom.DetermineDirectionDoors();
+                // Debug.Break();
 
                 yield return new WaitForFixedUpdate();
                 yield return new WaitForSeconds(createRoomTime);
@@ -246,6 +301,12 @@ public class RoomGenerator : MonoBehaviour
                     createdRooms.Add(newRoom); // 생성된 방 추가
                     currentRoomCount++;
                     
+                    // 새 방에 대한 연결 리스트 초기화
+                    roomConnections[newRoom] = new List<DoorEdge> { childDoor };
+                    
+                    // 새롭게 생성된 방과 기존 방들 사이에 추가 연결 시도
+                    TryAdditionalConnections(newRoom, roomQueue);
+                    
                     // 새롭게 생성된 방의 문을 큐에 추가
                     foreach (var door in newRoom.GetUnconnectedDoors())
                     {
@@ -254,6 +315,7 @@ public class RoomGenerator : MonoBehaviour
 
                     roomCreated = true; // 겹치지 않았으므로 방 생성 성공
                     Debug.Log($"방 생성 성공: {currentRoomCount}/{maxRoomCount}");
+
                 }
                 else
                 {
@@ -347,7 +409,8 @@ public class RoomGenerator : MonoBehaviour
             }
         }
         
-        isGenerating = false;
+        doorGeneration.isGenerating = false;
+        currentActiveRoomCount--;
     }
     private void CancelConnectRooms(DoorEdge parentDoor, DoorEdge childDoor)
     {
@@ -494,7 +557,161 @@ public class RoomGenerator : MonoBehaviour
     {
         ExpandRoom();
     }
+
+    // 새로 생성된 방과 기존 방들 사이의 추가 연결을 시도하는 메서드
+    private void TryAdditionalConnections(RoomNode newRoom, Queue<RoomNode> existingRooms)
+    {
+        // 새로 생성된 방의 모든 문 가져오기
+        var newRoomDoors = newRoom.GetUnconnectedDoors();
+        if (newRoomDoors.Count == 0) return;
+        
+        // 이미 생성된 모든 방들에 대해
+        foreach (var existingRoom in existingRooms)
+        {
+            // 자기 자신은 건너뛰기
+            if (existingRoom == newRoom) continue;
+            
+            // 기존 방의 연결되지 않은 문들 가져오기
+            var existingRoomDoors = existingRoom.GetUnconnectedDoors();
+            if (existingRoomDoors.Count == 0) continue;
+            
+            // 두 방 사이의 거리 확인 (너무 멀리 떨어진 방들끼리는 연결 시도하지 않음)
+            float distance = Vector3.Distance(newRoom.transform.position, existingRoom.transform.position);
+            float maxConnectionDistance = 20f; // 적절한 값으로 조정 필요
+            
+            if (distance > maxConnectionDistance) continue;
+            
+            // 문 간 연결 시도
+            foreach (var newDoor in newRoomDoors.ToList()) // ToList()로 복사본 사용
+            {
+                if (newDoor.toRoomNode != null) continue; // 이미 연결된 문은 건너뛰기
+                
+                foreach (var existingDoor in existingRoomDoors.ToList())
+                {
+                    if (existingDoor.toRoomNode != null) continue; // 이미 연결된 문은 건너뛰기
+                    
+                    // 방향 체크 - 서로 마주보는 문들인지 확인
+                    bool doorsAreCompatible = CheckDoorsCompatibility(newDoor, existingDoor);
+                    
+                    if (doorsAreCompatible)
+                    {
+                        try 
+                        {
+                            // 두 문을 연결
+                            newDoor.toRoomNode = existingRoom;
+                            existingDoor.toRoomNode = newRoom;
+                            
+                            // 문과 연결된 두 방의 위치 조정
+                            // 이미 위치가 확정된 방을 기준으로 새 방의 위치를 조정해야 함
+                            // 이 경우 existingRoom은 이미 위치가 확정됨
+                            
+                            // 새 방의 현재 상태를 기억
+                            Vector3 originalPosition = newRoom.transform.position;
+                            Quaternion originalRotation = newRoom.transform.rotation;
+                            
+                            // 두 방의 위치 관계를 조정 시도
+                            bool alignmentSuccess = TryAlignRooms(newRoom, existingRoom, newDoor, existingDoor);
+                            
+                            if (alignmentSuccess && !newRoom.isOverlap)
+                            {
+                                Debug.Log($"추가 문 연결 및 위치 조정 성공: {newRoom.name}의 {newDoor.name}와 {existingRoom.name}의 {existingDoor.name}");
+                            }
+                            else
+                            {
+                                // 위치 조정 실패 시 원래 위치로 복원하고 연결 취소
+                                Debug.Log("추가 문 연결 실패: 방 위치 조정 후 겹침 발생");
+                                newRoom.transform.position = originalPosition;
+                                newRoom.transform.rotation = originalRotation;
+                                newDoor.toRoomNode = null;
+                                existingDoor.toRoomNode = null;
+                                continue;
+                            }
+                            
+                            // 하나의 연결만 시도 (여러 연결을 원하면 이 break 제거)
+                            break;
+                        }
+                        catch (System.Exception e) {
+                            Debug.LogError($"추가 문 연결 중 오류 발생: {e.Message}");
+                            newDoor.toRoomNode = null;
+                            existingDoor.toRoomNode = null;
+                        }
+                    }
+                }
+                
+                // 하나의 연결만 시도 (여러 연결을 원하면 이 break 제거)
+                if (newDoor.toRoomNode != null) break;
+            }
+        }
+    }
+
+    // 두 방을 문을 기준으로 정렬 시도
+    private bool TryAlignRooms(RoomNode newRoom, RoomNode existingRoom, DoorEdge newDoor, DoorEdge existingDoor)
+    {
+        // 두 문의 방향 계산
+        Vector3 newDoorDir = newDoor.transform.rotation.eulerAngles;
+        Vector3 existingDoorDir = existingDoor.transform.rotation.eulerAngles;
+        
+        // 문이 서로 마주보도록 방 회전 조정
+        float rotationDifference = Mathf.DeltaAngle(existingDoorDir.y, newDoorDir.y);
+        
+        // 나중에 추가되는 방(newRoom)의 회전을 조정
+        if (Mathf.Abs(Mathf.Abs(rotationDifference) - 180f) > 5f)
+        {
+            // 180도 차이가 아니면 회전 조정
+            newRoom.transform.Rotate(0, 180f - rotationDifference, 0);
+        }
+        
+        // 두 문 사이의 거리 계산
+        Vector3 offset = existingDoor.transform.position - newDoor.transform.position;
+        
+        // 방 위치 조정
+        newRoom.transform.position += offset;
+        
+        // 위치 조정 후 겹침 확인
+        // 잠시 대기 후 겹침 확인 상태 업데이트를 위해 몇 프레임 기다려야 할 수 있음
+        // 실제 구현에서는 코루틴이나 적절한 대기 메커니즘 필요
+        
+        // 겹침이 없으면 성공
+        return !newRoom.isOverlap;
+    }
+
+    // 두 문이 서로 연결 가능한지 확인
+    private bool CheckDoorsCompatibility(DoorEdge door1, DoorEdge door2)
+    {
+        // 문의 방향 벡터
+        Vector3 door1Dir = door1.transform.rotation.eulerAngles;
+        Vector3 door2Dir = door2.transform.rotation.eulerAngles;
+        
+        // 두 문의 Y축 회전 차이 계산
+        float rotationDifference = Mathf.DeltaAngle(door1Dir.y, door2Dir.y);
+        float absDifference = Mathf.Abs(rotationDifference);
+        
+        const float ANGLE_TOLERANCE = 5f; // 허용 오차 범위
+        
+        // 문이 서로 마주보는지 확인 (180도 차이)
+        bool facingEachOther = Mathf.Abs(absDifference - 180f) <= ANGLE_TOLERANCE;
+        
+        // 두 문 사이의 거리 확인
+        float doorDistance = Vector3.Distance(door1.transform.position, door2.transform.position);
+        float maxDoorDistance = 5f; // 적절한 값으로 조정 필요
+        
+        return facingEachOther && doorDistance <= maxDoorDistance;
+    }
+
+    public DoorGeneration GetDoorGeneration(DoorDirection doorDirection)
+    {
+        foreach(var doorGeneration in doorGenerationSettings)
+        {
+            if(doorGeneration.door.direction == doorDirection)
+            {
+                return doorGeneration;
+            }
+        }
+        return null;
+    }
 }
+
+
 
  
 
