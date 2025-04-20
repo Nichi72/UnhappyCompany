@@ -49,16 +49,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4351bbcdcc7d23143859466d4b121045, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentStateName: 
   agent: {fileID: 0}
   player: {fileID: 0}
   enemyData: {fileID: 11400000, guid: 3bd527d4fb4c8384a9229458b2b1a3eb, type: 2}
   patrolGizmoRangeColor: {r: 0, g: 1, b: 0, a: 1}
   chaseGizmoRangeColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   attackGizmoRangeColor: {r: 1, g: 0, b: 0, a: 1}
-  hp: 0
   enableDebugUI: 0
   debugUIPrefab: {fileID: 1408967662060289923, guid: d724028fde1d6c74fafdf89a418c9c10, type: 3}
   debugUI: {fileID: 0}
+  budgetFlag: 0
+  enemyData: {fileID: 11400000, guid: 3bd527d4fb4c8384a9229458b2b1a3eb, type: 2}
   rspSystem: {fileID: 0}
   animator: {fileID: 0}
   compulsoryPlayStack: 0
@@ -72,7 +74,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 706018679531887867}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 1.05
+  m_Radius: 0.5
   m_Speed: 3.5
   m_Acceleration: 100
   avoidancePriority: 50

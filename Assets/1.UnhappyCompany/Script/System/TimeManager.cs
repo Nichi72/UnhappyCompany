@@ -72,7 +72,10 @@ public class TimeManager : MonoBehaviour
         }
     }
 
-   
+    /// <summary>
+    /// enemyScheduleEvents를 외부에서 접근하기 위한 속성
+    /// </summary>
+    public IReadOnlyDictionary<TimeSpan, Action> EnemyScheduleEvents => enemyScheduleEvents;
 
     private void Awake()
     {

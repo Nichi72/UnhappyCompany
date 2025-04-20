@@ -69,14 +69,14 @@ public class MooAIController : EnemyAIController<MooAIData>
         UpdateAnimatorSpeed();
         CurrentStateName = currentState.GetType().Name;
     }
+    [ContextMenu("AttackCenter")]
+    public override  void AttackCenter()
+    {
+        base.AttackCenter();
+        ChangeState(new MooCenterAttackState(this));
+    }
 
-    // private void AfternoonUpdate()
-    // {
-    //     if(TimeManager.instance.IsDay)
-    //     {
-    //         ChangeState(new MooAfternoonState(this));
-    //     }
-    // }
+    
 
     /// <summary>
     /// 애니메이터의 Speed 파라미터를 업데이트합니다.

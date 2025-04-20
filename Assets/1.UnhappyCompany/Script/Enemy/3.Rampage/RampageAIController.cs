@@ -10,13 +10,12 @@ using System.Collections.Generic;
 public class RampageAIController : EnemyAIController<RampageAIData>
 {
     public new RampageAIData EnemyData => enemyData;
-    [Header("DEBUG")]
-    public string currentStateName;
+    // public string currentStateName;
     
 
     [Header("Charge State")]
     public bool isCollided = false;      // 돌진 중 충돌 발생 여부
-    public int chargeCount = 0;         // 돌진 횟수
+    public int chargeCount = 0;           // 돌진 횟수
     private int consecutiveCollisions = 0;// 연속 충돌 카운트
     private const int MAX_CONSECUTIVE_COLLISIONS = 10; // 최대 연속 충돌 횟수
     [Header("Panel State")]
@@ -61,7 +60,7 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     {
         base.Update();
         UpdateLineRenderer();
-        currentStateName = currentState.GetType().Name;
+        // currentStateName = currentState.GetType().Name;
 
         // currentPanelHealth가 0이 되면 RampageDisabledState로 전환
         if (CurrentPanelHealth <= 0 && !(currentState is RampageDisabledState))
@@ -89,7 +88,12 @@ public class RampageAIController : EnemyAIController<RampageAIData>
         }
     }
 
-    
+    [ContextMenu("ChangeCenterAttackState")]
+    public override void AttackCenter()
+    {
+        base.AttackCenter();
+        ChangeState(new RampageCenterAttackState(this));
+    }
 
     /// <summary>
     /// LineRenderer를 비활성화
@@ -197,6 +201,11 @@ public class RampageAIController : EnemyAIController<RampageAIData>
         {
             panel.gameObject.SetActive(false);
         }
+    }
+    [ContextMenu("ChangeCenterAttackState")]
+    public void ChangeCenterAttackState()
+    {
+        ChangeState(new RampageCenterAttackState(this));
     }
 
     #region == Debug ==

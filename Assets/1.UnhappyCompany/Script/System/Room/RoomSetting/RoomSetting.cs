@@ -8,8 +8,8 @@ using UnityEditor;
 public class RoomSetting : MonoBehaviour
 {
     public NavMeshSurface navMeshSurface;
-    public List<Transform> eggSpawnPoints;
-    public List<Transform> itemSpawnPoints;
+    public List<EggSpawnPoint> eggSpawnPoints;
+    public List<ItemSpawnPoint> itemSpawnPoints;
     public List<Light> roomLights;
     
     public List<GameObject> doorObjects;
@@ -204,8 +204,8 @@ public class RoomSettingEditor : Editor
 
     private void FindSpawnPoints(RoomSetting roomSetting)
     {
-        roomSetting.eggSpawnPoints = new List<Transform>();
-        roomSetting.itemSpawnPoints = new List<Transform>();
+        roomSetting.eggSpawnPoints = new List<EggSpawnPoint>();
+        roomSetting.itemSpawnPoints = new List<ItemSpawnPoint>();
 
         Transform[] allChildren = roomSetting.GetComponentsInChildren<Transform>(true); // 비활성 오브젝트도 포함
 
@@ -216,11 +216,11 @@ public class RoomSettingEditor : Editor
             // 태그 대신 GetComponent로 컴포넌트 확인
             if (child.GetComponent<EggSpawnPoint>() != null)
             {
-                roomSetting.eggSpawnPoints.Add(child);
+                roomSetting.eggSpawnPoints.Add(child.GetComponent<EggSpawnPoint>());
             }
             else if (child.GetComponent<ItemSpawnPoint>() != null)
             {
-                roomSetting.itemSpawnPoints.Add(child);
+                roomSetting.itemSpawnPoints.Add(child.GetComponent<ItemSpawnPoint>());
             }
         }
 

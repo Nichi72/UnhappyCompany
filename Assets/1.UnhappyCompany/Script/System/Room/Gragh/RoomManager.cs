@@ -9,6 +9,7 @@ public class RoomManager : MonoBehaviour
 {
     public static RoomManager Instance { get; private set; }
     public RoomGenerator roomGenerator;
+    public GameObject centerRoom;
 
     [Header("NavMesh 설정")]
     public NavMeshSurface navMeshSurface;
@@ -20,7 +21,6 @@ public class RoomManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            // DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -30,10 +30,8 @@ public class RoomManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Q))
-        {
-            UpdateAllRoomsNavMeshAsync();
-        }
+        
+
     }
 
     /// <summary>
@@ -75,8 +73,8 @@ public class RoomManager : MonoBehaviour
             Debug.LogError("RoomGenerator가 설정되지 않았습니다.");
             return;
         }
-
-        StartCoroutine(UpdateRoomsNavMeshCoroutine());
+        roomGenerator.allRoomList[0].roomSetting.navMeshSurface.BuildNavMesh();
+        // StartCoroutine(UpdateRoomsNavMeshCoroutine());
     }
 
     private IEnumerator UpdateRoomsNavMeshCoroutine()
@@ -85,7 +83,7 @@ public class RoomManager : MonoBehaviour
         Debug.Log("모든 방의 NavMesh 빌드 시작");
 
         // RoomGenerator의 roomList에서 모든 방 가져오기
-        List<RoomNode> rooms = new List<RoomNode>(roomGenerator.roomList);
+        List<RoomNode> rooms = new List<RoomNode>(roomGenerator.allRoomList);
         
         // 시작 방도 포함
         if(roomGenerator.startRoomNode != null && !rooms.Contains(roomGenerator.startRoomNode))

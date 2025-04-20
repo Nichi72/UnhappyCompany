@@ -47,7 +47,7 @@ public class MobileManager : MonoBehaviour
         {
             multiRaycastOcclusionCheck.ScanForEnemies();
         }
-        if(Input.GetKeyDown(KeyCode.E) && scanObj.activeSelf == true)
+        else if(Input.GetKeyDown(KeyCode.E) && scanObj.activeSelf == true)
         {
             // 스캔 종료
             player.firstPersonController._input.SetCursorLock(false,true);
@@ -57,11 +57,11 @@ public class MobileManager : MonoBehaviour
         }
     
 
-        if(Input.GetKeyDown(KeyCode.E) && uiObjmobile.activeSelf == true)
+        else if(Input.GetKeyDown(KeyCode.E) && uiObjmobile.activeSelf == true)
         {
             CCTVManager.instance.NextCCTV();
         }
-        if (Input.GetKeyDown(KeyCode.Q) && uiObjmobile.activeSelf == true)
+        else if (Input.GetKeyDown(KeyCode.Q) && uiObjmobile.activeSelf == true)
         {
             CCTVManager.instance.BeforeCCTV();
         }

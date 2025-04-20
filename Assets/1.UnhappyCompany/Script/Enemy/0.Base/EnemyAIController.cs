@@ -7,10 +7,13 @@ using UnityEngine.AI;
 /// </summary>
 public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
 {
+    [Header("DEBUG")]
+    public string currentStateName;
     [SerializeField] protected IState currentState; // 현재 활성화된 상태
     protected UtilityCalculator utilityCalculator; // 유틸리티 계산기
     public NavMeshAgent agent; // NavMeshAgent 컴포넌트 참조
     public Transform player; // 플레이어의 Transform 참조
+
     
     [Header("AI Settings")]
     [SerializeField] protected BaseEnemyAIData enemyData;
@@ -111,6 +114,7 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
     protected virtual void Update()
     {
         HandleExecute();
+        currentStateName = currentState.GetType().Name;
 
         // 디버그 UI 업데이트
         if (debugUI != null)
@@ -167,6 +171,27 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
     {
         Debug.Log($"{gameObject.name} 센터 공격");
     }
+
+    public void FollowTarget(float stoppingDistance = 2.0f , Vector3 targetPosition = default)
+    {
+        float distanceToPlayer = Vector3.Distance(transform.position, targetPosition);
+        
+        if (distanceToPlayer > stoppingDistance)
+        {
+            agent.SetDestination(targetPosition);
+        }
+        else
+        {
+            // 플레이어 근처에 도달하면 서서히 멈춤
+            agent.velocity = Vector3.Lerp(agent.velocity, Vector3.zero, Time.deltaTime * 5f);
+            if (agent.velocity.magnitude < 0.1f)
+            {
+                agent.ResetPath();
+            }
+        }
+    }
+
+    
 }
 
 /// <summary>

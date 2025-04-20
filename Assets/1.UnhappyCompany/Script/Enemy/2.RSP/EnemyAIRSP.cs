@@ -23,6 +23,8 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractable
 
     public bool isAnimationEnd = false;
 
+    public bool isPlayerFound = false;
+
     public readonly string WinAnimationName = "RSP_Win";
     public readonly string LoseAnimationName = "RSP_Lose";
     public readonly string DrawAnimationName = "RSP_Draw";
@@ -41,6 +43,12 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractable
         // rspStack 증가 코루틴 시작
         StartCoroutine(IncrementCompulsoryPlayStack());
         StartCoroutine(CheckCompulsoryPlayStack());
+    }
+    [ContextMenu("ChangeCenterAttackState")]
+    public override void AttackCenter()
+    {
+        base.AttackCenter();
+        ChangeState(new RSPCenterAttackState(this, utilityCalculator));
     }
 
     protected override void HandleTimeOfDayChanged(TimeOfDay newTimeOfDay)

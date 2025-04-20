@@ -6,8 +6,6 @@ using Random = UnityEngine.Random;
 public class RegionManager : MonoBehaviour
 {
     public static RegionManager instance;
-    //public int currentBudget;
-
 
     void Awake()
     {

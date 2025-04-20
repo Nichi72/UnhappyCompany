@@ -97,7 +97,7 @@ public class GameManager : MonoBehaviour
         isPressedStartBtn = false;
         TimeManager.instance.IsStop = false;
         FadeManager.instance.FadeInThenFadeOut(1f, 1f, 1f);
-        EnemyManager.instance.SpawnEgg();
+        EnemyManager.instance.SpawnEggsInEachRoom();
     }
 
     private void OnChangeEnd()
