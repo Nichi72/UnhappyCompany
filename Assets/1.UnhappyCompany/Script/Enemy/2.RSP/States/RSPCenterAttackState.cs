@@ -9,7 +9,7 @@ public class RSPCenterAttackState : IState
     {
         this.controller = controller;
         this.utilityCalculator = calculator;
-        this.controller.agent.speed = 8f;
+        this.controller.agent.speed = 6f;
     }
 
     public void Enter()

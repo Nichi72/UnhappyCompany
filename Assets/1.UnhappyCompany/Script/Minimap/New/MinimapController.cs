@@ -158,8 +158,9 @@ public class MinimapController : MonoBehaviour
         MinimapIcon iconToRemove = minimapIcons.Find(icon => icon.worldTarget == worldTarget);
         if (iconToRemove != null)
         {
-            Destroy(iconToRemove.iconUI.gameObject);
             minimapIcons.Remove(iconToRemove);
+            Destroy(iconToRemove.iconUI.gameObject);
+
         }
     }
 }

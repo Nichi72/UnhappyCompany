@@ -2,28 +2,34 @@ using UnityEngine;
 
 public class CentralBatteryConsumer : MonoBehaviour, ICentralBatteryConsumer
 {
-    // ¹èÅÍ¸® ¼Ò¸ğ·®À» ÀúÀåÇÏ´Â ¹éÅ· ÇÊµå
+    [SerializeField] protected string id;
+    
     [Tooltip("This sets the amount of battery consumed per second.")]
     protected float batteryDrainPerSecond = 0.05f;
 
-    // ¹èÅÍ¸® ¼Ò¸ğ·® ÇÁ·ÎÆÛÆ¼
+    public string ID => id;
+
     public virtual float BatteryDrainPerSecond
     {
         get => batteryDrainPerSecond;
         set => batteryDrainPerSecond = value;
     }
 
-    void Start()
+    protected virtual void Start()
     {
-        CentralBatterySystem.Instance.RegisterConsumer(this); // Áß¾Ó ¹èÅÍ¸® ½Ã½ºÅÛ¿¡ µî·Ï
+        if (string.IsNullOrEmpty(id))
+        {
+            id = System.Guid.NewGuid().ToString();
+        }
+        CentralBatterySystem.Instance.RegisterConsumer(this); // ì¤‘ì•™ ë°°í„°ë¦¬ ì‹œìŠ¤í…œì— ì†Œë¹„ì ë“±ë¡
     }
 
     void OnDestroy()
     {
-        CentralBatterySystem.Instance.UnregisterConsumer(this); // Áß¾Ó ¹èÅÍ¸® ½Ã½ºÅÛ¿¡¼­ µî·Ï ÇØÁ¦
+        CentralBatterySystem.Instance.UnregisterConsumer(this); // ì¤‘ì•™ ë°°í„°ë¦¬ ì‹œìŠ¤í…œì—ì„œ ì†Œë¹„ì ì œê±°
     }
 
-    // ¹èÅÍ¸® ¼Ò¸ğ ¸Ş¼­µå
+    // ë°°í„°ë¦¬ ì†Œëª¨ ë©”ì„œë“œ
     public virtual void DrainBattery()
     {
         if (CentralBatterySystem.Instance != null)
@@ -34,7 +40,7 @@ public class CentralBatteryConsumer : MonoBehaviour, ICentralBatteryConsumer
 
     void Update()
     {
-        DrainBattery(); // ¸Å ÇÁ·¹ÀÓ¸¶´Ù ¹èÅÍ¸® ¼Ò¸ğ
+        DrainBattery(); 
     }
 
     public virtual string GetConsumerName()

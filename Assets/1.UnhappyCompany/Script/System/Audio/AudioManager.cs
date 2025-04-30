@@ -28,6 +28,15 @@ public class AudioManager : MonoBehaviour
     {
         EventInstance eventInstance = RuntimeManager.CreateInstance(eventReference);
         StartCoroutine(PlayOneShotCoroutine(eventInstance, targetTransform));
+        // eventInstance.setVolume(0.5f);
+        return eventInstance;
+    }
+
+    private EventInstance PlayOneShotTestBeep(EventReference eventReference, Transform targetTransform)
+    {
+        EventInstance eventInstance = RuntimeManager.CreateInstance(eventReference);
+        StartCoroutine(PlayOneShotCoroutine(eventInstance, targetTransform));
+        eventInstance.setVolume(0.2f);
         return eventInstance;
     }
 
@@ -39,11 +48,20 @@ public class AudioManager : MonoBehaviour
         // 사운드가 재생되는 동안 위치 업데이트
         while (eventInstance.isValid())
         {
-            eventInstance.set3DAttributes(RuntimeUtils.To3DAttributes(targetTransform.position));
+            if(targetTransform != null)
+            {
+                eventInstance.set3DAttributes(RuntimeUtils.To3DAttributes(targetTransform.position));
+            }
             yield return null;
         }
 
         // 사운드가 끝나면 메모리에서 해제
         eventInstance.release();
+    }
+
+    public void PlayTestBeep(string eventName, Transform targetTransform)
+    {
+        Debug.Log($"TestBeep {eventName}");
+        AudioManager.instance.PlayOneShotTestBeep(FMODEvents.instance.TestBeep, targetTransform);
     }
 }

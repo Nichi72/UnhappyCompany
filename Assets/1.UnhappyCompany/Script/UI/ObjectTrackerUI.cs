@@ -61,6 +61,8 @@ public class ObjectTrackerUI : MonoBehaviour
         }
     }
 
+    // 기존 AddTarget 함수 주석 처리
+    /*
     public void AddTarget(Transform newTarget, EObjectTrackerUIType targetType)
     {
         if (newTarget != null && !targets.Contains(newTarget))
@@ -120,6 +122,77 @@ public class ObjectTrackerUI : MonoBehaviour
             uiElements.Add(newUI);
             newUI.SetActive(true);
             StartCoroutine(RemoveUIAfterDelay(newTarget, newUI, showTime));
+        }
+    }
+    */
+
+    // 새로운 AddTarget 함수
+    public void AddTarget(Transform newTarget, EObjectTrackerUIType targetType)
+    {
+        if (newTarget != null && !targets.Contains(newTarget))
+        {
+            GameObject newUI = null;
+            switch (targetType)
+            {
+                case EObjectTrackerUIType.Enemy:
+                    BaseEnemyAIData enemyData = newTarget.GetComponent<BaseEnemyAIData>();
+                    string enemyName = "...";
+                    if(enemyData != null)
+                    {
+                        enemyName = enemyData.enemyName;
+                    }
+                    newUI = Instantiate(enemyUI, initTarget.transform);
+                    newUI.GetComponent<ScanInfo>().SetScanInfoText(enemyName);
+                    break;
+                case EObjectTrackerUIType.Egg:
+                    Egg egg = newTarget.GetComponent<Egg>();
+                    if(egg != null)
+                    {
+                        newUI = Instantiate(eggUI, initTarget.transform);
+                        ScanInfo scanInfo = newUI.GetComponent<ScanInfo>();
+                        
+                        if(egg.isScanningOver)
+                        {
+                            // 이미 스캔된 상태면 바로 eggType 표시
+                            scanInfo.SetScanInfoText(egg.eggType.ToString());
+                        }
+                        else
+                        {
+                            // 아직 스캔되지 않은 상태면 Scanning... 표시 후 2초 후에 eggType으로 변경
+                            scanInfo.SetScanInfoText("Scanning...");
+                            StartCoroutine(UpdateEggInfoAfterDelay(scanInfo, egg, 2f));
+                        }
+                    }
+                    break;
+                case EObjectTrackerUIType.CollectibleItem:
+                    Item item = newTarget.GetComponent<Item>();
+                    string price = "...";
+                    if(item != null)
+                    {
+                        price = item.itemData.SellPrice.ToString();
+                    }
+                    
+                    newUI = Instantiate(collectibleItemUI, initTarget.transform);
+                    newUI.GetComponent<ScanInfo>().SetScanInfoText(price);
+                    break;
+                default:
+                    newUI = Instantiate(uiPrefab, initTarget.transform);
+                    break;
+            }
+            targets.Add(newTarget);
+            uiElements.Add(newUI);
+            newUI.SetActive(true);
+            StartCoroutine(RemoveUIAfterDelay(newTarget, newUI, showTime));
+        }
+    }
+    
+    // 2초 후에 알 정보 업데이트를 위한 코루틴
+    private IEnumerator UpdateEggInfoAfterDelay(ScanInfo scanInfo, Egg egg, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if(scanInfo != null && egg != null)
+        {
+            scanInfo.SetScanInfoText(egg.eggType.ToString());
         }
     }
 

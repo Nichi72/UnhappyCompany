@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 using MyUtility;
 
-public class Computer : MonoBehaviour , IInteractable
+public class Computer : MonoBehaviour , IInteractableF , IToolTip
 {
     enum ComputerState
     {
@@ -14,7 +14,10 @@ public class Computer : MonoBehaviour , IInteractable
     public Player currentUsePlayer;
     [SerializeField] private ComputerState computerState;
 
-    public string InteractionText { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "Computer_ITR"); set => InteractionText = value; }
+    public string InteractionTextF { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "Computer_ITR"); set => InteractionTextF = value; }
+    public string ToolTipText { get => "F :컴퓨터 나가기"; set => ToolTipText = value; }
+    public string ToolTipText2 { get => ""; set => ToolTipText2 = value; }
+    public string ToolTipText3 { get => ""; set => ToolTipText3 = value; }
 
     private void Start()
     {
@@ -29,6 +32,7 @@ public class Computer : MonoBehaviour , IInteractable
             {
                 ComputerSystem.instance.OpenComputer(player);
                 DelayChangeState(ComputerState.Open);
+                ToolTipUI.instance.SetToolTip(this);
             }
         }
     }

@@ -23,28 +23,111 @@ public class Door : CentralBatteryConsumer
         Ing,
         End
     }
-
+    [ReadOnly] public bool shouldGenerate = false;
+    public DoorEdge doorEdge;
     public Transform closeTransform;
     public Transform openTransform;
     public float lerpSpeed = 1.0f;
     private Coroutine lerpCoroutine;
-    public DoorState currentDoorState;
+    
+    [SerializeField] private DoorState _currentDoorState;
+    public DoorState currentDoorState
+    {
+        get => _currentDoorState;
+        set
+        {
+            if (_currentDoorState != value)
+            {
+                DoorState oldState = _currentDoorState;
+                _currentDoorState = value;
+                OnDoorStateChanged(oldState, _currentDoorState);
+            }
+        }
+    }
+    
     public DoorOpening currentDoorOpening;
 
-    void Start()
+    // ë¬¸ ìƒíƒœê°€ ë³€ê²½ë  ë•Œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜
+    private void OnDoorStateChanged(DoorState oldState, DoorState newState)
     {
+        Debug.Log($"Door state changed from {oldState} to {newState}");
+        
+        // ìƒˆ ìƒíƒœì— ë”°ë¼ ì ì ˆí•œ í•¨ìˆ˜ í˜¸ì¶œ
+        if (newState == DoorState.Close)
+        {
+            OnDoorClosed();
+        }
+        else if (newState == DoorState.Open)
+        {
+            OnDoorOpened();
+        }
+    }
+    
+    // ë¬¸ì´ ë‹«í ë•Œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜
+    private void OnDoorClosed()
+    {
+        Debug.Log("ë¬¸ì´ ë‹«í˜”ìŠµë‹ˆë‹¤.");
+        if (shouldGenerate)
+        {
+            CentralBatterySystem.Instance.RegisterConsumer(this);
+        }
+    }
+    
+    // ë¬¸ì´ ì—´ë¦´ ë•Œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜
+    private void OnDoorOpened()
+    {
+        Debug.Log("ë¬¸ì´ ì—´ë ¸ìŠµë‹ˆë‹¤.");
+        CentralBatterySystem.Instance.UnregisterConsumer(this);
+    }
+
+    protected override void Start()
+    {
+        // ID ì„¤ì •: Door_[DoorEdge ID]_[ìœ„ì¹˜ í•´ì‹œ]
+        if (string.IsNullOrEmpty(id))
+        {
+            string doorEdgeId = doorEdge != null ? doorEdge.GetInstanceID().ToString() : "noDoorEdge";
+            string positionHash = transform.position.GetHashCode().ToString();
+            id = $"Door_{doorEdgeId}_{positionHash}";
+            Debug.Log($"ë¬¸ ID í• ë‹¹: {id}");
+        }
+
         currentDoorState = DoorState.Open;
         currentDoorOpening = DoorOpening.End;
         transform.position = openTransform.position;
-        CentralBatterySystem.Instance.RegisterConsumer(this); // Áß¾Ó ¹èÅÍ¸® ½Ã½ºÅÛ¿¡ µî·Ï
+        var temp = RoomManager.Instance.roomGenerator.doorGenerationSettings;
+        foreach (var item in temp)
+        {
+            if(item.door == doorEdge)
+            {
+                shouldGenerate = item.shouldGenerate;
+            }
+        }
+        
+        if (shouldGenerate)
+        {
+            base.Start(); // ë¶€ëª¨ í´ë˜ìŠ¤ì˜ Start ë©”ì„œë“œ í˜¸ì¶œ (ë°°í„°ë¦¬ ì†Œë¹„ì ë“±ë¡)
+        }
+    }
+
+    void Update()
+    {
+        if(shouldGenerate == false)
+        {
+            CentralBatterySystem.Instance.UnregisterConsumer(this);
+            InstantCloseDoor();
+        }
     }
 
     public override void DrainBattery()
     {
-        // ´İÇûÀ» ¶§¸¸ ¹èÅÍ¸® ¼Ò¸ğ
+        var currentGameState = GameManager.instance.currentGameState;
+        if (currentGameState == EGameState.Ready && currentGameState == EGameState.None)
+        {
+            return;
+        }
         if (currentDoorState == DoorState.Close)
         {
-            base.DrainBattery(); // ±âº» ¹èÅÍ¸® ¼Ò¸ğ ±â´É »ç¿ë
+            base.DrainBattery(); // ê¸°ë³¸ ì†Œëª¨ëŸ‰ ì†Œëª¨
         }
     }
 
@@ -52,11 +135,58 @@ public class Door : CentralBatteryConsumer
     {
         if (currentDoorOpening == DoorOpening.Ing)
         {
-            Debug.Log("ÇöÀç ¿­¸®´Â ÁßÀÔ´Ï´Ù.");
+            Debug.Log("ì´ë¯¸ ë¬¸ì´ ì—´ë¦¬ê³  ìˆìŠµë‹ˆë‹¤.");
             return;
         }
 
         lerpCoroutine = StartCoroutine(LerpMovement());
+    }
+    public void OpenDoor()
+    {
+        if(shouldGenerate == false)
+        {
+            Debug.Log($"{doorEdge.name} : shouldGenerate = false");
+            return;
+        }
+        if (currentDoorState == DoorState.Close)
+        {
+            lerpCoroutine = StartCoroutine(LerpMovement());
+        }
+    }
+
+    public void CloseDoor()
+    {
+        // if(shouldGenerate == false)
+        // {
+        //     Debug.Log($"{doorEdge.name} : shouldGenerate = false");
+        //     return;
+        // }
+        Debug.Log($"currentDoorState : {currentDoorState}");
+        if(currentDoorState == DoorState.Open)
+        {
+            Debug.Log("ë¬¸ì´ ë‹«í™ë‹ˆë‹¤.");
+            lerpCoroutine = StartCoroutine(LerpMovement());
+        }
+    }
+
+   
+
+    private void InstantOpenDoor()
+    {
+        if (currentDoorState == DoorState.Close)
+        {
+            transform.position = openTransform.position;
+            currentDoorState = DoorState.Open;
+        }
+    }
+
+    public void InstantCloseDoor()
+    {
+        // if (currentDoorState == DoorState.Open)
+        {
+            transform.position = closeTransform.position;
+            currentDoorState = DoorState.Close;
+        }
     }
 
     IEnumerator LerpMovement()
@@ -70,14 +200,14 @@ public class Door : CentralBatteryConsumer
             if (currentDoorState == DoorState.Close)
             {
                 transform.position = closeTransform.position;
-                // ¿­±â
+                // ë‹«íŒ ìœ„ì¹˜
                 startPoint = closeTransform.position;
                 endPoint = openTransform.position;
             }
-            else // ÇöÀç ¿­¸² »óÅÂ
+            else // ì—´ë¦° ìœ„ì¹˜
             {
                 transform.position = openTransform.position;
-                // ´İ±â
+                // ì—´ë¦° ìœ„ì¹˜
                 startPoint = openTransform.position;
                 endPoint = closeTransform.position;
             }
@@ -95,13 +225,13 @@ public class Door : CentralBatteryConsumer
                 yield return null;
             }
 
-            // »óÅÂ ¾÷µ¥ÀÌÆ®
+            // ë¬¸ì´ ì—´ë¦¬ê±°ë‚˜ ë‹«í˜
             currentDoorOpening = DoorOpening.End;
             currentDoorState = currentDoorState == DoorState.Close ? DoorState.Open : DoorState.Close;
         }
         else
         {
-            Debug.LogError("startTransform ¶Ç´Â endTransformÀÌ ´©¶ôµÇ¾ú½À´Ï´Ù.");
+            Debug.LogError("startTransform ë˜ëŠ” endTransformì´ ì„¤ì •ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
         }
     }
 }

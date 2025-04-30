@@ -29,5 +29,8 @@ public abstract class BaseEnemyAIData : ScriptableObject
     public float moveSpeed = 5f;
     [Tooltip("비용")]
     public int Cost = 10;
+    [Header("Base Status Settings")]
+    [Tooltip("체력")]
+    public int hpMax = 100;
 
 } 

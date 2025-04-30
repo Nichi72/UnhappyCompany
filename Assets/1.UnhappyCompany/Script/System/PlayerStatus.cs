@@ -2,18 +2,18 @@ using UnityEngine;
 
 public class PlayerStatus : MonoBehaviour
 {
-    [Header("ÇÃ·¹ÀÌ¾î »óÅÂ")]
-    [Header("ÃÖ´ë Ã¼·Â")] 
+    [Header("ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½")]
+    [Header("ï¿½Ö´ï¿½ Ã¼ï¿½ï¿½")] 
     public float MaxHealth = 100.0f;
-    [Header("ÃÖ´ë ½ºÅÂ¹Ì³ª")] 
+    [Header("ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½Â¹Ì³ï¿½")] 
     public float MaxStamina = 100.0f;
-    [Header("½ºÅÂ¹Ì³ª È¸º¹ ¼Óµµ (ÃÊ´ç È¸º¹·®)")] 
+    [Header("ï¿½ï¿½ï¿½Â¹Ì³ï¿½ È¸ï¿½ï¿½ ï¿½Óµï¿½ (ï¿½Ê´ï¿½ È¸ï¿½ï¿½ï¿½ï¿½)")] 
     public float StaminaRecoveryRate = 5.0f;
-    [Header("´Þ¸®±â ½Ã ½ºÅÂ¹Ì³ª °¨¼Ò·®")] 
+    [Header("ï¿½Þ¸ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Â¹Ì³ï¿½ ï¿½ï¿½ï¿½Ò·ï¿½")] 
     public float StaminaReduce = 30;
-    [Header("Á¡ÇÁ ½Ã ½ºÅÂ¹Ì³ª °¨¼Ò·®")] 
+    [Header("ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Â¹Ì³ï¿½ ï¿½ï¿½ï¿½Ò·ï¿½")] 
     public float StaminaJumpReduce = 10;
-    [Header("´Þ¸®±â ¶Ç´Â Á¡ÇÁ¸¦ À§ÇÑ ÃÖ¼Ò ½ºÅÂ¹Ì³ª")] 
+    [Header("ï¿½Þ¸ï¿½ï¿½ï¿½ ï¿½Ç´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö¼ï¿½ ï¿½ï¿½ï¿½Â¹Ì³ï¿½")] 
     public float StaminaThresholdToRunOrJump = 20.0f;
 
     [ReadOnly] [SerializeField] private float _currentHealth;
@@ -29,7 +29,7 @@ public class PlayerStatus : MonoBehaviour
         _currentStamina = MaxStamina;
         _canRunOrJump = true;
 
-        // UI ÃÊ±âÈ­
+        // UI ï¿½Ê±ï¿½È­
         UIManager.instance.UpdateHealthBar(_currentHealth, MaxHealth);
         UIManager.instance.UpdateStaminaBar(_currentStamina, MaxStamina);
     }

@@ -48,10 +48,10 @@ public class RSPRageState : IState
 
     private void FollowPlayer()
     {
-        float distanceToPlayer = Vector3.Distance(controller.transform.position, controller.player.position);
+        float distanceToPlayer = Vector3.Distance(controller.transform.position, controller.playerTr.position);
         if (distanceToPlayer > stoppingDistance)
         {
-            controller.agent.SetDestination(controller.player.position);
+            controller.agent.SetDestination(controller.playerTr.position);
         }
         else
         {

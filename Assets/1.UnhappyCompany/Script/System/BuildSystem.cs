@@ -10,7 +10,7 @@ public class BuildSystem : MonoBehaviour
     public Player currentPlayer;
 
     private GameObject currentObject; // 현재 배치 중인 객체
-    private bool isPlacing = false; // 배치 모드 여부
+    public bool isPlacing = false; // 배치 모드 여부
     private Dictionary<Renderer, Material> originalMaterials = new Dictionary<Renderer, Material>(); // 원래 재질 저장소
     [SerializeField] [ReadOnly] private GameObject currentItem;
     private void Awake()
@@ -19,6 +19,7 @@ public class BuildSystem : MonoBehaviour
     }
     void Update()
     {
+
         if(currentItem != null)
         {
             if(currentItem != GameManager.instance.currentPlayer.quickSlotSystem.currentItemObject)
@@ -51,6 +52,7 @@ public class BuildSystem : MonoBehaviour
     // 배치 모드 시작 - 객체를 생성하고 미리보기 재질 적용
     public void StartPlacing(GameObject objectToPlace, GameObject currentItem)
     {
+        InteractionSystem.instance.isInteraction = false;
         this.currentItem = currentItem;
         if (objectToPlace != null)
         {
@@ -64,7 +66,7 @@ public class BuildSystem : MonoBehaviour
                 rb.isKinematic = true;
                 rb.useGravity = false;
             }
-            // currentObject.layer = LayerMask.NameToLayer("Default");
+            //currentObject.layer = LayerMask.NameToLayer("Default");
 
             isPlacing = true; // 배치 모드 활성화
         }
@@ -102,8 +104,10 @@ public class BuildSystem : MonoBehaviour
         }
         currentObject.layer = LayerMask.NameToLayer(ETag.Item.ToString());
         RemovePreviewMaterial(currentObject); // 미리보기 재질 제거
+        Destroy(currentItem);
         currentObject = null;
         isPlacing = false; // 배치 모드 비활성화
+        InteractionSystem.instance.isInteraction = true;
         currentPlayer.quickSlotSystem.DestroyCurrentItem();
     }
 
@@ -113,6 +117,7 @@ public class BuildSystem : MonoBehaviour
         Destroy(currentObject); // 현재 배치 중인 객체 제거
         currentObject = null;
         isPlacing = false; // 배치 모드 비활성화
+        InteractionSystem.instance.isInteraction = true;
     }
 
     // 미리보기 재질 적용 - 배치할 객체에 재질 적용

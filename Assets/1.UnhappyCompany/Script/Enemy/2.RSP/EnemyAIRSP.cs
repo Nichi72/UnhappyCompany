@@ -6,7 +6,7 @@ using FMOD.Studio;
 /// <summary>
 /// RSP 타입 적의 AI 컨트롤러입니다.
 /// </summary>
-public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractable
+public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
 {
     // RSP 전용 프로퍼티
     public float AttackCooldown => enemyData.attackCooldown;
@@ -14,7 +14,7 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractable
     public float SpecialAttackRange => enemyData.specialAttackRange;
 
     private string interactionText = "가위바위보 하기";
-    public string InteractionText { get => interactionText; set => interactionText = value; }
+    public string InteractionTextF { get => interactionText; set => interactionText = value; }
     public RSPSystem rspSystem;
     public Animator animator;
 

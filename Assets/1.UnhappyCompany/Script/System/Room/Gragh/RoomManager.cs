@@ -3,7 +3,6 @@ using Unity.AI.Navigation;
 using UnityEngine.AI;
 using System.Collections.Generic;
 using System.Collections;
-using System.Threading.Tasks;
 
 public class RoomManager : MonoBehaviour
 {
@@ -15,6 +14,9 @@ public class RoomManager : MonoBehaviour
     public NavMeshSurface navMeshSurface;
     private NavMeshData navMeshData;
     private bool isNavMeshBuilding = false;
+
+    [Header("센터 문")]
+    public List<Door> centerDoorList;
 
     private void Awake()
     {

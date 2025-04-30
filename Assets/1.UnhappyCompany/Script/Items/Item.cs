@@ -3,12 +3,12 @@ using UnityEngine.Localization.Settings;
 using MyUtility;
 using System;
 [Serializable]
-public abstract class Item : MonoBehaviour , IInteractable , IToolTip
+public abstract class Item : MonoBehaviour , IInteractableF , IToolTip
 {
     public ItemData itemData;
     // string interactionText;
 
-    public string InteractionText { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "Item_ITR"); set => InteractionText = value; }
+    public string InteractionTextF { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "Item_ITR"); set => InteractionTextF = value; }
     public virtual string ToolTipText { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "Item_TT_Drop"); set => ToolTipText = value; }
     public virtual string ToolTipText2 { get => ""; set => ToolTipText2 = value; }
     public virtual string ToolTipText3 { get => ""; set => ToolTipText3 = value; }
@@ -93,6 +93,20 @@ public abstract class Item : MonoBehaviour , IInteractable , IToolTip
         player.SetModelHandTransform(isModelHandAnimation);
         player.firstPersonController.SetPivotHandTransform(isModelHandAnimation);
         transform.SetParent(player.rightHandPos);
+
+        if(itemData.ItemPosition != Vector3.zero)
+        {
+            transform.localPosition = itemData.ItemPosition;
+        }
+        if(itemData.ItemRotation != Vector3.zero)
+        {
+            transform.localRotation = Quaternion.Euler(itemData.ItemRotation);
+        }
+        if(itemData.ItemScale != Vector3.zero)
+        {
+            transform.localScale = itemData.ItemScale;
+        }
+        
         ToolTipUI.instance.SetToolTip(this);
     }
 

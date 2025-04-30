@@ -15,7 +15,7 @@ public class ScanningSystem : MonoBehaviour
     public int verticalSamples = 50;
 
     [SerializeField] private ObjectTrackerUI objectTrackerUI;
-    [SerializeField] private float scanCooldown = 3f; // 쿨타임 설정 (초 단위)
+    [SerializeField] private float scanCooldown = 1f; // 쿨타임 설정 (초 단위)
 
     
     // 카메라 뷰에 "Enemy"가 있는지 스캔하는 메서드

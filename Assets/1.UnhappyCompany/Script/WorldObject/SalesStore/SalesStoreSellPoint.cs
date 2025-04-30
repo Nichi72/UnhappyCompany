@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 using MyUtility;
 
-public class SalesStoreSellPoint : MonoBehaviour , IInteractable
+public class SalesStoreSellPoint : MonoBehaviour , IInteractableF
 {
     [SerializeField] private GameObject slider;
     [SerializeField] private bool isOpen = false;
@@ -22,7 +22,7 @@ public class SalesStoreSellPoint : MonoBehaviour , IInteractable
 
     private bool isToggling = false;
 
-    public string InteractionText { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "SalesStoreSellPoint_ITR"); set => InteractionText = value; }
+    public string InteractionTextF { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "SalesStoreSellPoint_ITR"); set => InteractionTextF = value; }
 
     public IEnumerator ToggleDoor()
     {

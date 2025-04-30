@@ -27,13 +27,13 @@ public class RampagePatrolState : IState
     public void ExecuteMorning()
     {
         PatrolUpdateLogic();
-        controller.UpdateLineRenderer();
+        // controller.UpdateLineRenderer();
     }
 
     public void ExecuteAfternoon()
     {
         PatrolUpdateLogic();
-        controller.UpdateLineRenderer();
+        // controller.UpdateLineRenderer();
     }
 
     public void Exit()
@@ -47,39 +47,48 @@ public class RampagePatrolState : IState
 
     private void PatrolUpdateLogic()
     {
+        if (controller.CheckPlayerDetected())
+        {
+            controller.ChangeState(new RampageChargeState(controller,"PatrolState"));
+            return;
+        }
+        
+        if (!agent.enabled)
+        {
+            agent.enabled = true;
+            return;
+        }
+        
         if (!agent.pathPending && agent.remainingDistance < 1f)
         {
-            SetRandomPatrolDestination();
+            controller.SetRandomPatrolDestination();
         }
 
         // 플레이어 감지 범위 / 각도 확인
-        if (CheckPlayerDetected())
-        {
-            controller.ChangeState(new RampageChargeState(controller,"PatrolState"));
-        }
+        
     }
 
-    private bool CheckPlayerDetected()
-    {
-        if (controller.player == null) return false;
+    // private bool CheckPlayerDetected()
+    // {
+    //     if (controller.player == null) return false;
 
-        Vector3 toPlayer = controller.player.position - controller.transform.position;
-        float distance = toPlayer.magnitude;
-        float angle = Vector3.Angle(controller.transform.forward, toPlayer);
+    //     Vector3 toPlayer = controller.player.position - controller.transform.position;
+    //     float distance = toPlayer.magnitude;
+    //     float angle = Vector3.Angle(controller.transform.forward, toPlayer);
 
-        if (distance <= controller.EnemyData.detectRange && angle <= controller.EnemyData.detectAngle)
-        {
-            return true;
-        }
-        return false;
-    }
+    //     if (distance <= controller.EnemyData.detectRange && angle <= controller.EnemyData.detectAngle)
+    //     {
+    //         return true;
+    //     }
+    //     return false;
+    // }
 
     private void SetRandomPatrolDestination()
     {
-        Vector3 randomDir = Random.insideUnitSphere * controller.EnemyData.patrolRadius;
-        randomDir += controller.transform.position;
+        Vector3 targetPoint = controller.GenerateRandomPatrolPoint();
         NavMeshHit hit;
-        if (NavMesh.SamplePosition(randomDir, out hit, controller.EnemyData.patrolRadius, 1))
+        
+        if (NavMesh.SamplePosition(targetPoint, out hit, controller.EnemyData.patrolRadius, 1))
         {
             agent.SetDestination(hit.position);
         }

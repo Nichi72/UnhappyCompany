@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 using MyUtility;
 
-public class NormalDoor : MonoBehaviour , IInteractable
+public class NormalDoor : MonoBehaviour , IInteractableF
 {
     public enum DoorType
     {
@@ -21,7 +21,7 @@ public class NormalDoor : MonoBehaviour , IInteractable
     [ReadOnly][SerializeField] private bool isOpen = false;
     private bool isMoving = false; // 문이 움직이는 중인지 체크하는 변수
 
-    public string InteractionText { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "NormalDoor_ITR"); set => InteractionText = value; }
+    public string InteractionTextF { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "NormalDoor_ITR"); set => InteractionTextF = value; }
 
     public void HitEventInteractionF(Player rayOrigin)
     {

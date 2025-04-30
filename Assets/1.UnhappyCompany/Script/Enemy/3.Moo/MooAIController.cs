@@ -9,7 +9,8 @@ public class MooAIController : EnemyAIController<MooAIData>
 {
     [Header("Debug")]
     [ReadOnly] [SerializeField] public string CurrentStateName = "";
-    [SerializeField] private bool isShowDebug = false;
+    public new MooAIData EnemyData => enemyData;
+    public bool isShowDebug = false;
     // 점액 배출 간격
     public float slimeEmitInterval = 10f;
     private float lastSlimeEmitTime;
@@ -26,7 +27,7 @@ public class MooAIController : EnemyAIController<MooAIData>
     [ReadOnly] [SerializeField] private float animatorSpeed = 2f;
 
     // 이동 및 스트레스 관련 변수
-    public float moveSpeed = 2f;
+    [HideInInspector] public float moveSpeed = 2f;
     public float stressThreshold = 5f;
     public float stress = 0f;
     public float stressIncreaseAmount = 1f;
@@ -36,9 +37,16 @@ public class MooAIController : EnemyAIController<MooAIData>
     private bool isBumping = false; // 부딪힘 상태 플래그
 
     // 데미지 관련 변수
-    public int damageAmount = 10; // 플레이어에게 줄 데미지 양
+    public int damageAmount = 10; // 플레이어에게 줄 데미지 양 
+    private float lastDamageTime = 0f; // 마지막으로 데미지를 준 시간
+    public float damageCooldown = 1f; // 데미지 간 쿨다운 시간 (1초)
 
+    [Header("Movement")]
     public CharacterController characterController;
+    public float gravity = 9.8f;   // 중력 값
+    private float verticalSpeed = 0f;   // 수직 속도
+    public bool isGrounded = false;   // 지면에 있는지 여부
+    public float groundCheckDistance = 0.1f;   // 지면 체크 거리
 
     /// <summary>
     /// 초기화 메서드입니다.
@@ -49,6 +57,7 @@ public class MooAIController : EnemyAIController<MooAIData>
         ChangeState(new MooIdleState(this));
         lastSlimeEmitTime = Time.time;
         agent = GetComponent<NavMeshAgent>();
+        moveSpeed = enemyData.moveSpeed;
         agent.enabled = false; // 초기에는 NavMeshAgent를 사용하지 않음
         agent.speed = moveSpeed;
         ChangeDirection();
@@ -58,6 +67,7 @@ public class MooAIController : EnemyAIController<MooAIData>
         }
         StartCoroutine(SlimeEmitRoutine());
         StartCoroutine(MovementRoutine());
+        DebugManager.Log("MooAIController Start", isShowDebug);
     }
 
     /// <summary>
@@ -67,7 +77,6 @@ public class MooAIController : EnemyAIController<MooAIData>
     {
         base.Update();
         UpdateAnimatorSpeed();
-        CurrentStateName = currentState.GetType().Name;
     }
     [ContextMenu("AttackCenter")]
     public override  void AttackCenter()
@@ -173,26 +182,32 @@ public class MooAIController : EnemyAIController<MooAIData>
     /// <summary>
     /// 플레이어와 충돌 시 데미지를 줍니다.
     /// </summary>
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerStay(Collider other)
     {
-        if (other.CompareTag("Player"))
+        // Debug.Break();
+        //Debug.Log("MooAIController OnCollisionEnter");
+        if (other.gameObject.tag == ETag.Player.ToString())
         {
-            DebugManager.Log("MooAIController OnCollisionEnter", isShowDebug);
-            Player player = other.GetComponent<Player>();
-            if (player != null)
+            // 1초에 한 번만 데미지를 줄 수 있도록 체크
+            if (Time.time - lastDamageTime >= damageCooldown)
             {
-                DealDamage(damageAmount, player as IDamageable);
+                //DebugManager.Log("MooAIController OnCollisionEnter", isShowDebug);
+                Player player = other.gameObject.GetComponent<Player>();
+                if (player != null)
+                {
+                    DealDamage(damageAmount, player as IDamageable);
+                    lastDamageTime = Time.time; // 마지막 데미지 시간 갱신
+                }
             }
         }
     }
-
-    
-
+   
     /// <summary>
     /// 플레이어에게 데미지를 줍니다.
     /// </summary>
     public override void DealDamage(int damage, IDamageable target)
     {
+        Debug.Log($"target {target.ToString()}DealDamage {damage} ");
         target.TakeDamage(damage, DamageType.Physical);
     }
 
@@ -211,9 +226,35 @@ public class MooAIController : EnemyAIController<MooAIData>
     {
         while (true)
         {
+            if(currentState.GetType().Name != typeof(MooIdleState).Name) // 도망치거나 다른거 하는 중이라서 움직임 함수 제한해야함.
+            {
+                yield return null;
+                continue;
+            }
+            // 지면 체크
+            isGrounded = IsGrounded();
+            
+            // 중력 적용
+            if (isGrounded && verticalSpeed < 0)
+            {
+                verticalSpeed = -0.5f; // 지면에 닿았을 때 약간의 음수 값 설정
+            }
+            else
+            {
+                verticalSpeed -= gravity * Time.deltaTime; // 중력 적용
+            }
+            
+            // 이동 벡터에 중력 적용
+            Vector3 movement = new Vector3(moveDirection.x, verticalSpeed, moveDirection.z);
+            
             if (!isStressed && !isBumping)
             {
-                characterController.Move(moveDirection * moveSpeed * Time.deltaTime);
+                // 수평 이동만 처리
+                Vector3 horizontalMovement = moveDirection * moveSpeed;
+                // 최종 이동 벡터 (수평 이동 + 중력)
+                movement = new Vector3(horizontalMovement.x, verticalSpeed, horizontalMovement.z);
+                
+                characterController.Move(movement * Time.deltaTime);
 
                 // 이동 방향으로 회전
                 RotateTowardsMoveDirection();
@@ -241,6 +282,9 @@ public class MooAIController : EnemyAIController<MooAIData>
             }
             else if (isStressed)
             {
+                // 스트레스 상태에서는 중력만 적용
+                characterController.Move(new Vector3(0, verticalSpeed, 0) * Time.deltaTime);
+                
                 // 스트레스 상태에서 목적지에 도달하면 스트레스 상태 종료
                 if (!agent.pathPending && agent.remainingDistance < 0.5f)
                 {
@@ -249,5 +293,27 @@ public class MooAIController : EnemyAIController<MooAIData>
             }
             yield return null;
         }
+    }
+    
+    /// <summary>
+    /// 캐릭터가 지면에 닿아있는지 확인합니다.
+    /// </summary>
+    private bool IsGrounded()
+    {
+        // 캐릭터의 발 위치에서 아래로 레이캐스트
+        Ray ray = new Ray(transform.position, Vector3.down);
+        RaycastHit hit;
+        
+        // 지면 체크 시각화
+        Debug.DrawRay(transform.position, Vector3.down * groundCheckDistance, Color.green, 0.1f);
+        
+        // 레이캐스트가 지면에 닿으면 true 반환
+        if (Physics.Raycast(ray, out hit, groundCheckDistance))
+        {
+            return true;
+        }
+        
+        // 캐릭터 컨트롤러의 isGrounded 속성도 함께 확인
+        return characterController.isGrounded;
     }
 } 

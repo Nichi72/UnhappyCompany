@@ -66,8 +66,8 @@ public class CubeChaseState : IState
 
     private void HandleChaseLogic(System.Action OnInnerAttackRadius = null, System.Action OnOuterAttackRadius = null)
     {
-        controller.agent.SetDestination(controller.player.position);
-        float distanceToPlayer = Vector3.Distance(controller.transform.position, controller.player.position);
+        controller.agent.SetDestination(controller.playerTr.position);
+        float distanceToPlayer = Vector3.Distance(controller.transform.position, controller.playerTr.position);
         
         if (distanceToPlayer < controller.AttackRadius)
         {

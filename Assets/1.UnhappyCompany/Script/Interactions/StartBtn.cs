@@ -1,9 +1,9 @@
 using UnityEngine;
 using MyUtility;
 
-public class StartBtn : MonoBehaviour , IInteractable
+public class StartBtn : MonoBehaviour , IInteractableF
 {
-    public string InteractionText { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "StartBtn_ITR"); set => InteractionText = value; }
+    public string InteractionTextF { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "StartBtn_ITR"); set => InteractionTextF = value; }
 
     public void HitEventInteractionF(Player rayOrigin)
     {
@@ -12,6 +12,9 @@ public class StartBtn : MonoBehaviour , IInteractable
             GameManager.instance.currentGameState = EGameState.Ready;
             GameManager.instance.isPressedStartBtn = true;
             Debug.Log("StartBtn HitEventInteractionF");
+            AudioManager.instance.PlayTestBeep("StartBtn HitEventInteractionF", transform);
+            StartCoroutine(GameManager.instance.ShowDayText());
+
         }
         else
         {

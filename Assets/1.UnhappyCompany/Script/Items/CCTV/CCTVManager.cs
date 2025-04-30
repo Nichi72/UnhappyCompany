@@ -25,14 +25,22 @@ public class CCTVManager : MonoBehaviour
     void Start()
     {
         currentIndex = 0;
-        TurnOnOnlyOneByCurrentIndex();
+        // TurnOnOnlyOneByCurrentIndex();
         originalColor = cctvMaterial.color;
+        
+        // MobileManager의 UI 상태 변경 감지
+        if (mobileManager != null)
+        {
+            // mobileManager.OnMobileUIStateChanged가 있는 경우에 활용 가능
+        }
     }
-
     public void NextCCTV()
     {
         ClampIndex(1);
-        StopCoroutine(blinkCoroutine);
+        if(blinkCoroutine != null)
+        {
+            StopCoroutine(blinkCoroutine);
+        }
         foreach(var cctv in cctvs)
         {
             cctv.CCTVIcon.img.color = originalColor;
@@ -40,10 +48,14 @@ public class CCTVManager : MonoBehaviour
         TurnOnOnlyOneByCurrentIndex();
     }
 
+    
     public void BeforeCCTV()
     {
         ClampIndex(-1);
-        StopCoroutine(blinkCoroutine);
+        if(blinkCoroutine != null)
+        {
+            StopCoroutine(blinkCoroutine);
+        }
         foreach(var cctv in cctvs)
         {
             cctv.CCTVIcon.img.color = originalColor;
@@ -52,7 +64,10 @@ public class CCTVManager : MonoBehaviour
     }
     public void PressedCCTV(CCTV cctv)
     {
-        StopCoroutine(blinkCoroutine);
+        if(blinkCoroutine != null)
+        {
+            StopCoroutine(blinkCoroutine);
+        }
         foreach(var cctvTemp in cctvs)
         {
             cctvTemp.CCTVIcon.img.color = originalColor;
@@ -73,20 +88,23 @@ public class CCTVManager : MonoBehaviour
         }
     }
 
-    public void TurnOnOnlyOneByCurrentIndex()
+    public CCTV TurnOnOnlyOneByCurrentIndex()
     {
+        CCTV currentCCTV = null;
         for (int i = 0; i < cctvs.Count; i++)
         {
             if(currentIndex == i)
             {
-                cctvs[i].currentCamera.gameObject.SetActive(true);
-                blinkCoroutine = StartCoroutine(BlinkMaterial(cctvs[i].CCTVIcon.img));
+                currentCCTV = cctvs[i];
+                currentCCTV.currentCamera.enabled = true;
+                blinkCoroutine = StartCoroutine(BlinkMaterial(currentCCTV.CCTVIcon.img));
             }
             else
             {
-                cctvs[i].currentCamera.gameObject.SetActive(false);
+                cctvs[i].currentCamera.enabled = false;
             }
         }
+        return currentCCTV;
     }
     public void TurnOnOnlyOneByCCTV(CCTV cctv)
     {
@@ -94,13 +112,15 @@ public class CCTVManager : MonoBehaviour
         {
             if(cctv == cctvs[i])
             {
-                cctvs[i].currentCamera.gameObject.SetActive(true);
+                // cctvs[i].currentCamera.gameObject.SetActive(true);
+                cctvs[i].currentCamera.enabled = true;
                 currentIndex = i;
                 blinkCoroutine = StartCoroutine(BlinkMaterial(cctvs[i].CCTVIcon.img));
             }
             else
             {
-                cctvs[i].currentCamera.gameObject.SetActive(false);
+                // cctvs[i].currentCamera.gameObject.SetActive(false);
+                cctvs[i].currentCamera.enabled = false;
             }
         }
     }
@@ -110,26 +130,79 @@ public class CCTVManager : MonoBehaviour
         float duration = 0.3f;
         while(true)
         {
-            if(mobileManager.uiObjmobile.activeSelf == false)
+            if(cctvMaterial == null || !cctvMaterial.isActiveAndEnabled)
+            {
+                Debug.Log("CCTV 이미지가 더 이상 존재하지 않습니다. 블링크 코루틴을 종료합니다.");
+                yield break;
+            }
+
+            if(mobileManager == null || mobileManager.uiObjmobile == null || !mobileManager.uiObjmobile.activeSelf)
             {
                 yield return null;
                 continue;
             }
+            
             Color originalColor = cctvMaterial.color;
             Color blinkColor = Color.black;
             yield return new WaitForSeconds(duration);
 
-            // Debug.Log($"{cctvMaterial.color} BlinkMaterial");
+            if(cctvMaterial == null || !cctvMaterial.isActiveAndEnabled)
+            {
+                Debug.Log("CCTV 이미지가 더 이상 존재하지 않습니다. 블링크 코루틴을 종료합니다.");
+                yield break;
+            }
+
             cctvMaterial.color = blinkColor;
             yield return new WaitForSeconds(duration);
+            
+            if(cctvMaterial == null || !cctvMaterial.isActiveAndEnabled)
+            {
+                Debug.Log("CCTV 이미지가 더 이상 존재하지 않습니다. 블링크 코루틴을 종료합니다.");
+                yield break;
+            }
+            
             cctvMaterial.color = originalColor; 
-            // Debug.Log($"{cctvMaterial.color} BlinkMaterial2");
         }
+    }
+
+    public bool IsAllCCTVsDisabled()
+    {
+        foreach(var cctv in cctvs)
+        {
+            if (cctv.currentCamera.enabled)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     void OnDestroy()
     {
         StopAllCoroutines();
     }
-   
+
+    public void TurnOnOffAllCCTVCamera(bool isOn)
+    {
+        foreach(var cctv in cctvs)
+        {
+            cctv.currentCamera.enabled = isOn;
+        }
+    }
+
+    public void TurnOnOffCurrentCCTV(bool isOn)
+    {
+        // 리스트가 비어있거나 인덱스가 범위를 벗어나는지 체크
+        if (cctvs == null || cctvs.Count == 0 || currentIndex < 0 || currentIndex >= cctvs.Count)
+        {
+            Debug.LogWarning("CCTV 리스트가 비어있거나 currentIndex가 유효하지 않습니다: " + currentIndex);
+            return;
+        }
+
+        if(cctvs[currentIndex] == null)
+        {
+            return;
+        }
+        cctvs[currentIndex].currentCamera.enabled = isOn;
+    }
 }

@@ -15,6 +15,7 @@ public class FMODEvents : MonoBehaviour
     [field: SerializeField] public EventReference rspWin { get; private set; }
     [field: SerializeField] public EventReference rspLose { get; private set; }
     [field: SerializeField] public List<EventReference> rspStack { get; private set; }
+    [field: SerializeField] public EventReference TestBeep { get; private set; }
 
 
 

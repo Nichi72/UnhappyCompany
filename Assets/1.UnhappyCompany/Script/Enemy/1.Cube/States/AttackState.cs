@@ -59,7 +59,7 @@ public class CubeAttackState : IState
 
     private void ExecuteFixedUpdate()
     {
-        float distanceToPlayer = Vector3.Distance(controller.transform.position, controller.player.position);
+        float distanceToPlayer = Vector3.Distance(controller.transform.position, controller.playerTr.position);
         // 플레이어를 향해 회전
        
         // 공격 범위 벗어남
@@ -77,7 +77,7 @@ public class CubeAttackState : IState
             attackCastingStartTime = Time.time;
             ChangeMaterialColor(Color.red);
             // 시전하면서 플레이어 쳐다보기
-            Vector3 directionToPlayer = (controller.player.position - controller.transform.position).normalized;
+            Vector3 directionToPlayer = (controller.playerTr.position - controller.transform.position).normalized;
             Quaternion targetRotation = Quaternion.LookRotation(directionToPlayer);
             controller.transform.rotation = Quaternion.Slerp(controller.transform.rotation, targetRotation, Time.fixedDeltaTime * 5f);
 
@@ -87,7 +87,7 @@ public class CubeAttackState : IState
         if (isAttackCasting && Time.time - attackCastingStartTime >= controller.AttackCastingTime)
         {
             ResetMaterialColor();
-            Vector3 directionToPlayer = (controller.player.position - controller.transform.position).normalized;
+            Vector3 directionToPlayer = (controller.playerTr.position - controller.transform.position).normalized;
             directionToPlayer += Vector3.up * 0.2f;
             directionToPlayer.Normalize();
             Debug.DrawRay(controller.transform.position, directionToPlayer * controller.RushForce, Color.red, 1f);

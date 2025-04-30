@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 using MyUtility;
 
-public class SalesStoreLever : MonoBehaviour , IInteractable
+public class SalesStoreLever : MonoBehaviour , IInteractableF
 {
     [SerializeField] private Animator animator;
     [SerializeField] private string animationNameOpen = "Open";
@@ -10,7 +10,7 @@ public class SalesStoreLever : MonoBehaviour , IInteractable
 
     private bool isAnimating = false;
 
-    public string InteractionText { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "SalesStoreLever_ITR"); set => InteractionText = value; }
+    public string InteractionTextF { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "SalesStoreLever_ITR"); set => InteractionTextF = value; }
 
     public void HitEventInteractionF(Player rayOrigin)
     {

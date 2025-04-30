@@ -67,7 +67,7 @@ public class RSPChaseState : IState
         {
             Debug.LogError("RSP: 비정상적인 멈춤 감지, 경로 재탐색");
             controller.agent.ResetPath();
-            controller.agent.SetDestination(controller.player.position);
+            controller.agent.SetDestination(controller.playerTr.position);
             lastMovedTime = Time.time;
         }
     }
