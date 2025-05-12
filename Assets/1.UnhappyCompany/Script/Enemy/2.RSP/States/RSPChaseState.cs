@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 public class RSPChaseState : IState
 {
@@ -6,18 +7,16 @@ public class RSPChaseState : IState
     private UtilityCalculator utilityCalculator;
     private float stoppingDistance = 2.0f; // 플레이어와의 최소 거리
     private bool isRage = false;
-    private float currentSpeed = 0;
+    // private float currentSpeed = 0;
     private float speedOfNormal = 3.5f;
     private float speedOfRage = 12f;
 
 
-    public RSPChaseState(EnemyAIRSP controller, UtilityCalculator calculator, float stoppingDistance = 2.0f)
+    public RSPChaseState(EnemyAIRSP controller)
     {
         this.controller = controller;
-        this.utilityCalculator = calculator;
-        this.stoppingDistance = stoppingDistance;
-        controller.agent.speed = currentSpeed;
-        controller.StartCheckCompulsoryPlayStack();
+        this.stoppingDistance = 5.5f;
+        
     }
 
     public void Enter()
@@ -29,14 +28,14 @@ public class RSPChaseState : IState
     {
         // Debug.Log("RSP: 오전 추적 중");
         controller.FollowTarget(stoppingDistance);
-        ExceptionalFollowPlayer();
+        // ExceptionalFollowPlayer();
     }
 
     public void ExecuteAfternoon()
     {
         // Debug.Log("RSP: 오후 추적 중");
         controller.FollowTarget(stoppingDistance);
-        ExceptionalFollowPlayer();
+        // ExceptionalFollowPlayer();
     }
 
     public void Exit()
@@ -50,27 +49,10 @@ public class RSPChaseState : IState
 
     public void ExecuteFixedAfternoon()
     {
+
     }
 
-    private Vector3 lastPosition;
-    private float lastMovedTime;
-    private float stuckCheckTime = 3f; // 멈춤 감지 시간
-    private void ExceptionalFollowPlayer()
-    {
-        float movedDistance = Vector3.Distance(controller.transform.position, lastPosition);
-        if (movedDistance > 0.1f) // 의미있는 이동이 있었다면
-        {
-            lastPosition = controller.transform.position;
-            lastMovedTime = Time.time;
-        }
-        else if (Time.time - lastMovedTime > stuckCheckTime) // 일정 시간동안 이동이 없었다면
-        {
-            Debug.LogError("RSP: 비정상적인 멈춤 감지, 경로 재탐색");
-            controller.agent.ResetPath();
-            controller.agent.SetDestination(controller.playerTr.position);
-            lastMovedTime = Time.time;
-        }
-    }
+    
 
     
 } 

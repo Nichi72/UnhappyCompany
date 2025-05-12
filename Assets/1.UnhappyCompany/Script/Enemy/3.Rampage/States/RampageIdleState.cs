@@ -40,7 +40,7 @@ public class RampageIdleState : IState
     private void UpdateLogic()
     {
         // 플레이어 감지 시 Charge 상태로 전환
-        if (controller.CheckPlayerDetected())
+        if (controller.CheckPlayerInSight())
         {
             controller.ChangeState(new RampageChargeState(controller,"IdleState"));
             return;

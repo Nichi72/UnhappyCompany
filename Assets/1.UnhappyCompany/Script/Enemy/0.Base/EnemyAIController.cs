@@ -212,7 +212,7 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
     }
     
     // 플레이어 감지 확인 메서드
-    public bool CheckPlayerDetected()
+    public bool CheckPlayerInSight()
     {
         if (playerTr == null)
         {
@@ -264,7 +264,7 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
 
     public virtual void DealDamage(int damage, IDamageable target)
     {
-        target.TakeDamage(damage, DamageType.Physical);
+        target.TakeDamage(damage, DamageType.Nomal);
     }
 
     public virtual void AttackCenter()
@@ -272,21 +272,56 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
         Debug.Log($"{gameObject.name} 센터 공격");
     }
 
-    public void FollowTarget(float stoppingDistance = 2.0f , Vector3 targetPosition = default)
+    public void FollowTarget(float stoppingDistance = 1f, Vector3 targetPosition = default , Action onArrive = null)
     {
-        float distanceToPlayer = Vector3.Distance(transform.position, targetPosition);
-        
-        if (distanceToPlayer > stoppingDistance)
+        if (targetPosition == default)
         {
+            if (playerTr != null)
+            {
+                targetPosition = playerTr.position;
+            }
+            else
+            {
+                Debug.LogWarning("FollowTarget: 타겟 위치가 지정되지 않았고 플레이어도 없습니다.");
+                return;
+            }
+        }
+        
+        float distanceToTarget = Vector3.Distance(transform.position, targetPosition);
+        // distanceToTarget += 4f;
+        
+        if (distanceToTarget > stoppingDistance)
+        {
+            // 타겟이 정지 거리보다 멀리 있으면 따라감
+            agent.stoppingDistance = stoppingDistance;
             agent.SetDestination(targetPosition);
+            
+            // 이동 중 정지하지 않도록 함
+            if (agent.pathPending || agent.remainingDistance > stoppingDistance)
+            {
+                // 이동 중
+            }
+            else
+            {
+                // 목적지에 도달했지만 플레이어가 이동했을 수 있으니 경로 갱신
+                agent.SetDestination(targetPosition);
+            }
         }
         else
         {
-            // 플레이어 근처에 도달하면 서서히 멈춤
+            // 타겟과 충분히 가까운 경우
             agent.velocity = Vector3.Lerp(agent.velocity, Vector3.zero, Time.deltaTime * 5f);
-            if (agent.velocity.magnitude < 0.1f)
+            
+            // 그러나 타겟이 다시 멀어지면 즉시 추적을 재개할 수 있도록 경로를 유지
+            if (distanceToTarget > stoppingDistance * 1.1f) // 약간의 여유를 두고 재추적
             {
-                agent.ResetPath();
+                agent.SetDestination(targetPosition);
+            }
+            //Debug.Log("도착");
+
+            if(onArrive != null)
+            {
+                onArrive();
             }
         }
     }

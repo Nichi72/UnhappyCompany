@@ -16,4 +16,7 @@ public class RSPEnemyAIData : BaseEnemyAIData
     public float afternoonSpeedMultiplier = 1.3f;
     [Header("오후 시간대 순찰 범위 증가 배율")]
     public float afternoonPatrolRangeMultiplier = 1.4f;
+
+    // [Header("추적 속도 증가 배율")]
+    // public float chaseSpeedMultiplier = 1.5f;
 } 

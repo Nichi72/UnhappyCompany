@@ -47,7 +47,7 @@ public class RampagePatrolState : IState
 
     private void PatrolUpdateLogic()
     {
-        if (controller.CheckPlayerDetected())
+        if (controller.CheckPlayerInSight())
         {
             controller.ChangeState(new RampageChargeState(controller,"PatrolState"));
             return;

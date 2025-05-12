@@ -41,6 +41,9 @@ public class UIManager : MonoBehaviour
     public Image centerBatteryLevelImage;
     public Dictionary<string, GameObject> batteryStatusItems = new Dictionary<string, GameObject>();
 
+    [Header("Settings UI")]
+    public GameObject settingsUI;
+
     private void Awake()
     {
         // 싱글톤 패턴 적용
@@ -76,6 +79,10 @@ public class UIManager : MonoBehaviour
     {
         // 현재 사용되지 않는 Update 메서드
         UpdateCenterBatteryLevel();
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            ToggleObject(settingsUI);
+        }
     }
 
     public void UpdateCenterBatteryLevel()

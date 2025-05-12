@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 237338803906257292}
   - component: {fileID: 8954461637624571415}
   - component: {fileID: 8357354315212367178}
+  - component: {fileID: 7019124002608275406}
   m_Layer: 8
   m_Name: EnemyAIRSP
   m_TagString: Enemy
@@ -51,7 +52,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentStateName: 
   agent: {fileID: 0}
-  player: {fileID: 0}
+  playerTr: {fileID: 0}
   enemyData: {fileID: 11400000, guid: 3bd527d4fb4c8384a9229458b2b1a3eb, type: 2}
   patrolGizmoRangeColor: {r: 0, g: 1, b: 0, a: 1}
   chaseGizmoRangeColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
@@ -60,11 +61,23 @@ MonoBehaviour:
   debugUIPrefab: {fileID: 1408967662060289923, guid: d724028fde1d6c74fafdf89a418c9c10, type: 3}
   debugUI: {fileID: 0}
   budgetFlag: 0
+  vision:
+    sightRange: 10
+    sightAngle: 120
+    obstacleLayer:
+      serializedVersion: 2
+      m_Bits: 0
+    playerLayer:
+      serializedVersion: 2
+      m_Bits: 0
+    drawGizmos: 1
+    sightColor: {r: 1, g: 0, b: 0, a: 0.3}
   enemyData: {fileID: 11400000, guid: 3bd527d4fb4c8384a9229458b2b1a3eb, type: 2}
-  rspSystem: {fileID: 0}
-  animator: {fileID: 0}
+  rspSystem: {fileID: 8954461637624571415}
+  animator: {fileID: 7019124002608275406}
   compulsoryPlayStack: 0
   isAnimationEnd: 0
+  isPlayerFound: 0
 --- !u!195 &6466035266941901335
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -149,6 +162,105 @@ CapsuleCollider:
   m_Height: 3.4559124
   m_Direction: 1
   m_Center: {x: -0, y: 1.7315031, z: 0}
+--- !u!95 &7019124002608275406
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 706018679531887867}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: 1343066a25d846445915433d067c1b8b, type: 3}
+  m_Controller: {fileID: 9100000, guid: 8f943113a0905984eb132d3522ae1e6d, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: "\nBinding warning: Some generic clip(s) animate transforms that
+    are already bound by a Humanoid avatar. These transforms can only be changed
+    by Humanoid clips.\n\tTransform 'grip'\n\tTransform 'grip'\n\tTransform 'grip'\n\tFrom
+    animation clip 'RSP_Stop'"
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!1001 &4836405834849703237
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 5813412284295014559}
+    m_Modifications:
+    - target: {fileID: 2510594055407254172, guid: 6e4b574b01ab8a64c9fa7a009c5fc222, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.3435886
+      objectReference: {fileID: 0}
+    - target: {fileID: 2510594055407254172, guid: 6e4b574b01ab8a64c9fa7a009c5fc222, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.2549872
+      objectReference: {fileID: 0}
+    - target: {fileID: 2510594055407254172, guid: 6e4b574b01ab8a64c9fa7a009c5fc222, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.2549872
+      objectReference: {fileID: 0}
+    - target: {fileID: 2510594055407254172, guid: 6e4b574b01ab8a64c9fa7a009c5fc222, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.20419666
+      objectReference: {fileID: 0}
+    - target: {fileID: 2510594055407254172, guid: 6e4b574b01ab8a64c9fa7a009c5fc222, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -1.1667215
+      objectReference: {fileID: 0}
+    - target: {fileID: 2510594055407254172, guid: 6e4b574b01ab8a64c9fa7a009c5fc222, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.82673913
+      objectReference: {fileID: 0}
+    - target: {fileID: 2510594055407254172, guid: 6e4b574b01ab8a64c9fa7a009c5fc222, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.012091685
+      objectReference: {fileID: 0}
+    - target: {fileID: 2510594055407254172, guid: 6e4b574b01ab8a64c9fa7a009c5fc222, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.7081944
+      objectReference: {fileID: 0}
+    - target: {fileID: 2510594055407254172, guid: 6e4b574b01ab8a64c9fa7a009c5fc222, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.7058097
+      objectReference: {fileID: 0}
+    - target: {fileID: 2510594055407254172, guid: 6e4b574b01ab8a64c9fa7a009c5fc222, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.012131363
+      objectReference: {fileID: 0}
+    - target: {fileID: 2510594055407254172, guid: 6e4b574b01ab8a64c9fa7a009c5fc222, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2510594055407254172, guid: 6e4b574b01ab8a64c9fa7a009c5fc222, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2510594055407254172, guid: 6e4b574b01ab8a64c9fa7a009c5fc222, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2998477409653743654, guid: 6e4b574b01ab8a64c9fa7a009c5fc222, type: 3}
+      propertyPath: m_Name
+      value: rspmap (1)
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 6e4b574b01ab8a64c9fa7a009c5fc222, type: 3}
+--- !u!4 &7046223043837194201 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2510594055407254172, guid: 6e4b574b01ab8a64c9fa7a009c5fc222, type: 3}
+  m_PrefabInstance: {fileID: 4836405834849703237}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &8337420418184272255
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -269,6 +381,13 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 8
       objectReference: {fileID: 0}
+    - target: {fileID: 4756048148658722085, guid: bce4477da83845541b2479067753a068, type: 3}
+      propertyPath: m_WarningMessage
+      value: "\nBinding warning: Some generic clip(s) animate transforms that are
+        already bound by a Humanoid avatar. These transforms can only be changed
+        by Humanoid clips.\n\tTransform 'grip'\n\tTransform 'grip'\n\tTransform 'grip'\n\tFrom
+        animation clip 'RSP_Attack'\n\tFrom animation clip 'RSP_Stop'"
+      objectReference: {fileID: 0}
     - target: {fileID: 5050338184879654063, guid: bce4477da83845541b2479067753a068, type: 3}
       propertyPath: m_Layer
       value: 8
@@ -336,9 +455,17 @@ PrefabInstance:
     - {fileID: 6970323135051733641, guid: bce4477da83845541b2479067753a068, type: 3}
     - {fileID: 8238636563124062753, guid: bce4477da83845541b2479067753a068, type: 3}
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 2529074765948105184, guid: bce4477da83845541b2479067753a068, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7046223043837194201}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: bce4477da83845541b2479067753a068, type: 3}
+--- !u!4 &5813412284295014559 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2529074765948105184, guid: bce4477da83845541b2479067753a068, type: 3}
+  m_PrefabInstance: {fileID: 8337420418184272255}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &7445782729171310112 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1504426864583167839, guid: bce4477da83845541b2479067753a068, type: 3}

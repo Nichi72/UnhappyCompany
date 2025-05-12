@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PlayerStatus : MonoBehaviour
+public class PlayerStatus : MonoBehaviour , IDamageable
 {
     [Header("�÷��̾� ����")]
     [Header("�ִ� ü��")] 
@@ -22,6 +22,24 @@ public class PlayerStatus : MonoBehaviour
     [ReadOnly] [SerializeField] private bool _canRunOrJump;
 
     public float CurrentHealth { get => _currentHealth; set => _currentHealth = value; }
+    
+    // IDamageable 인터페이스 구현
+    public int hp { get => (int)_currentHealth; set => _currentHealth = value; }
+
+    public void TakeDamage(int damage, DamageType damageType)
+    {
+        _currentHealth -= damage;
+        _currentHealth = Mathf.Clamp(_currentHealth, 0, MaxHealth);
+        UIManager.instance.UpdateHealthBar(_currentHealth, MaxHealth);
+
+        Debug.Log($"Player {damage}의 피해 입음 남은 체력:{hp}");
+        
+        if (_currentHealth <= 0)
+        {
+            // Handle player death here
+            Debug.Log("Player 사망");
+        }
+    }
 
     private void Awake()
     {

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Player : MonoBehaviour , IDamageable
+public class Player : MonoBehaviour
 {
     public Transform rightHandPos;
     public Transform noneModelHandTransform;
@@ -13,18 +13,6 @@ public class Player : MonoBehaviour , IDamageable
     public Animator armAnimator;
     public List<Transform> OffsetLists;
     public PlayerStatus playerStatus;
-
-    public int hp { get => (int)playerStatus.CurrentHealth; set => playerStatus.CurrentHealth = value; }
-
-    public void TakeDamage(int damage, DamageType damageType)
-    {
-        hp -= damage;
-        Debug.Log($"Player {damage}의 피해 입음 남은 체력:{hp}");
-        if(hp <= 0)
-        {
-            Debug.Log("Player 사망");
-        }   
-    }
 
     void Start()
     {

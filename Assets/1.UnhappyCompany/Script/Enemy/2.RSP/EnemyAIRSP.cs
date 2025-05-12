@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using FMOD.Studio;
+using UnhappyCompany;
 
 /// <summary>
 /// RSP 타입 적의 AI 컨트롤러입니다.
@@ -24,12 +25,23 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
     public bool isAnimationEnd = false;
 
     public bool isPlayerFound = false;
+    public bool coolDown = false; // 홀드 이후에 
 
     public readonly string WinAnimationName = "RSP_Win";
     public readonly string LoseAnimationName = "RSP_Lose";
     public readonly string DrawAnimationName = "RSP_Draw";
     public readonly string IdleAnimationName = "RSP_Idle";
     public readonly string HoldingAnimationName = "RSP_Stop";
+    
+    [Header("슬롯머신 참조")]
+    [Tooltip("RSPSlotMachine 참조")]
+    public RSPSlotMachine rspSlotMachine;
+    
+    [Tooltip("RSPSlotMachineConnector 참조")]
+    public RSPSlotMachineConnector rspConnector;
+    
+    [Tooltip("슬롯머신 UI 위치")]
+    public Transform slotMachineUIPosition;
 
     protected override void Start()
     {
@@ -37,12 +49,19 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
         // RSP 특화 초기화
         rspSystem = GetComponent<RSPSystem>();
         Player player = GameManager.instance.currentPlayer;
-        ChangeState(new RSPPatrolState(this, utilityCalculator, 60f));
-        // ChangeState(new RSPHoldingState(this, utilityCalculator, player, rspSystem));
+        ChangeState(new RSPPatrolState(this));
+    }
+    
+    protected override void Update()
+    {
+        base.Update();
         
-        // rspStack 증가 코루틴 시작
-        StartCoroutine(IncrementCompulsoryPlayStack());
-        StartCoroutine(CheckCompulsoryPlayStack());
+        // agent의 현재 속도를 기반으로 애니메이터 파라미터 업데이트
+        if (animator != null && agent != null)
+        {
+            float speed = agent.velocity.magnitude;
+            animator.SetFloat("Speed", speed);
+        }
     }
     [ContextMenu("ChangeCenterAttackState")]
     public override void AttackCenter()
@@ -89,12 +108,25 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
             }
             yield return null;
         }
+        Debug.Log("광란 체크 종료");
     }
 
     public void IncrementStack()
     {
         compulsoryPlayStack++;
         PlaySoundBasedOnCompulsoryPlayStack(compulsoryPlayStack);
+        
+        // 슬롯머신 게임 시작
+        if (rspSlotMachine != null && rspConnector != null)
+        {
+            // 현재 스택 수에 맞게 슬롯머신 게임 시작
+            rspConnector.StartGame(compulsoryPlayStack);
+            Debug.Log($"RSP: 스택 {compulsoryPlayStack}에 따른 슬롯머신 게임 시작");
+        }
+        else
+        {
+            Debug.LogWarning("RSP: 슬롯머신 참조가 없어 게임을 시작할 수 없습니다.");
+        }
     }
 
     public void DecrementStack()
@@ -112,6 +144,11 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
                     lastInstance.release();
                 }
             }
+        }
+        else
+        {
+            // 스택이 0이면 패턴 변경
+            ChangeState(new RSPPatrolState(this));
         }
     }
 

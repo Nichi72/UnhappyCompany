@@ -192,7 +192,7 @@ public class MooAIController : EnemyAIController<MooAIData>
             if (Time.time - lastDamageTime >= damageCooldown)
             {
                 //DebugManager.Log("MooAIController OnCollisionEnter", isShowDebug);
-                Player player = other.gameObject.GetComponent<Player>();
+                PlayerStatus player = other.gameObject.GetComponent<PlayerStatus>();
                 if (player != null)
                 {
                     DealDamage(damageAmount, player as IDamageable);
@@ -208,7 +208,7 @@ public class MooAIController : EnemyAIController<MooAIData>
     public override void DealDamage(int damage, IDamageable target)
     {
         Debug.Log($"target {target.ToString()}DealDamage {damage} ");
-        target.TakeDamage(damage, DamageType.Physical);
+        target.TakeDamage(damage, DamageType.Nomal);
     }
 
     // 새로운 코루틴: 점액 배출 처리
