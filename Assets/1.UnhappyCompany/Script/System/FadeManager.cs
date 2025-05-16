@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
 public class FadeManager : MonoBehaviour
 {
@@ -29,27 +30,27 @@ public class FadeManager : MonoBehaviour
     }
 
     // 페이드 인 메서드
-    public void FadeIn(GameObject obj, float duration)
+    public void FadeIn(GameObject obj, float duration, Action onComplete = null)
     {
         if (fadeCoroutines.ContainsKey(obj))
         {
             StopCoroutine(fadeCoroutines[obj]); // 기존 코루틴 중지
         }
-        fadeCoroutines[obj] = StartCoroutine(FadeCanvasGroup(obj, 0, 1, duration)); // 새로운 페이드 인 코루틴 시작
+        fadeCoroutines[obj] = StartCoroutine(FadeCanvasGroup(obj, 0, 1, duration, onComplete)); // 새로운 페이드 인 코루틴 시작
     }
 
     // 페이드 아웃 메서드
-    public void FadeOut(GameObject obj, float duration)
+    public void FadeOut(GameObject obj, float duration, Action onComplete = null)
     {
         if (fadeCoroutines.ContainsKey(obj))
         {
             StopCoroutine(fadeCoroutines[obj]); // 기존 코루틴 중지
         }
-        fadeCoroutines[obj] = StartCoroutine(FadeCanvasGroup(obj, 1, 0, duration)); // 새로운 페이드 아웃 코루틴 시작
+        fadeCoroutines[obj] = StartCoroutine(FadeCanvasGroup(obj, 1, 0, duration, onComplete)); // 새로운 페이드 아웃 코루틴 시작
     }
 
     // CanvasGroup의 알파 값을 변경하여 페이드 효과를 구현하는 코루틴
-    private IEnumerator FadeCanvasGroup(GameObject obj, float start, float end, float duration)
+    private IEnumerator FadeCanvasGroup(GameObject obj, float start, float end, float duration, Action onComplete = null)
     {
         CanvasGroup canvasGroup = obj.GetComponent<CanvasGroup>();
         if (canvasGroup == null)
@@ -68,38 +69,41 @@ public class FadeManager : MonoBehaviour
         }
         canvasGroup.alpha = end; // 최종 알파 값 설정
         fadeCoroutines.Remove(obj); // 코루틴 추적에서 제거
+        
+        // 콜백 함수 실행
+        onComplete?.Invoke();
     }
 
     // FadeOverlay 전체 화면 페이드 인 메서드
-    public void ScreenFadeIn(float duration)
+    public void ScreenFadeIn(float duration, Action onComplete = null)
     {
         if (fadeOverlay != null)
         {
-            FadeIn(fadeOverlay, duration); // duration은 페이드 인 효과의 지속 시간을 조절합니다.
+            FadeIn(fadeOverlay, duration, onComplete); // duration은 페이드 인 효과의 지속 시간을 조절합니다.
         }
     }
 
     // FadeOverlay 전체 화면 페이드 아웃 메서드
-    public void ScreenFadeOut(float duration)
+    public void ScreenFadeOut(float duration, Action onComplete = null)
     {
         if (fadeOverlay != null)
         {
-            FadeOut(fadeOverlay, duration);
+            FadeOut(fadeOverlay, duration, onComplete);
         }
     }
 
     // FadeIn 후 지정된 시간(delaySeconds) 후 FadeOut을 수행하는 메서드
-    public void FadeInThenFadeOut(float fadeInDuration, float delaySeconds, float fadeOutDuration)
+    public void FadeInThenFadeOut(float fadeInDuration, float delaySeconds, float fadeOutDuration, Action onFadeInComplete = null, Action onFadeOutComplete = null)
     {
-        StartCoroutine(FadeInThenFadeOutCoroutine(fadeOverlay, fadeInDuration, delaySeconds, fadeOutDuration));
+        StartCoroutine(FadeInThenFadeOutCoroutine(fadeOverlay, fadeInDuration, delaySeconds, fadeOutDuration, onFadeInComplete, onFadeOutComplete));
     }
 
     // FadeIn 후 대기 후 FadeOut을 실행하는 코루틴
-    private IEnumerator FadeInThenFadeOutCoroutine(GameObject obj, float fadeInDuration, float delaySeconds, float fadeOutDuration)
+    private IEnumerator FadeInThenFadeOutCoroutine(GameObject obj, float fadeInDuration, float delaySeconds, float fadeOutDuration, Action onFadeInComplete = null, Action onFadeOutComplete = null)
     {
-        FadeIn(obj, fadeInDuration); // 페이드 인 시작
+        FadeIn(obj, fadeInDuration, onFadeInComplete); // 페이드 인 시작
         yield return new WaitForSeconds(fadeInDuration); // 페이드 인 완료 대기
         yield return new WaitForSeconds(delaySeconds); // 지정된 시간 대기
-        FadeOut(obj, fadeOutDuration); // 페이드 아웃 시작
+        FadeOut(obj, fadeOutDuration, onFadeOutComplete); // 페이드 아웃 시작
     }
 } 

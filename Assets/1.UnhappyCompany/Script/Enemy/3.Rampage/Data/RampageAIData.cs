@@ -32,4 +32,5 @@ public class RampageAIData : BaseEnemyAIData
 
     [Header("RUSH")]
     public float rushSpeed = 10f;
+    public int rushDamage = 50;
 } 

@@ -1,11 +1,11 @@
 using UnityEngine;
 using MyUtility;
 
-public class DoorBtn : MonoBehaviour , IInteractable
+public class DoorBtn : MonoBehaviour , IInteractableF
 {
     public Door door;
 
-    public string InteractionText { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "DoorBtn_ITR"); set => InteractionText = value; }
+    public string InteractionTextF { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "DoorBtn_ITR"); set => InteractionTextF = value; }
 
     public void HitEventInteractionF(Player rayOrigin)
     {

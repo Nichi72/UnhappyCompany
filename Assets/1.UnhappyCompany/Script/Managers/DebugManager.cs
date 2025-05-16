@@ -4,8 +4,6 @@ public class DebugManager : MonoBehaviour
 {
     public static DebugManager Instance { get; private set; }
 
-    [Header("Debug Settings")]
-    public bool enableRampageDebug = true;
 
     private void Awake()
     {
@@ -16,6 +14,7 @@ public class DebugManager : MonoBehaviour
         }
         else
         {
+            Debug.Log("DebugManager 이미 있음");
             Destroy(gameObject);
         }
     }
@@ -24,7 +23,7 @@ public class DebugManager : MonoBehaviour
     {
         if (Instance == null) return;
         
-        if (isRampageDebug && !Instance.enableRampageDebug) return;
+        if (isRampageDebug == false) return;
         
         Debug.Log(message);
     }

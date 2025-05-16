@@ -28,7 +28,7 @@ public class MainManager : MonoBehaviour
 
         while (!asyncLoad.isDone)
         {
-            // �ε� ���α׷����� ��Ÿ ó���� ���� ��� ���� (0~1 ������ ��)
+            // 로딩 진행 상황 (0~1 사이의 값)
             Debug.Log(asyncLoad.progress);
             yield return null;
         }

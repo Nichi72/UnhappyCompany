@@ -326,7 +326,7 @@ GameObject:
   - component: {fileID: 7794096806265596843}
   - component: {fileID: 4763442977970754571}
   m_Layer: 8
-  m_Name: Mujisang
+  m_Name: EnemyAIMujisang
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -382,8 +382,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9fbf38d89a26387489eff8e265dcc28f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentStateName: 
   agent: {fileID: 0}
-  player: {fileID: 0}
+  playerTr: {fileID: 0}
   enemyData: {fileID: 11400000, guid: 682f52a097136bf40aac1d5dae74c130, type: 2}
   patrolGizmoRangeColor: {r: 0, g: 1, b: 0, a: 1}
   chaseGizmoRangeColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
@@ -392,8 +393,21 @@ MonoBehaviour:
   debugUIPrefab: {fileID: 0}
   debugUI: {fileID: 0}
   budgetFlag: 0
+  vision:
+    sightRange: 10
+    sightAngle: 120
+    obstacleLayer:
+      serializedVersion: 2
+      m_Bits: 0
+    playerLayer:
+      serializedVersion: 2
+      m_Bits: 0
+    drawGizmos: 1
+    sightColor: {r: 1, g: 0, b: 0, a: 0.3}
+  enemyData: {fileID: 11400000, guid: 682f52a097136bf40aac1d5dae74c130, type: 2}
   CurrentStateName: 
-  slimeEmitInterval: 1
+  isShowDebug: 1
+  slimeEmitInterval: 120
   animator: {fileID: 440928390233893239}
   wallCheckDistance: 1
   animatorSpeed: 2
@@ -403,7 +417,11 @@ MonoBehaviour:
   stressIncreaseAmount: 1
   stressResetDistance: 10
   damageAmount: 10
+  damageCooldown: 1
   characterController: {fileID: 4763442977970754571}
+  gravity: 9.8
+  isGrounded: 0
+  groundCheckDistance: 0.1
 --- !u!195 &5589575264658865346
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -413,7 +431,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 2060752047448260306}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.54
+  m_Radius: 0.7
   m_Speed: 3.5
   m_Acceleration: 8
   avoidancePriority: 50
@@ -468,11 +486,11 @@ CapsuleCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.96
+  m_Radius: 1.6
   m_Height: 1
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}

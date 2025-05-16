@@ -45,7 +45,8 @@ public class RoomGenerator : MonoBehaviour
         public float lastTryTime = 0f;
     }
     public static RoomGenerator instance;
-    [ReadOnly] public List<RoomNode> roomList = new List<RoomNode>(); // 생성된 방 리스트
+    [ReadOnly] public List<RoomNode> allRoomList = new List<RoomNode>(); // 생성된 방 리스트
+    [ReadOnly] public List<RoomNode> roomsWithUnconnectedDoors = new List<RoomNode>(); // 연결되지 않은 문이 있는 방 리스트
     public RoomNode startRoomNode; // 시작 방
     public DoorGeneration[] doorGenerationSettings; // 시작방에서 시작 문 선택
     [SerializeField] private float createRoomTime = 1f;
@@ -82,10 +83,16 @@ public class RoomGenerator : MonoBehaviour
     [Tooltip("최대 실패 허용 횟수, 이 이상 실패하면 문은 영구히 제외됨")]
     public int maxDoorFailCount = 3;
 
-
+    [Header("로딩 관련 설정")]
+    [ReadOnly] [SerializeField] private int maxSuccessfullyCreatedRooms = 0; // 현재까지 생성된 방의 최대 개수
+    [ReadOnly] [SerializeField] private int totalRoomCountToGenerate = 0; // 생성해야 할 총 방 개수
+    [ReadOnly] [SerializeField] private string currentLoadingState = ""; // 현재 로딩 상태 메시지
 
     private Dictionary<DoorEdge, DoorRetryInfo> doorRetryData = new Dictionary<DoorEdge, DoorRetryInfo>();
     private float gameStartTime;
+    
+    // 방 생성 완료 콜백
+    public Action OnGenerationComplete;
     
     // [ReadOnly] [SerializeField] private int currentActiveRoomCount = 0;
 
@@ -97,9 +104,14 @@ public class RoomGenerator : MonoBehaviour
         }
         gameStartTime = Time.time;
         doorRetryData.Clear();
+        
+        // 초기 생성할 방의 총 개수 계산
+        CalculateTotalRoomCount();
+        OnGenerationComplete += HandleGenerationComplete;
     }   
     void Start()
     {
+        
         StartCoroutine(GenerateRoomFirstTime());
         // foreach(var doorGeneration in doorGenerationSettings)
         // {
@@ -119,6 +131,40 @@ public class RoomGenerator : MonoBehaviour
         }
     }
 
+    // 초기 생성할 방의 총 개수 계산
+    private void CalculateTotalRoomCount()
+    {
+        int initDoorCount = 0;
+        foreach(var doorGeneration in doorGenerationSettings)
+        {
+            if(doorGeneration.shouldGenerate)
+            {
+                initDoorCount++;
+            }
+        }
+        
+        // 첫 번째 생성과 깊이 확장에 따른 방 개수 계산
+        totalRoomCountToGenerate = roomCountFirstTime+1;
+    }
+    
+    // 로딩 진행률을 반환하는 메서드 (0.0f ~ 1.0f)
+    public float GetLoadingProgress()
+    {
+        if(totalRoomCountToGenerate <= 0) return 0f;
+        return Mathf.Clamp01((float)maxSuccessfullyCreatedRooms / totalRoomCountToGenerate);
+    }
+    
+    // 로딩 진행률을 백분율로 반환 (0 ~ 100)
+    public float GetLoadingProgressPercentage()
+    {
+        return GetLoadingProgress() * 100f;
+    }
+    
+    // 현재 로딩 상태 메시지 반환
+    public string GetLoadingState()
+    {
+        return currentLoadingState;
+    }
 
     private IEnumerator GenerateRoomFirstTime()
     {
@@ -154,6 +200,11 @@ public class RoomGenerator : MonoBehaviour
                 ConnectRooms(newRoom.gameObject, startDoor.door, newRoom.connectToParentDoor);
                 // newRoom.DetermineDirectionDoors();
 
+                // allRoomList에 방 추가
+                if (!allRoomList.Contains(newRoom))
+                {
+                    allRoomList.Add(newRoom);
+                }
 
                 // doorGenerationSettings를 셔플
                 var tempList = new List<DoorGeneration>(doorGenerationSettings);
@@ -171,6 +222,8 @@ public class RoomGenerator : MonoBehaviour
                 doorGenerationSettings[2].stair = 1;
                 doorGenerationSettings[3].stair = 2;
 
+                currentLoadingState = "초기 방 생성 중...";
+
                 // 첫 번째 방 생성
                 RoomNode.RoomType randomRoomType = (RoomNode.RoomType)Random.Range(0, System.Enum.GetValues(typeof(RoomNode.RoomType)).Length);
                 StartCoroutine(GenerateRoom(newRoom, roomCountFirstTime,startDoor));
@@ -184,20 +237,22 @@ public class RoomGenerator : MonoBehaviour
         for(int i = 0; i < depthCount; i++)
         {
             
-            if (roomList.Count > 0)
+            if (roomsWithUnconnectedDoors.Count > 0)
             {
                 // roomList에서 랜덤으로 방을 선택
-                int randomIndex = Random.Range(0, roomList.Count);
+                int randomIndex = Random.Range(0, roomsWithUnconnectedDoors.Count);
                 if(tempRoomList.Contains(randomIndex))
                 {
                     continue;
                 }
-                RoomNode roomToExpand = roomList[randomIndex];
+                RoomNode roomToExpand = roomsWithUnconnectedDoors[randomIndex];
                 tempRoomList.Add(randomIndex);
                 DoorGeneration doorGeneration = GetDoorGeneration(roomToExpand.doorDirection);
                 // 선택된 방을 기준으로 확장
                 StartCoroutine(GenerateRoom(roomToExpand, roomCountPerDepth,doorGeneration));
             }
+            
+            currentLoadingState = $"추가 방 생성 중... ({i+1}/{depthCount})";
         }
     }
 
@@ -227,6 +282,7 @@ public class RoomGenerator : MonoBehaviour
         roomQueue.Enqueue(startRoomNode);
 
         int currentRoomCount = 0;
+        int maxSuccessfullyCreatedRoomsInThisCoroutine = 0; // 해당 코루틴에서 생성된 방의 최대 개수
         int totalAttempts = 0; // 전체 시도 횟수 (무한 루프 방지용)
         int maxTotalAttempts = maxRoomCount * 3; // 최대 전체 시도 횟수
 
@@ -300,6 +356,12 @@ public class RoomGenerator : MonoBehaviour
                     roomQueue.Enqueue(newRoom);
                     createdRooms.Add(newRoom); // 생성된 방 추가
                     currentRoomCount++;
+                    
+                    // allRoomList에 방 추가
+                    if (!allRoomList.Contains(newRoom))
+                    {
+                        allRoomList.Add(newRoom);
+                    }
                     
                     // 새 방에 대한 연결 리스트 초기화
                     roomConnections[newRoom] = new List<DoorEdge> { childDoor };
@@ -387,6 +449,27 @@ public class RoomGenerator : MonoBehaviour
                 }
             }
             
+            if (roomCreated)
+            {
+                currentRoomCount++;
+                
+                // 생성된 방의 최대 개수 업데이트
+                if (currentRoomCount > maxSuccessfullyCreatedRoomsInThisCoroutine)
+                {
+                    maxSuccessfullyCreatedRoomsInThisCoroutine = currentRoomCount;
+                    
+                    // 전체 성공적으로 생성된 방의 최대 개수 업데이트
+                    lock (this) // 여러 코루틴이 동시에 이 값을 수정할 수 있으므로 락 사용
+                    {
+                        maxSuccessfullyCreatedRooms = Mathf.Max(maxSuccessfullyCreatedRooms, maxSuccessfullyCreatedRooms + 1);
+                    }
+                }
+                
+                currentLoadingState = $"방 생성 중... ({maxSuccessfullyCreatedRooms}/{totalRoomCountToGenerate})";
+                
+                Debug.Log($"방 생성 성공: {currentRoomCount}/{maxRoomCount} (전체 진행률: {GetLoadingProgressPercentage():F1}%)");
+            }
+            
             yield return new WaitForSeconds(0.1f);
         }
 
@@ -403,14 +486,22 @@ public class RoomGenerator : MonoBehaviour
         // 문이 남아 있는 방만 roomList에 추가
         foreach (var room in roomQueue)
         {
-            if (room.GetUnconnectedDoors().Count > 0 && !roomList.Contains(room))
+            if (room.GetUnconnectedDoors().Count > 0 && !roomsWithUnconnectedDoors.Contains(room))
             {
-                roomList.Add(room);
+                roomsWithUnconnectedDoors.Add(room);
             }
         }
         
         doorGeneration.isGenerating = false;
         currentActiveRoomCount--;
+        
+        // 모든 생성 코루틴이 완료되었는지 확인하고 콜백 호출
+        if (!IsAnyGenerationRunning()) 
+        {
+            currentLoadingState = "방 생성 완료!";
+            Debug.Log("모든 방 생성이 완료되었습니다. 콜백을 호출합니다.");
+            OnGenerationComplete?.Invoke(); // 방 생성 완료 콜백 호출
+        }
     }
     private void CancelConnectRooms(DoorEdge parentDoor, DoorEdge childDoor)
     {
@@ -708,6 +799,70 @@ public class RoomGenerator : MonoBehaviour
             }
         }
         return null;
+    }
+
+    // 모든 방 생성이 완료되었는지 확인하는 메서드
+    public bool IsGenerationComplete()
+    {
+        return !isGenerating && currentActiveRoomCount == 0;
+    }
+    
+    // 로딩 상태를 초기화하는 메서드 (다시 시작할 때 사용)
+    public void ResetLoadingState()
+    {
+        maxSuccessfullyCreatedRooms = 0;
+        currentLoadingState = "";
+        isGenerating = false;
+        CalculateTotalRoomCount();
+    }
+
+    // Helper method to check if any door generation is still running
+    private bool IsAnyGenerationRunning()
+    {
+        foreach (var doorGenSetting in doorGenerationSettings)
+        {
+            if (doorGenSetting.isGenerating)
+            {
+                return true; // 하나라도 실행 중이면 true 반환
+            }
+        }
+        return false; // 모든 생성이 완료되었으면 false 반환
+    }
+
+    /// <summary>
+    /// 모든 방 생성이 완료되면 실행되는 메서드
+    /// </summary>
+    void HandleGenerationComplete()
+    {
+        Debug.Log("모든 방 생성이 완료되었습니다!");
+        
+        // roomSettings 초기화
+        List<RoomSetting> roomSettings = new List<RoomSetting>();
+        foreach(var room in allRoomList)
+        {
+            roomSettings.Add(room.roomSetting);
+        }
+        EnemyManager.instance.roomSettings = roomSettings;
+
+        // 모든 방의 NavMesh 업데이트
+        RoomManager.Instance.UpdateAllRoomsNavMeshAsync();
+    }
+
+    // 스크립트가 비활성화되거나 파괴될 때 콜백 구독 해제 (메모리 누수 방지)
+    void OnDisable()
+    {
+        if (RoomGenerator.instance != null)
+        {
+            RoomGenerator.instance.OnGenerationComplete -= HandleGenerationComplete;
+        }
+    }
+
+    void OnDestroy()
+    {
+         if (RoomGenerator.instance != null)
+        {
+            RoomGenerator.instance.OnGenerationComplete -= HandleGenerationComplete;
+        }
     }
 }
 

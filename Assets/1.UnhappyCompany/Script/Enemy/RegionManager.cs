@@ -6,8 +6,9 @@ using Random = UnityEngine.Random;
 public class RegionManager : MonoBehaviour
 {
     public static RegionManager instance;
-    //public int currentBudget;
 
+    // 공격 할 확률
+    public float attackProbability = 0.5f;
 
     void Awake()
     {
@@ -121,8 +122,15 @@ public class RegionManager : MonoBehaviour
                     {
                         remainingCost -= enemy.EnemyData.Cost;
                         enemy.budgetFlag = EnemyBudgetFlag.SubtractedFromBudget;
-                        enemy.AttackCenter();
-                        Debug.Log($" 특별 크리처 : {enemy.name} / 남은 비용 : {remainingCost}");
+                        if(Random.Range(0, 1f) < attackProbability)
+                        {
+                            enemy.AttackCenter();
+                            Debug.Log($" 특별 크리처 : {enemy.name} / 남은 비용 : {remainingCost}");
+                        }
+                        else
+                        {
+                            Debug.Log($"{enemy.name}은 공격 확률에 의해 공격하지 않습니다.");
+                        }
                     }
                 }
             }

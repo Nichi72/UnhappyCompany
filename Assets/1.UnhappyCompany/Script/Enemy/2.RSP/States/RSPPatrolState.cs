@@ -45,7 +45,7 @@ public class RSPPatrolState : IState
     private void PatrolBehavior()
     {
         // 플레이어가 감지 범위 내에 있는지 체크
-        float distanceToPlayer = Vector3.Distance(controller.transform.position, controller.player.position);
+        float distanceToPlayer = Vector3.Distance(controller.transform.position, controller.playerTr.position);
         if (distanceToPlayer < controller.ChaseRadius && Time.time - lastChaseAttemptTime > chaseCooldown)
         {
             lastChaseAttemptTime = Time.time;

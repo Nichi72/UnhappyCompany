@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 6296721422350053921}
   - component: {fileID: 6031100884545488458}
   m_Layer: 0
-  m_Name: GameObject (1)
+  m_Name: West
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -51,6 +51,7 @@ MonoBehaviour:
   formRoomNode: {fileID: 0}
   toRoomNode: {fileID: 0}
   currentDoorType: 0
+  direction: 3
 --- !u!1 &688474154023802652
 GameObject:
   m_ObjectHideFlags: 0
@@ -541,6 +542,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   doorBatteryDrainPerSecond: 3
+  shouldGenerate: 0
+  doorEdge: {fileID: 6031100884545488458}
   closeTransform: {fileID: 371754656092789879}
   openTransform: {fileID: 7757534701472447}
   lerpSpeed: 1

@@ -4,7 +4,8 @@ using UnityEngine;
 public class ItemsMeleeAttack : Item ,IDamager
 {
     public Animator armAnimator;
-    public int damage { get; set; } = 20;
+    public int _damage= 20;
+    public int damage { get => _damage; set => _damage = value; }
     public LayerMask DamageLayer { get => damageLayer; set => damageLayer = value; }
     public float Distance { get => distance; set => distance = value; }
 

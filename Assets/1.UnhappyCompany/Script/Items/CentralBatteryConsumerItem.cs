@@ -3,6 +3,9 @@ using UnityEngine;
 public class CentralBatteryConsumerItem : Item , ICentralBatteryConsumer
 {
     [SerializeField] public float BatteryDrainPerSecond { get; set; } = 0.05f;
+    
+    public string ID => GetUniqueInstanceID();
+    
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {

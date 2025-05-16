@@ -6,7 +6,7 @@ using FMOD.Studio;
 /// <summary>
 /// RSP 타입 적의 AI 컨트롤러입니다.
 /// </summary>
-public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractable
+public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
 {
     // RSP 전용 프로퍼티
     public float AttackCooldown => enemyData.attackCooldown;
@@ -14,7 +14,7 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractable
     public float SpecialAttackRange => enemyData.specialAttackRange;
 
     private string interactionText = "가위바위보 하기";
-    public string InteractionText { get => interactionText; set => interactionText = value; }
+    public string InteractionTextF { get => interactionText; set => interactionText = value; }
     public RSPSystem rspSystem;
     public Animator animator;
 
@@ -22,6 +22,8 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractable
     private Stack<EventInstance> soundInstances = new Stack<EventInstance>();
 
     public bool isAnimationEnd = false;
+
+    public bool isPlayerFound = false;
 
     public readonly string WinAnimationName = "RSP_Win";
     public readonly string LoseAnimationName = "RSP_Lose";
@@ -41,6 +43,12 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractable
         // rspStack 증가 코루틴 시작
         StartCoroutine(IncrementCompulsoryPlayStack());
         StartCoroutine(CheckCompulsoryPlayStack());
+    }
+    [ContextMenu("ChangeCenterAttackState")]
+    public override void AttackCenter()
+    {
+        base.AttackCenter();
+        ChangeState(new RSPCenterAttackState(this, utilityCalculator));
     }
 
     protected override void HandleTimeOfDayChanged(TimeOfDay newTimeOfDay)

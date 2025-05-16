@@ -62,6 +62,7 @@ public class ComputerSystem : MonoBehaviour
             itemObj.transform.position = computer.spwanTr.position;
             var rigidbody = itemObj.GetComponent<Rigidbody>();
             rigidbody.AddForce(computer.spwanTr.transform.right * 250f);
+            AudioManager.instance.PlayTestBeep("BuyItem Drop", itemObj.transform);
         }
     }
 

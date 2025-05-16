@@ -4,10 +4,16 @@ using UnityEngine;
 /// 플레이어와 상호 작용할 때 호출되는 메서드를 정의하는 인터페이스입니다.
 /// </summary>
 /// <param name="player">상호 작용하는 플레이어</param>
-public interface IInteractable
+public interface IInteractableF
 {
-    string InteractionText { get; set; }
+    string InteractionTextF { get; set; }
     void HitEventInteractionF(Player rayOrigin);
+}
+
+public interface IInteractableE
+{
+    string InteractionTextE { get; set; }
+    void HitEventInteractionE(Player rayOrigin);
 }
 
 public interface IToolTip
@@ -23,6 +29,7 @@ public interface IToolTip
 /// </summary>
 public interface ICentralBatteryConsumer
 {
+    string ID { get; }
     float BatteryDrainPerSecond { get; set; }
     void DrainBattery();
     string GetConsumerName();

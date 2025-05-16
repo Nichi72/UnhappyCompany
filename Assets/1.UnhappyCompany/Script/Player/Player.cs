@@ -12,8 +12,9 @@ public class Player : MonoBehaviour , IDamageable
     public BuildSystem buildSystem;
     public Animator armAnimator;
     public List<Transform> OffsetLists;
+    public PlayerStatus playerStatus;
 
-    public int hp { get; set; } = 100;
+    public int hp { get => (int)playerStatus.CurrentHealth; set => playerStatus.CurrentHealth = value; }
 
     public void TakeDamage(int damage, DamageType damageType)
     {

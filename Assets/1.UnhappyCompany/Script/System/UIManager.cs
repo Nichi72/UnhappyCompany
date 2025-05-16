@@ -9,28 +9,37 @@ public class UIManager : MonoBehaviour
 {
 
     public static UIManager instance; // 싱글톤 인스턴스
+    [Header("처음 비활성화 될 UI")]
     public List<GameObject> unActiveObjects = new List<GameObject>();
-    [Header("소비자 UI")]
-    public TMP_Text consumerInfoText; // 소비자 정보 표시 텍스트 (TMP 사용)
-    public TMP_Text totalConsumersText; // 전체 소비자 수 텍스트 (TMP 사용)
-    public TMP_Text totalBatteryLevelText; // 총 배터리 레벨 표시 텍스트 (TMP 사용)
-    public TMP_Text currentTimeText; // 현재 시간 표시 텍스트 (TMP 사용)
 
-    [Header("")]
+    [Header("골드 관련 UI")]
     public TMP_Text totalGoldText; // 총 골드 텍스트
 
     [Header("Player Status UI")]
     public Slider healthBar; // HP 상태바 슬라이더
     public Slider staminaBar; // 스태미나 상태바 슬라이더
-
-    public GameObject gameOverImage; // 게임 오버 이미지 오브젝트
-    // public GameObject computerView; // 컴퓨터 뷰 오브젝트
-
+    
+    [Header("CCTV 관련 UI")]
     public GameObject cctvButtonPrefab; // CCTV 버튼 프리팹
     [SerializeField] private Transform cctvButtonParent; // CCTV 버튼 부모 트랜스폼
-    public List<GameObject> cctvButtons = new List<GameObject>(); // 생성된 CCTV 버튼 리스트
-    public TMP_Text screenDayText;
+    public List<GameObject> cctvButtons = new List<GameObject>(); // 생성된 CCTV 버튼 리스트\
 
+    [Header("게임 진행 관련 UI")]
+    public TMP_Text screenDayText;
+    public GameObject gameOverImage; // 게임 오버 이미지 오브젝트
+
+    [Header("모바일 화면 관련 UI")]
+    public TMP_Text statusBarTimeText;
+    public TMP_Text statusBarDayText;
+
+    [Header("배터리 관련 UI")]
+    public GameObject batteryStatusItemPrefab;
+    public Transform batteryStatusItemParent;
+    public TMP_Text totalConsumersText; // 전체 소비자 수 텍스트 (TMP 사용)
+    public TMP_Text totalBatteryDrainPerSecondText; // 초당 전체 배터리 소모량 텍스트
+    public TMP_Text centerBatteryLevelText; 
+    public Image centerBatteryLevelImage;
+    public Dictionary<string, GameObject> batteryStatusItems = new Dictionary<string, GameObject>();
 
     private void Awake()
     {
@@ -45,16 +54,6 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    // 현재 시간을 텍스트로 업데이트하는 코루틴
-    IEnumerator UpdateTimeText()
-    {
-        while(true)
-        {
-            yield return new WaitForSeconds(1f); // 1초 대기
-            currentTimeText.text = TimeManager.instance.GetCurrentGameTime(); // 현재 게임 시간 업데이트
-        }
-    }
-
     private void Start()
     {
         // 상태바 초기화
@@ -66,21 +65,28 @@ public class UIManager : MonoBehaviour
         {
             staminaBar.fillRect.GetComponent<Image>().color = Color.yellow; // 스태미나 바 색상 설정
         }
-        if(currentTimeText != null)
-        {
-            StartCoroutine(UpdateTimeText()); // 시간 업데이트 코루틴 시작
-        }
         foreach(var obj in unActiveObjects)
         {
             obj.SetActive(false);
         }
-        // computerView.SetActive(false);
+        screenDayText.gameObject.SetActive(false);
     }
     
     private void Update()
     {
         // 현재 사용되지 않는 Update 메서드
+        UpdateCenterBatteryLevel();
     }
+
+    public void UpdateCenterBatteryLevel()
+    {
+        float currentBatteryLevel = CentralBatterySystem.Instance.currentBatteryLevel;
+        centerBatteryLevelImage.fillAmount = currentBatteryLevel / CentralBatterySystem.Instance.MaxBatteryLevel;
+        centerBatteryLevelText.text = $"{currentBatteryLevel}";
+
+        totalBatteryDrainPerSecondText.text = $"{CentralBatterySystem.Instance.CalculateTotalBatteryDrainPerSecond()}";
+    }
+    
 
     // 총 골드 텍스트 업데이트 메서드
     public void UpdateGold(int totalGold)
@@ -88,28 +94,50 @@ public class UIManager : MonoBehaviour
         // totalGoldText.text = $"Total Gold: {totalGold}";
     }
 
-    // 소비자 정보 추가 메서드
-    public void AddConsumerInfo(string info)
-    {
-        consumerInfoText.text += info + "\n"; // 새로운 소비자 정보 추가
-    }
-
-    // 소비자 정보 초기화 메서드
-    public void ClearConsumerInfo()
-    {
-        consumerInfoText.text = string.Empty; // 소비자 정보 텍스트 초기화
-    }
-
     // 전체 소비자 수 업데이트 메서드
     public void UpdateTotalConsumers(int count)
     {
         totalConsumersText.text = $"Total Consumers: {count}";
     }
+    public void UpdateTotalBattery()
+    {
+
+    }
+    public void RemoveBatteryStatusItem(ICentralBatteryConsumer consumer)
+    {
+        if (consumer == null) return;
+        
+        string consumerId = consumer.ID;
+        if (batteryStatusItems.ContainsKey(consumerId))
+        {
+            GameObject uiItem = batteryStatusItems[consumerId];
+            batteryStatusItems.Remove(consumerId);
+            
+            if (uiItem != null)
+            {
+                Destroy(uiItem);
+            }
+        }
+    }
+    public void InitBatteryStatusItem(ICentralBatteryConsumer consumer)
+    {
+        if (consumer == null) return;
+        
+        string consumerId = consumer.ID;
+        // // 이미 존재하는 경우 기존 항목 제거
+        // if (batteryStatusItems.ContainsKey(consumerId))
+        // {
+        //     RemoveBatteryStatusItem(consumer);
+        // }
+        GameObject batteryStatusItem = Instantiate(batteryStatusItemPrefab, batteryStatusItemParent);
+        batteryStatusItems.Add(consumerId, batteryStatusItem); 
+        batteryStatusItem.GetComponent<BattaryStatusItem>().Init(consumer);
+    }
 
     // 총 배터리 레벨 업데이트 메서드
     public void UpdateTotalBatteryLevel(float level)
     {
-        totalBatteryLevelText.text = $"Total Battery Level: {level:F2}";
+        centerBatteryLevelText.text = $"{level:F1}";
     }
 
     // 플레이어의 HP 상태바 업데이트 메서드
@@ -135,6 +163,14 @@ public class UIManager : MonoBehaviour
     {
         GameObject tempButton = Instantiate(cctvButtonPrefab, cctvButtonParent); // CCTV 버튼 생성
         cctvButtons.Add(tempButton); // CCTV 버튼 리스트에 추가
+    }
+    public void RemoveCCTVButton(GameObject button)
+    {
+        if(cctvButtons.Count > 0)
+        {
+            cctvButtons.Remove(button);
+            Destroy(button);
+        }
     }
 
     // 오브젝트 활성화/비활성화 메서드
@@ -170,21 +206,38 @@ public class UIManager : MonoBehaviour
         FadeManager.instance.FadeOut(gameOverImage, 2f); // 게임 오버 이미지 페이드 아웃
     }
 
-    // 예시: 씬 전환 시 전체 화면 페이드 인/아웃 사용
-    public void TransitionToScene(string sceneName)
+    public void UpdateStatusBarTimeText(string time)
     {
-        FadeManager.instance.FadeInThenFadeOut(1f, 2f, 1f); // 페이드 인 후 2초 대기 후 페이드 아웃
-        StartCoroutine(LoadSceneCoroutine(sceneName));
+        statusBarTimeText.text = time;
     }
 
-    private IEnumerator LoadSceneCoroutine(string sceneName)
+    
+
+    /// <summary>
+    /// CCTV용 배터리 상태 UI 아이템을 생성하는 함수
+    /// </summary>
+    /// <param name="prefab">배터리 상태 UI 프리팹</param>
+    /// <param name="cctv">연결할 CCTV 객체</param>
+    /// <returns>생성된 배터리 상태 UI GameObject</returns>
+    public GameObject CreateBatteryStatusItem(GameObject prefab, CCTV cctv)
     {
-        yield return new WaitForSeconds(1f); // 페이드 인 완료 대기
-        // 씬 로드 로직 추가 (예: UnityEngine.SceneManagement.SceneManager.LoadScene)
-        // 예시:
-        // UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
-        yield return new WaitForSeconds(1f); // 페이드 아웃 준비 대기
-        FadeManager.instance.ScreenFadeOut(1f); // 페이드 아웃 시작
+        if (prefab == null)
+        {
+            Debug.LogWarning("배터리 상태 UI 프리팹이 null입니다.");
+            return null;
+        }
+
+        // 배터리 상태 UI 아이템 생성
+        GameObject batteryStatusItem = Instantiate(prefab, transform);
+        
+        // 배터리 상태 UI 아이템 설정
+        // 예: 이름 설정, 위치 조정 등
+        batteryStatusItem.name = $"BatteryStatus_CCTV_{cctv.gameObject.name}";
+        
+        // 여기에 배터리 UI 컴포넌트 참조 설정 및 초기화 코드 추가
+        // 예: batteryStatusItem.GetComponent<BatteryStatusUI>().SetCCTV(cctv);
+        
+        return batteryStatusItem;
     }
 }
 

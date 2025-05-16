@@ -28,14 +28,14 @@ public class RSPChaseState : IState
     public void ExecuteMorning()
     {
         // Debug.Log("RSP: 오전 추적 중");
-        FollowPlayer();
+        controller.FollowTarget(stoppingDistance);
         ExceptionalFollowPlayer();
     }
 
     public void ExecuteAfternoon()
     {
         // Debug.Log("RSP: 오후 추적 중");
-        FollowPlayer();
+        controller.FollowTarget(stoppingDistance);
         ExceptionalFollowPlayer();
     }
 
@@ -50,25 +50,6 @@ public class RSPChaseState : IState
 
     public void ExecuteFixedAfternoon()
     {
-    }
-
-    private void FollowPlayer()
-    {
-        float distanceToPlayer = Vector3.Distance(controller.transform.position, controller.player.position);
-        
-        if (distanceToPlayer > stoppingDistance)
-        {
-            controller.agent.SetDestination(controller.player.position);
-        }
-        else
-        {
-            // 플레이어 근처에 도달하면 서서히 멈춤
-            controller.agent.velocity = Vector3.Lerp(controller.agent.velocity, Vector3.zero, Time.deltaTime * 5f);
-            if (controller.agent.velocity.magnitude < 0.1f)
-            {
-                controller.agent.ResetPath();
-            }
-        }
     }
 
     private Vector3 lastPosition;
@@ -86,7 +67,7 @@ public class RSPChaseState : IState
         {
             Debug.LogError("RSP: 비정상적인 멈춤 감지, 경로 재탐색");
             controller.agent.ResetPath();
-            controller.agent.SetDestination(controller.player.position);
+            controller.agent.SetDestination(controller.playerTr.position);
             lastMovedTime = Time.time;
         }
     }

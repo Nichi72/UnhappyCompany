@@ -358,9 +358,9 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7789767424556405276}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.4154809, y: 0.50096136, z: 3.8612204}
-  m_LocalScale: {x: 0.7595801, y: 0.75958, z: 0.75957984}
+  m_LocalRotation: {x: -0.05617149, y: -0.02565276, z: 0.028179098, w: 0.9976937}
+  m_LocalPosition: {x: 0.3475066, y: 0.107253045, z: 0.4952277}
+  m_LocalScale: {x: 0.75957996, y: 0.75958, z: 0.7595797}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 9077084528975257561}
@@ -368,7 +368,7 @@ Transform:
   - {fileID: 3048810328767703720}
   - {fileID: 4761862731992566203}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -6.352, y: -3.135, z: 3.41}
 --- !u!64 &3658085299335691280
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -431,6 +431,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemData: {fileID: 11400000, guid: 584412efab6a33c4a876b1860bcf2b84, type: 2}
+  uniqueInstanceID: 
+  useItemDataPosition: 0
+  useItemDataRotation: 0
+  isModelHandAnimation: 0
   currentCamera: {fileID: 3558055017805718098}
   isTurnOn: 1
   minimapQuad: {fileID: 0}

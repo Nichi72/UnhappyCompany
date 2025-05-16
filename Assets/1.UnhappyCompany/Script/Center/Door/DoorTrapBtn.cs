@@ -1,7 +1,7 @@
 using UnityEngine;
 using MyUtility;
 
-public class DoorTrapBtn : MonoBehaviour,IInteractable
+public class DoorTrapBtn : MonoBehaviour,IInteractableF
 {
     enum DoorTrapBtnType{
         Fire,
@@ -11,7 +11,7 @@ public class DoorTrapBtn : MonoBehaviour,IInteractable
     }
     [SerializeField] private DoorTrapBtnType doorTrapBtnType;
 
-    public string InteractionText { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "DoorTrapBtn_ITR"); set => InteractionText = value; }
+    public string InteractionTextF { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "DoorTrapBtn_ITR"); set => InteractionTextF = value; }
 
     public void HitEventInteractionF(Player rayOrigin)
     {

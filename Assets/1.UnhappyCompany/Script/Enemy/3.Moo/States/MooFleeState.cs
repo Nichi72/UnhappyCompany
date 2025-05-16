@@ -6,9 +6,9 @@ using UnityEngine;
 public class MooFleeState : IState
 {
     private MooAIController controller; // MooAIController 인스턴스
-    private float fleeDuration = 3f; // 도망 상태 지속 시간
+    private float fleeDuration = 15f; // 도망 상태 지속 시간
+    
     private float fleeStartTime; // 도망 상태 시작 시간
-    private bool isShowDebug = false;
 
     /// <summary>
     /// MooFleeState의 생성자. MooAIController를 매개변수로 받습니다.
@@ -24,7 +24,7 @@ public class MooFleeState : IState
     /// </summary>
     public void Enter()
     {
-        DebugManager.Log("Moo: Flee 상태 시작", isShowDebug);
+        DebugManager.Log("Moo: Flee 상태 시작", controller.isShowDebug);
         controller.PlayAnimation("Flee"); // 도망 애니메이션 재생
         fleeStartTime = Time.time; // 도망 시작 시간 기록
         SetFleeDestination(); // 도망 목적지 설정
@@ -38,6 +38,15 @@ public class MooFleeState : IState
         // 도망 상태가 지속 시간을 초과하면 Idle 상태로 전환
         if (Time.time - fleeStartTime > fleeDuration)
         {
+            controller.ChangeState(new MooIdleState(controller));
+            return;
+        }
+        
+        // 목적지에 도달했는지 확인
+        if (controller.agent.enabled && !controller.agent.pathPending && 
+            controller.agent.remainingDistance <= controller.agent.stoppingDistance)
+        {
+            // 목적지에 도달했으면 Idle 상태로 전환
             controller.ChangeState(new MooIdleState(controller));
         }
     }
@@ -55,7 +64,10 @@ public class MooFleeState : IState
     /// </summary>
     public void Exit()
     {
-        DebugManager.Log("Moo: Flee 상태 종료", isShowDebug);
+        DebugManager.Log("Moo: Flee 상태 종료", controller.isShowDebug);
+        controller.agent.speed = controller.EnemyData.moveSpeed;
+        controller.agent.enabled = false;
+
     }
 
     /// <summary>
@@ -63,10 +75,11 @@ public class MooFleeState : IState
     /// </summary>
     private void SetFleeDestination()
     {
-        // 플레이어로부터 멀어지는 방향으로 도망 목적지 설정
-        Vector3 fleeDirection = (controller.transform.position - controller.player.position).normalized;
-        Vector3 fleeDestination = controller.transform.position + fleeDirection * 5f;
-        controller.agent.SetDestination(fleeDestination);
+        var point = controller.GenerateRandomPatrolPoint();
+        controller.agent.enabled = true;
+        float fleeSpeed = controller.EnemyData.fleeSpeed;
+        controller.agent.speed = fleeSpeed;
+        controller.agent.SetDestination(point);
     }
 
     /// <summary>

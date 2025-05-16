@@ -9,10 +9,12 @@ public static class Structures
 
 public enum ETag
 {
+    Untagged,
     RaycastHit,
     Item,
     Wall,
-    Player
+    Player,
+    Pushable
 }
 
 public enum EItem

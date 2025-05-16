@@ -40,7 +40,7 @@ public class RampageIdleState : IState
     private void UpdateLogic()
     {
         // 플레이어 감지 시 Charge 상태로 전환
-        if (CheckPlayerDetected())
+        if (controller.CheckPlayerDetected())
         {
             controller.ChangeState(new RampageChargeState(controller,"IdleState"));
             return;
@@ -53,27 +53,5 @@ public class RampageIdleState : IState
         }
     }
 
-    private bool CheckPlayerDetected()
-    {
-        if (controller.player == null) return false;
-
-        Vector3 toPlayer = controller.player.position - controller.transform.position;
-        float distance = toPlayer.magnitude;
-        float angle = Vector3.Angle(controller.transform.forward, toPlayer);
-
-        if (distance <= controller.EnemyData.detectRange && angle <= controller.EnemyData.detectAngle)
-        {
-            // 레이캐스트를 사용하여 시야에 장애물이 있는지 확인
-            RaycastHit hit;
-            if (Physics.Raycast(controller.transform.position, toPlayer.normalized, out hit, distance))
-            {
-                // 레이캐스트가 플레이어에 닿았는지 확인
-                if (hit.transform == controller.player)
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+    
 } 
