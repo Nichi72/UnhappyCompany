@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using FMOD.Studio;
-using UnhappyCompany;
 
 /// <summary>
 /// RSP 타입 적의 AI 컨트롤러입니다.
@@ -32,13 +31,6 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
     public readonly string DrawAnimationName = "RSP_Draw";
     public readonly string IdleAnimationName = "RSP_Idle";
     public readonly string HoldingAnimationName = "RSP_Stop";
-    
-    [Header("슬롯머신 참조")]
-    [Tooltip("RSPSlotMachine 참조")]
-    public RSPSlotMachine rspSlotMachine;
-    
-    [Tooltip("RSPSlotMachineConnector 참조")]
-    public RSPSlotMachineConnector rspConnector;
     
     [Tooltip("슬롯머신 UI 위치")]
     public Transform slotMachineUIPosition;
@@ -115,18 +107,6 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
     {
         compulsoryPlayStack++;
         PlaySoundBasedOnCompulsoryPlayStack(compulsoryPlayStack);
-        
-        // 슬롯머신 게임 시작
-        if (rspSlotMachine != null && rspConnector != null)
-        {
-            // 현재 스택 수에 맞게 슬롯머신 게임 시작
-            rspConnector.StartGame(compulsoryPlayStack);
-            Debug.Log($"RSP: 스택 {compulsoryPlayStack}에 따른 슬롯머신 게임 시작");
-        }
-        else
-        {
-            Debug.LogWarning("RSP: 슬롯머신 참조가 없어 게임을 시작할 수 없습니다.");
-        }
     }
 
     public void DecrementStack()
@@ -140,7 +120,7 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
                 if (lastInstance.isValid())
                 {
                     Debug.Log("RSP: 음악 중지");
-                    lastInstance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
+                    lastInstance.stop(STOP_MODE.IMMEDIATE);
                     lastInstance.release();
                 }
             }

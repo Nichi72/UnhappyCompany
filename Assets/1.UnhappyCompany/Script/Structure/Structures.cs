@@ -79,5 +79,18 @@ public enum EnemyBudgetFlag
     }
     
 
-public enum RSPChoice { Rock, Scissors, Paper }
-public enum RSPResult { Win, Lose, Draw }
+// public enum RSPChoice { Rock, Scissors, Paper }
+// public enum RSPResult { Win, Lose, Draw }
+public enum RSPChoice
+{
+    Rock,
+    Scissors,
+    Paper
+}
+
+public enum RSPResult
+{
+    Win,
+    Lose,
+    Draw
+}
