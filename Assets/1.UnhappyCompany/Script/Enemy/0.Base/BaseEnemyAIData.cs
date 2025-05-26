@@ -19,8 +19,11 @@ public abstract class BaseEnemyAIData : ScriptableObject
     [Header("Base Range Settings")]
     [Tooltip("순찰 반경")]
     public float patrolRadius = 10f;
-    [Tooltip("추적 반경")]
-    public float chaseRadius = 15f;
+    public float patrolRangeMin = 0.7f;
+    public float patrolRangeMax = 1.3f;
+    public Color patrolGizmoRangeColor = Color.green;
+    public Color patrolGizmoRangeMinMaxColor = Color.yellow;
+
     [Tooltip("공격 반경")]
     public float attackRadius = 2f;
 

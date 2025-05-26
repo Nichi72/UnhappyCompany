@@ -31,17 +31,17 @@ public class CubePatrolState : IState
 
     public void ExecuteMorning()
     {
-        float distanceToPlayer = Vector3.Distance(controller.transform.position, controller.playerTr.position);
-        if(distanceToPlayer < controller.AttackRadius)
-        {
-            controller.ChangeState(new CubeAttackState(controller, utilityCalculator));
-            return;
-        }
-        if (!isMovingToPoint || 
-            Vector3.Distance(controller.transform.position, currentPatrolPoint) < minDistanceToPoint)
-        {
-            SetNewPatrolPoint();
-        }
+        // float distanceToPlayer = Vector3.Distance(controller.transform.position, controller.playerTr.position);
+        // if(distanceToPlayer < controller.AttackRadius)
+        // {
+        //     controller.ChangeState(new CubeAttackState(controller, utilityCalculator));
+        //     return;
+        // }
+        // if (!isMovingToPoint || 
+        //     Vector3.Distance(controller.transform.position, currentPatrolPoint) < minDistanceToPoint)
+        // {
+        //     SetNewPatrolPoint();
+        // }
 
         UpdateAnimation();
         DrawPatrolGizmos();
@@ -50,16 +50,16 @@ public class CubePatrolState : IState
     public void ExecuteAfternoon()
     {
         float distanceToPlayer = Vector3.Distance(controller.transform.position, controller.playerTr.position);
-        if(distanceToPlayer < controller.AttackRadius)
-        {
-            controller.ChangeState(new CubeAttackState(controller, utilityCalculator));
-            return;
-        }
-        if (!isMovingToPoint || 
-            Vector3.Distance(controller.transform.position, currentPatrolPoint) < minDistanceToPoint)
-        {
-            SetNewPatrolPoint();
-        }
+        // if(distanceToPlayer < controller.AttackRadius)
+        // {
+        //     controller.ChangeState(new CubeAttackState(controller, utilityCalculator));
+        //     return;
+        // }
+        // if (!isMovingToPoint || 
+        //     Vector3.Distance(controller.transform.position, currentPatrolPoint) < minDistanceToPoint)
+        // {
+        //     SetNewPatrolPoint();
+        // }
 
         UpdateAnimation();
         DrawPatrolGizmos();

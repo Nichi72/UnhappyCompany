@@ -79,7 +79,7 @@ public class MooAIController : EnemyAIController<MooAIData>
         UpdateAnimatorSpeed();
     }
     [ContextMenu("AttackCenter")]
-    public override  void AttackCenter()
+    public override void AttackCenter()
     {
         base.AttackCenter();
         ChangeState(new MooCenterAttackState(this));

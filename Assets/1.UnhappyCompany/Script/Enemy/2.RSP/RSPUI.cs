@@ -11,7 +11,7 @@ public struct RSPChoiceImage
 }
 public class RSPUI : MonoBehaviour
 {
-    public List<int> scores;
+    // public List<int> scores;
   
     public List<RSPChoiceImage> cenerRSPs; // 가위바위보 중앙 이미지
     public List<GameObject> results; // 결과 이미지
@@ -26,7 +26,7 @@ public class RSPUI : MonoBehaviour
 
     void Start()
     {
-        scores = new List<int>(){1,2,4,7,20};
+        // scores = new List<int>(){1,2,4,7,20};
 
         
     }
@@ -39,6 +39,16 @@ public class RSPUI : MonoBehaviour
             StopCoroutine(centerRSPCoroutine);
         }
         centerRSPCoroutine = StartCoroutine(PlayCenterRSPAnimationCo());
+    }
+    public void GameStartRSPAnimation()
+    {
+
+    }
+
+    public void GameEndRSPAnimation()
+    {
+        cenerRSPs.ForEach(rsp => rsp.image.SetActive(false));
+
     }
 
     // 가위바위보 중앙 이미지 회전 애니메이션 중지

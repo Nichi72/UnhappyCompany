@@ -12,7 +12,7 @@ public class CCTV : CentralBatteryConsumerItem, IMinimapTrackable , IInteractabl
     public GameObject CCTVIconPrefab => iconPrefab;
 
     public string InteractionTextE { get => isTurnOn ? "CCTV 끄기" : "CCTV 켜기"; set => InteractionTextE = value; }
-
+    public bool IgnoreInteractionE { get; set; } = false;
     [ReadOnly] public MinimapUIBtnCCTV CCTVIcon;
 
     void Start()

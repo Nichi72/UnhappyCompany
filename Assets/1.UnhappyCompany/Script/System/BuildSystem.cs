@@ -6,13 +6,18 @@ public class BuildSystem : MonoBehaviour
     // public static BuildSystem instance = null;
     public GameObject objectToPlace; // 배치할 객체
     public LayerMask groundLayer; // 배치 가능한 레이어
+    public LayerMask wallLayer; // 벽 레이어
     public Material previewMaterial; // 배치 미리보기용 재질
+    public Material invalidPlacementMaterial; // 잘못된 배치 위치 표시용 재질
     public Player currentPlayer;
 
     private GameObject currentObject; // 현재 배치 중인 객체
     public bool isPlacing = false; // 배치 모드 여부
     private Dictionary<Renderer, Material> originalMaterials = new Dictionary<Renderer, Material>(); // 원래 재질 저장소
     [SerializeField] [ReadOnly] private GameObject currentItem;
+    private bool isWallMountable = false; // 벽에만 설치 가능한 아이템인지 여부
+    private bool isValidPlacement = false; // 현재 설치 위치가 유효한지 여부
+    
     private void Awake()
     {
         currentPlayer = GameManager.instance.currentPlayer;
@@ -35,10 +40,18 @@ public class BuildSystem : MonoBehaviour
         
         if (isPlacing)
         {
-            MoveObjectToMouse(); // 마우스로 객체 이동
+            if (isWallMountable)
+            {
+                MoveObjectToWall(); // 벽에 객체 이동
+            }
+            else
+            {
+                MoveObjectToMouse(); // 마우스로 객체 이동
+            }
+            
             RotateObject(); // 객체 회전
 
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0) && isValidPlacement)
             {
                 PlaceObject(); // 배치 확정
             }
@@ -50,10 +63,12 @@ public class BuildSystem : MonoBehaviour
     }
 
     // 배치 모드 시작 - 객체를 생성하고 미리보기 재질 적용
-    public void StartPlacing(GameObject objectToPlace, GameObject currentItem)
+    public void StartPlacing(GameObject objectToPlace, GameObject currentItem, bool wallMountable = false)
     {
         InteractionSystem.instance.isInteraction = false;
         this.currentItem = currentItem;
+        this.isWallMountable = wallMountable;
+        
         if (objectToPlace != null)
         {
             currentObject = Instantiate(objectToPlace); // 배치할 객체 인스턴스화
@@ -81,6 +96,49 @@ public class BuildSystem : MonoBehaviour
         if (Physics.Raycast(ray, out hit, Mathf.Infinity, groundLayer))
         {
             currentObject.transform.position = hit.point; // 객체 위치를 Ray 충돌 지점으로 설정
+            isValidPlacement = true;
+            UpdatePlacementMaterial(true);
+        }
+        else
+        {
+            isValidPlacement = false;
+            UpdatePlacementMaterial(false);
+        }
+    }
+
+    // 벽에 객체 이동 - Raycast를 사용하여 벽에 위치 결정
+    void MoveObjectToWall()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition); // 마우스 위치에서 Ray 생성
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, wallLayer))
+        {
+            // 벽 표면에 객체 위치 설정
+            currentObject.transform.position = hit.point;
+            
+            // 객체가 벽 표면에 대해 수직이 되도록 회전
+            currentObject.transform.forward = hit.normal;
+            
+            isValidPlacement = true;
+            UpdatePlacementMaterial(true);
+        }
+        else
+        {
+            isValidPlacement = false;
+            UpdatePlacementMaterial(false);
+        }
+    }
+
+    // 배치 유효성에 따라 재질 업데이트
+    void UpdatePlacementMaterial(bool isValid)
+    {
+        if (currentObject == null) return;
+        
+        Renderer[] renderers = currentObject.GetComponentsInChildren<Renderer>();
+        foreach (Renderer renderer in renderers)
+        {
+            renderer.material = isValid ? previewMaterial : invalidPlacementMaterial;
         }
     }
 
@@ -89,7 +147,15 @@ public class BuildSystem : MonoBehaviour
     {
         if (Input.GetKey(KeyCode.R))
         {
-            currentObject.transform.Rotate(Vector3.up, 100 * Time.deltaTime); // Y축 기준으로 회전
+            if (isWallMountable)
+            {
+                // 벽 부착형 객체는 벽에 수직인 축을 기준으로 회전
+                currentObject.transform.Rotate(currentObject.transform.forward, 100 * Time.deltaTime);
+            }
+            else
+            {
+                currentObject.transform.Rotate(Vector3.up, 100 * Time.deltaTime); // Y축 기준으로 회전
+            }
         }
     }
 

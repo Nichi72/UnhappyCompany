@@ -22,6 +22,7 @@ public class NormalDoor : MonoBehaviour , IInteractableF
     private bool isMoving = false; // 문이 움직이는 중인지 체크하는 변수
 
     public string InteractionTextF { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "NormalDoor_ITR"); set => InteractionTextF = value; }
+    public bool IgnoreInteractionF { get; set; } = false;
 
     public void HitEventInteractionF(Player rayOrigin)
     {

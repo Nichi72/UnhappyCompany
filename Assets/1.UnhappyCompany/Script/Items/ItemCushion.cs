@@ -13,4 +13,9 @@ public class ItemCushion : Item
     {
         
     }
+
+    public override void Use(Player player)
+    {
+        player.buildSystem.StartPlacing(itemData.prefab.gameObject, this.gameObject, true);
+    }
 }

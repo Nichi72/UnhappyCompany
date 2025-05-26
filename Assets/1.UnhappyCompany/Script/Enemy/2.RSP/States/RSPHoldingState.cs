@@ -49,6 +49,9 @@ public class RSPHoldingState : IState
         holdingStartTime = Time.time;
         RSPHolding();
         isHolding = true;
+        player.firstPersonController.LookAtWithQuaternion();
+        player.firstPersonController._input.FreezePlayerInput(true);
+    
     }
 
     public void ExecuteMorning()
@@ -65,12 +68,16 @@ public class RSPHoldingState : IState
 
     private void RSPHolding()
     {
+        isHolding = true;
         controller.StartCoroutine(MoveToJumpsquare());
     }
 
     public void Exit()
     {
         Debug.Log("RSP: 홀딩 상태 종료");
+        controller.rspSystem.rspUI.GameEndRSPAnimation();
+        
+        player.firstPersonController._input.FreezePlayerInput(false);
     }
 
     bool isflag = false;
@@ -149,6 +156,8 @@ public class RSPHoldingState : IState
 
         controller.transform.parent = null;
         controller.animator.enabled = true;
+        yield return new WaitUntil(() => controller.isGround);
+        Debug.Log("RSP: 지면에 도착했습니다.");
         EnableCompoenet(true);
         controller.ChangeState(new RSPPatrolState(controller));
     }

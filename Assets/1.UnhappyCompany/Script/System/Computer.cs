@@ -15,6 +15,7 @@ public class Computer : MonoBehaviour , IInteractableF , IToolTip
     [SerializeField] private ComputerState computerState;
 
     public string InteractionTextF { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "Computer_ITR"); set => InteractionTextF = value; }
+    public bool IgnoreInteractionF { get; set; } = false;
     public string ToolTipText { get => "F :컴퓨터 나가기"; set => ToolTipText = value; }
     public string ToolTipText2 { get => ""; set => ToolTipText2 = value; }
     public string ToolTipText3 { get => ""; set => ToolTipText3 = value; }

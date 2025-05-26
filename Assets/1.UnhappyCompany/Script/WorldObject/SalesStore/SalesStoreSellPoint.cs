@@ -23,6 +23,7 @@ public class SalesStoreSellPoint : MonoBehaviour , IInteractableF
     private bool isToggling = false;
 
     public string InteractionTextF { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "SalesStoreSellPoint_ITR"); set => InteractionTextF = value; }
+    public bool IgnoreInteractionF { get; set; } = false;
 
     public IEnumerator ToggleDoor()
     {

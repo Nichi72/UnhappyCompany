@@ -6,12 +6,15 @@ using UnityEngine;
 /// <param name="player">상호 작용하는 플레이어</param>
 public interface IInteractableF
 {
+    bool IgnoreInteractionF { get; set; }
     string InteractionTextF { get; set; }
     void HitEventInteractionF(Player rayOrigin);
+
 }
 
 public interface IInteractableE
 {
+    bool IgnoreInteractionE { get; set; }
     string InteractionTextE { get; set; }
     void HitEventInteractionE(Player rayOrigin);
 }

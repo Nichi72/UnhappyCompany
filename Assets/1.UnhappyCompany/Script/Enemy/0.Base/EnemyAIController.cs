@@ -23,13 +23,13 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
     
     // 공통 프로퍼티
     public float PatrolRadius => EnemyData.patrolRadius;
-    public float ChaseRadius => EnemyData.chaseRadius;
-    public float AttackRadius => EnemyData.attackRadius;
 
     [Header("AI GizmoRange Settings")]
-    public Color patrolGizmoRangeColor = Color.green;
-    public Color chaseGizmoRangeColor = Color.yellow;
-    public Color attackGizmoRangeColor = Color.red;
+    public Color patrolGizmoRangeColor => EnemyData.patrolGizmoRangeColor;
+    public Color patrolGizmoRangeMinMaxColor => EnemyData.patrolGizmoRangeMinMaxColor;
+    public float patrolRangeMin => EnemyData.patrolRangeMin;
+    public float patrolRangeMax => EnemyData.patrolRangeMax;
+   
 
     public TimeOfDay CurrentTimeOfDay { get; private set; }
     public UtilityCalculator UtilityCalculator { get => utilityCalculator; set => utilityCalculator = value; }
@@ -37,9 +37,9 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
     public int hp { get => _hp; set => _hp = value; }
 
     [Header("Debug Settings")]
-    public bool enableDebugUI = true;
-    public GameObject debugUIPrefab;  // Inspector에서 디버그 UI 프리팹 할당
-    [SerializeField] protected EnemyStateDebugUI debugUI;
+    // public bool enableDebugUI = true;
+    // public GameObject debugUIPrefab;  // Inspector에서 디버그 UI 프리팹 할당
+    // [SerializeField] protected EnemyStateDebugUI debugUI;
     public EnemyBudgetFlag budgetFlag;
 
     [Header("Vision Settings")]
@@ -60,24 +60,11 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
         TimeManager.instance.OnTimeOfDayChanged += HandleTimeOfDayChanged;
         CurrentTimeOfDay = TimeManager.instance.CurrentTimeOfDay;
         _hp = enemyData.hpMax;
-
-        if (enableDebugUI)
-        {
-            InitializeDebugUI();
-        }
     }
 
     protected virtual void InitializeDebugUI()
     {
-        if (debugUIPrefab != null)
-        {
-            var debugUIObject = Instantiate(debugUIPrefab, transform.position + Vector3.up * 2f, Quaternion.identity);
-            debugUI = debugUIObject.GetComponent<EnemyStateDebugUI>();
-            if (debugUI != null)
-            {
-                debugUI.Initialize(transform, patrolGizmoRangeColor, chaseGizmoRangeColor, attackGizmoRangeColor);
-            }
-        }
+       
     }
 
     protected virtual void OnDestroy()
@@ -90,12 +77,6 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
         if (EnemyManager.instance != null)
         {
             EnemyManager.instance.activeEnemies.Remove(gameObject);
-        }
-
-        // 디버그 UI 정리
-        if (debugUI != null)
-        {
-            Destroy(debugUI.gameObject);
         }
     }
 
@@ -122,12 +103,6 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
     {
         HandleExecute();
         currentStateName = currentState.GetType().Name;
-
-        // 디버그 UI 업데이트
-        if (debugUI != null)
-        {
-            debugUI.UpdateState(currentState.GetType().Name.Replace("State", ""));
-        }
     }
 
     protected virtual void FixedUpdate()
@@ -154,8 +129,8 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
     protected virtual void OnDrawGizmosSelected()
     {
         MyUtility.UtilityGizmos.DrawCircle(transform.position, PatrolRadius, patrolGizmoRangeColor);
-        MyUtility.UtilityGizmos.DrawCircle(transform.position, ChaseRadius, chaseGizmoRangeColor);
-        MyUtility.UtilityGizmos.DrawCircle(transform.position, AttackRadius, attackGizmoRangeColor);
+        MyUtility.UtilityGizmos.DrawCircle(transform.position, PatrolRadius * patrolRangeMin, patrolGizmoRangeMinMaxColor);
+        MyUtility.UtilityGizmos.DrawCircle(transform.position, PatrolRadius * patrolRangeMax, patrolGizmoRangeMinMaxColor);
     }
 
     // 에디터에서도 항상 기즈모 표시
@@ -330,8 +305,9 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
     {
         Vector3 targetPoint = GenerateRandomPatrolPoint();
         NavMeshHit hit;
+        float randomPatrolRadius = UnityEngine.Random.Range(PatrolRadius * patrolRangeMin, PatrolRadius * patrolRangeMax);
         
-        if (NavMesh.SamplePosition(targetPoint, out hit, PatrolRadius, 1))
+        if (NavMesh.SamplePosition(targetPoint, out hit, randomPatrolRadius, 1))
         {
             agent.SetDestination(hit.position);
             Debug.Log($"순찰 위치 설정: {hit.position}");

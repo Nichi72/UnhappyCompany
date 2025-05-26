@@ -9,6 +9,7 @@ public abstract class Item : MonoBehaviour , IInteractableF , IToolTip
     // string interactionText;
 
     public string InteractionTextF { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "Item_ITR"); set => InteractionTextF = value; }
+    public bool IgnoreInteractionF { get; set; } = false;
     public virtual string ToolTipText { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "Item_TT_Drop"); set => ToolTipText = value; }
     public virtual string ToolTipText2 { get => ""; set => ToolTipText2 = value; }
     public virtual string ToolTipText3 { get => ""; set => ToolTipText3 = value; }

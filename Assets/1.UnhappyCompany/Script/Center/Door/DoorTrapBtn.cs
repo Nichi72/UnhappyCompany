@@ -11,6 +11,7 @@ public class DoorTrapBtn : MonoBehaviour,IInteractableF
     }
     [SerializeField] private DoorTrapBtnType doorTrapBtnType;
 
+    public bool IgnoreInteractionF { get; set; } = false;
     public string InteractionTextF { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "DoorTrapBtn_ITR"); set => InteractionTextF = value; }
 
     public void HitEventInteractionF(Player rayOrigin)

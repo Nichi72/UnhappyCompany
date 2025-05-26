@@ -81,10 +81,32 @@ namespace StarterAssets
 			cursorInputForLook = newState;
 			SetCursorState(newState);
 			Cursor.visible = !newState;
+
 			if(isCursorCenter)
 			{
 				Vector2 screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
 				Mouse.current.WarpCursorPosition(screenCenter);
+			}
+		}
+
+		public void FreezePlayerInput(bool freeze)
+		{
+			if(freeze)
+			{
+				move = Vector2.zero;
+				look = Vector2.zero;
+				jump = false;
+				sprint = false;
+				
+				cursorInputForLook = false;
+				// SetCursorState(false);
+				Cursor.visible = true;
+			}
+			else
+			{
+				cursorInputForLook = true;
+				// SetCursorState(true);
+				Cursor.visible = false;
 			}
 		}
 	}

@@ -25,6 +25,7 @@ public class MooFleeState : IState
     public void Enter()
     {
         DebugManager.Log("Moo: Flee 상태 시작", controller.isShowDebug);
+        controller.agent.speed = controller.EnemyData.fleeSpeed;
         controller.PlayAnimation("Flee"); // 도망 애니메이션 재생
         fleeStartTime = Time.time; // 도망 시작 시간 기록
         SetFleeDestination(); // 도망 목적지 설정

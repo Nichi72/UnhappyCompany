@@ -47,8 +47,12 @@ public class RSPPatrolState : IState
     /// </summary>
     public void ExecuteMorning()
     {
+        if(controller.isGround == false)
+        {
+            return;
+        }
         // 플레이어가 시야에 들어오면 추적 상태로 전환
-        if(controller.CheckPlayerInSight())
+        if(controller.CheckPlayerInSight() && controller.isCoolDown == false)
         {
             controller.ChangeState(new RSPChaseState(controller));
         }
@@ -61,8 +65,12 @@ public class RSPPatrolState : IState
     /// </summary>
     public void ExecuteAfternoon()
     {
+        if(controller.isGround == false)
+        {
+            return;
+        }
         // 플레이어가 시야에 들어오면 추적 상태로 전환
-        if(controller.CheckPlayerInSight())
+        if(controller.CheckPlayerInSight() && controller.isCoolDown == false)
         {
             controller.ChangeState(new RSPChaseState(controller));
         }
@@ -76,6 +84,13 @@ public class RSPPatrolState : IState
     /// </summary>
     private void PatrolBehavior()
     {
+        // RSP가 지면에 없으면 패트롤 로직을 실행하지 않음
+        if (!controller.isGround)
+        {
+            Debug.LogWarning("RSP: 지면에 없어 패트롤 로직이 중단됩니다.");
+            return;
+        }
+        
         // 목적지에 도착했는지 확인 (경로 계산이 완료되고 남은 거리가 정지 거리 이하인 경우)
         if (!controller.agent.pathPending && controller.agent.remainingDistance <= controller.agent.stoppingDistance)
         {

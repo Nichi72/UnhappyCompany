@@ -46,6 +46,10 @@ public class InteractionSystem : MonoBehaviour
             var hitEventF = hit.transform.GetComponent<IInteractableF>();
             if(hitEventF != null)
             {
+                if(hitEventF.IgnoreInteractionF == true)
+                {
+                    return;
+                }
                 CenterText.transform.parent.gameObject.SetActive(true);
                 CenterText.text = hitEventF.InteractionTextF;
                 if (Input.GetKeyDown(KeyCode.F))
@@ -55,17 +59,20 @@ public class InteractionSystem : MonoBehaviour
                 }
                
             }
+
             var hitEventE = hit.transform.GetComponent<IInteractableE>();
-
-
             if(hitEventE != null)
             {
+                if(hitEventE.IgnoreInteractionE == true)
+                {
+                    return;
+                }
                 CenterTextE.transform.parent.gameObject.SetActive(true);
                 CenterTextE.text = hitEventE.InteractionTextE;
                  if (Input.GetKeyDown(KeyCode.E))
                 {
                     hitEventE.HitEventInteractionE(player);
-                    Debug.Log(hitEventF.InteractionTextF);
+                    Debug.Log(hitEventE.InteractionTextE);
                 }
                 
             }

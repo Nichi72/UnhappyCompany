@@ -3,6 +3,7 @@ using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
+using System.Collections;
 
 namespace StarterAssets
 {
@@ -338,12 +339,136 @@ namespace StarterAssets
 			}
 		}
 
+		/// <summary>
+		/// Smoothly rotates the camera to the specified rotation.
+		/// </summary>
+		/// <param name="targetRotation">The target rotation in Euler angles.</param>
+		/// <param name="duration">Duration of the rotation in seconds.</param>
+		/// <param name="onComplete">Optional callback when rotation is complete.</param>
+		public void SmoothRotateCinemachineCamera(Vector3 targetRotation, float duration = 1.0f, System.Action onComplete = null)
+		{
+			StartCoroutine(SmoothRotateCameraCoroutine(targetRotation, duration, onComplete));
+		}
+
+		/// <summary>
+		/// Smoothly rotates the camera to the specified rotation using quaternion.
+		/// </summary>
+		/// <param name="targetRotation">The target rotation as a Quaternion.</param>
+		/// <param name="duration">Duration of the rotation in seconds.</param>
+		/// <param name="onComplete">Optional callback when rotation is complete.</param>
+		public void SmoothRotateCinemachineCamera(Quaternion targetRotation, float duration = 1.0f, System.Action onComplete = null)
+		{
+			StartCoroutine(SmoothRotateCameraCoroutine(targetRotation, duration, onComplete));
+		}
+
+		private IEnumerator SmoothRotateCameraCoroutine(Vector3 targetRotation, float duration, System.Action onComplete)
+		{
+			// 시작 회전값
+			Vector3 startRotation = CinemachineCameraTarget.transform.localRotation.eulerAngles;
+			
+			// 시작 피치 값 계산
+			float startPitch = startRotation.x;
+			if (startPitch > 180f) startPitch -= 360f; // 180도 이상일 경우 음수로 변환
+			
+			// 타겟 피치 값 계산
+			float targetPitch = targetRotation.x;
+			if (targetPitch > 180f) targetPitch -= 360f; // 180도 이상일 경우 음수로 변환
+			targetPitch = Mathf.Clamp(targetPitch, BottomClamp, TopClamp); // 카메라 각도 제한 적용
+			
+			float startTime = Time.time;
+			float endTime = startTime + duration;
+			
+			while (Time.time < endTime)
+			{
+				float t = (Time.time - startTime) / duration;
+				float smoothT = Mathf.SmoothStep(0, 1, t); // 더 부드러운 보간을 위한 SmoothStep
+				
+				// x축(피치) 회전 값을 _cinemachineTargetPitch에 저장하여 CameraRotation 메서드와 동기화
+				_cinemachineTargetPitch = Mathf.Lerp(startPitch, targetPitch, smoothT);
+				// _cinemachineTargetPitch 값 제한
+				_cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
+				
+				// 카메라 피치 적용
+				CinemachineCameraTarget.transform.localRotation = Quaternion.Euler(_cinemachineTargetPitch, 0.0f, 0.0f);
+				
+				// y축(요) 회전 적용 - 플레이어 자체를 회전
+				Vector3 currentYaw = transform.eulerAngles;
+				float newYaw = Mathf.Lerp(currentYaw.y, targetRotation.y, smoothT);
+				transform.rotation = Quaternion.Euler(currentYaw.x, newYaw, currentYaw.z);
+				
+				yield return null;
+			}
+			
+			// 최종 회전값 정확히 설정
+			_cinemachineTargetPitch = targetPitch;
+			CinemachineCameraTarget.transform.localRotation = Quaternion.Euler(_cinemachineTargetPitch, 0.0f, 0.0f);
+			
+			// y축 회전 최종 적용
+			Vector3 finalYaw = transform.eulerAngles;
+			transform.rotation = Quaternion.Euler(finalYaw.x, targetRotation.y, finalYaw.z);
+			
+			// 콜백 호출
+			onComplete?.Invoke();
+		}
+
+		private IEnumerator SmoothRotateCameraCoroutine(Quaternion targetRotation, float duration, System.Action onComplete)
+		{
+			// 시작 회전값
+			Quaternion startCameraRotation = CinemachineCameraTarget.transform.localRotation;
+			Quaternion startPlayerRotation = transform.rotation;
+			
+			// 타겟 회전값에서 오일러 각도를 추출
+			Vector3 targetEuler = targetRotation.eulerAngles;
+			
+			// 카메라 피치 값 (_cinemachineTargetPitch를 위해)
+			float targetPitch = targetEuler.x;
+			if (targetPitch > 180f) targetPitch -= 360f; // 180도 이상일 경우 음수로 변환
+			targetPitch = Mathf.Clamp(targetPitch, BottomClamp, TopClamp); // 카메라 각도 제한 적용
+			
+			// 현재 피치 값 (시작점) 계산
+			float startPitch = startCameraRotation.eulerAngles.x;
+			if (startPitch > 180f) startPitch -= 360f; // 180도 이상일 경우 음수로 변환
+			
+			// 플레이어 요(Yaw) 회전 (y축)용 쿼터니언
+			Quaternion targetPlayerRotation = Quaternion.Euler(0f, targetEuler.y, 0f);
+			
+			// 시간 관련 변수
+			float startTime = Time.time;
+			float endTime = startTime + duration;
+			
+			// 부드러운 회전 적용
+			while (Time.time < endTime)
+			{
+				float t = (Time.time - startTime) / duration;
+				float smoothT = Mathf.SmoothStep(0, 1, t); // 더 부드러운 보간을 위한 SmoothStep
+				
+				// 현재 피치 값 계산 및 적용 (직접 오일러 각도를 보간하지 않고 시작과 목표 피치 값을 보간)
+				_cinemachineTargetPitch = Mathf.Lerp(startPitch, targetPitch, smoothT);
+				_cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
+				
+				// 카메라 타겟 회전 적용 (피치만)
+				CinemachineCameraTarget.transform.localRotation = Quaternion.Euler(_cinemachineTargetPitch, 0f, 0f);
+				
+				// 플레이어 회전 적용 (요만)
+				transform.rotation = Quaternion.Slerp(startPlayerRotation, targetPlayerRotation, smoothT);
+				
+				yield return null;
+			}
+			
+			// 최종 회전값 정확히 설정
+			_cinemachineTargetPitch = targetPitch;
+			CinemachineCameraTarget.transform.localRotation = Quaternion.Euler(_cinemachineTargetPitch, 0f, 0f);
+			transform.rotation = targetPlayerRotation;
+			
+			// 콜백 호출
+			onComplete?.Invoke();
+		}
+
 		public float handClampAngle = 45f;
 		private void HandFollowCamera()
 		{
 			if (currentPivotHandTransform != null && _mainCamera != null)
 			{
-				//
 				// Quaternion targetRotation = _mainCamera.transform.rotation * Quaternion.Euler(new Vector3(0f, -34.203f, 0f));
 				Quaternion targetRotation = _mainCamera.transform.rotation;
 				//카메라의 회전 각도를 제한
@@ -379,5 +504,50 @@ namespace StarterAssets
 				currentPivotHandTransform = pivotNoneModelHandTransform;
 			}
 		}
+
+
+		/// <summary>
+		/// 현재 카메라 방향을 기준으로 특정 방향을 바라보도록 회전합니다.
+		/// x축 회전은 0으로 초기화하여 수평을 유지합니다.
+		/// </summary>
+		public void LookAtWithQuaternion()
+		{
+			// 현재 카메라 회전에서 Quaternion 생성
+			Quaternion currentRotation = _mainCamera.transform.rotation;
+			
+			// 카메라의 현재 오일러 각도 가져오기
+			Vector3 eulerAngles = currentRotation.eulerAngles;
+			
+			// x축 회전(피치)을 0으로 설정하여 수평을 유지
+			eulerAngles.x = 0f;
+			
+			// 수정된 오일러 각도로 새 쿼터니언 생성
+			Quaternion targetRotation = Quaternion.Euler(eulerAngles);
+			
+			// 쿼터니언 기반 회전 메서드 호출
+			SmoothRotateCinemachineCamera(targetRotation, 1f);
+		}
+		
+		public IEnumerator LookAtCoroutine(Vector3 targetEulerAngles)
+		{
+			Quaternion startRotation = _mainCamera.transform.rotation;
+			Quaternion endRotation = Quaternion.Euler(targetEulerAngles);
+			
+			float rotationSpeed = 500f;
+			float threshold = 0.01f;
+			
+			while (Quaternion.Angle(_mainCamera.transform.rotation, endRotation) > threshold)
+			{
+				_mainCamera.transform.rotation = Quaternion.Slerp(_mainCamera.transform.rotation, endRotation, rotationSpeed * Time.deltaTime);
+				Debug.Log("LookAtCoroutine: " + _mainCamera.transform.rotation.eulerAngles);
+				yield return null;
+			}
+			
+			// 최종 회전값 정확히 설정
+			_mainCamera.transform.rotation = endRotation;
+		}
 	}
+
+	
+
 }

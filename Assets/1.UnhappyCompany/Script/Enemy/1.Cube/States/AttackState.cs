@@ -63,13 +63,13 @@ public class CubeAttackState : IState
         // 플레이어를 향해 회전
        
         // 공격 범위 벗어남
-        if (controller.AttackRadius  <= distanceToPlayer)
-        {
-            rigidbody.isKinematic = true;
-            // EnableAgentSafely();
-            controller.ChangeState(new CubePatrolState(controller, utilityCalculator , controller.pathCalculator));
-            return;
-        }
+        // if (controller.AttackRadius  <= distanceToPlayer)
+        // {
+        //     rigidbody.isKinematic = true;
+        //     // EnableAgentSafely();
+        //     controller.ChangeState(new CubePatrolState(controller, utilityCalculator , controller.pathCalculator));
+        //     return;
+        // }
 
         if (!isAttackCasting && Time.time - lastAttackTime >= controller.AttackCooldown)
         {

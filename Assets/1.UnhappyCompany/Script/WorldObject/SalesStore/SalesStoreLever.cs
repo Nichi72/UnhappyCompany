@@ -11,6 +11,7 @@ public class SalesStoreLever : MonoBehaviour , IInteractableF
     private bool isAnimating = false;
 
     public string InteractionTextF { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "SalesStoreLever_ITR"); set => InteractionTextF = value; }
+    public bool IgnoreInteractionF { get; set; } = false;
 
     public void HitEventInteractionF(Player rayOrigin)
     {

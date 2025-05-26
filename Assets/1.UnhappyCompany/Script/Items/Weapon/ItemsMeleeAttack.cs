@@ -30,6 +30,7 @@ public class ItemsMeleeAttack : Item ,IDamager
 
     public void Attack()
     {
+        
         DamageSystem.RaycastDamage(damage, Distance, DamageLayer, DealDamage);
     }
 
