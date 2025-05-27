@@ -8,23 +8,27 @@ public class BuildSystem : MonoBehaviour
     public LayerMask groundLayer; // 배치 가능한 레이어
     public LayerMask wallLayer; // 벽 레이어
     public Material previewMaterial; // 배치 미리보기용 재질
-    public Material invalidPlacementMaterial; // 잘못된 배치 위치 표시용 재질
+    public Material validPlacementMaterial; // 설치 가능한 상태의 재질
+    public Material invalidPlacementMaterial; // 설치 불가능한 상태의 재질
     public Player currentPlayer;
+    public float wallCheckDistance = 0.5f; // 벽 감지 거리
+    public float wallOffset = 0.05f; // 벽으로부터의 거리 오프셋
+    public LayerMask playerLayer; // 플레이어 레이어
 
     private GameObject currentObject; // 현재 배치 중인 객체
     public bool isPlacing = false; // 배치 모드 여부
     private Dictionary<Renderer, Material> originalMaterials = new Dictionary<Renderer, Material>(); // 원래 재질 저장소
     [SerializeField] [ReadOnly] private GameObject currentItem;
+    private bool canPlaceOnWall = false; // 벽에 설치 가능 여부
     private bool isWallMountable = false; // 벽에만 설치 가능한 아이템인지 여부
-    private bool isValidPlacement = false; // 현재 설치 위치가 유효한지 여부
     
     private void Awake()
     {
         currentPlayer = GameManager.instance.currentPlayer;
     }
+    
     void Update()
     {
-
         if(currentItem != null)
         {
             if(currentItem != GameManager.instance.currentPlayer.quickSlotSystem.currentItemObject)
@@ -51,8 +55,13 @@ public class BuildSystem : MonoBehaviour
             
             RotateObject(); // 객체 회전
 
-            if (Input.GetMouseButtonDown(0) && isValidPlacement)
+            // 벽에만 설치 가능한 객체는 벽에 있을 때만 배치 가능
+            bool canPlace = !isWallMountable || (isWallMountable && canPlaceOnWall);
+            Debug.Log("canPlace: " + canPlace);
+            
+            if (Input.GetMouseButtonDown(0) && canPlace)
             {
+                Debug.Log("배치 확정: " + canPlace);
                 PlaceObject(); // 배치 확정
             }
             else if (Input.GetKeyDown(KeyCode.Escape))
@@ -67,11 +76,19 @@ public class BuildSystem : MonoBehaviour
     {
         InteractionSystem.instance.isInteraction = false;
         this.currentItem = currentItem;
-        this.isWallMountable = wallMountable;
+        this.isWallMountable = wallMountable; // 벽에만 설치 가능한지 설정
         
         if (objectToPlace != null)
         {
             currentObject = Instantiate(objectToPlace); // 배치할 객체 인스턴스화
+            
+            // 콜라이더 일시적으로 비활성화
+            Collider[] colliders = currentObject.GetComponentsInChildren<Collider>();
+            foreach (Collider collider in colliders)
+            {
+                collider.enabled = false;
+            }
+            
             SetPreviewMaterial(currentObject); // 미리보기 재질 적용
 
             // 객체에 Rigidbody가 있다면 배치 모드 동안 비활성화
@@ -81,8 +98,13 @@ public class BuildSystem : MonoBehaviour
                 rb.isKinematic = true;
                 rb.useGravity = false;
             }
-            //currentObject.layer = LayerMask.NameToLayer("Default");
-
+            
+            // 현재 아이템이 쿠션이면 쿠션의 isPreview를 true로 설정 이후에 추상화 필요함.
+            var item = currentItem.GetComponent<ItemCushion>();
+            if(item != null)
+            {
+                item.isPreview = true;
+            }
             isPlacing = true; // 배치 모드 활성화
         }
     }
@@ -93,81 +115,91 @@ public class BuildSystem : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition); // 마우스 위치에서 Ray 생성
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity, groundLayer))
+        // 플레이어 레이어를 제외한 레이어 마스크 생성
+        int layerMaskWithoutPlayer = groundLayer & ~playerLayer;
+
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMaskWithoutPlayer))
         {
             currentObject.transform.position = hit.point; // 객체 위치를 Ray 충돌 지점으로 설정
-            isValidPlacement = true;
-            UpdatePlacementMaterial(true);
-        }
-        else
-        {
-            isValidPlacement = false;
-            UpdatePlacementMaterial(false);
         }
     }
-
+    
     // 벽에 객체 이동 - Raycast를 사용하여 벽에 위치 결정
     void MoveObjectToWall()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition); // 마우스 위치에서 Ray 생성
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity, wallLayer))
+        // 플레이어 레이어를 제외한 레이어 마스크 생성
+        int layerMaskWithoutPlayer = Physics.DefaultRaycastLayers & ~playerLayer;
+        
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMaskWithoutPlayer))
         {
-            // 벽 표면에 객체 위치 설정
-            currentObject.transform.position = hit.point;
+            // 벽 레이어에 충돌했는지 확인
+            canPlaceOnWall = (wallLayer == (wallLayer | (1 << hit.collider.gameObject.layer)));
             
-            // 객체가 벽 표면에 대해 수직이 되도록 회전
-            currentObject.transform.forward = hit.normal;
-            
-            isValidPlacement = true;
-            UpdatePlacementMaterial(true);
+            // 위치 설정 - 모든 표면에 미리보기 표시
+            if (canPlaceOnWall)
+            {
+                // 벽의 법선 방향으로 오프셋을 적용하여 위치 설정
+                Vector3 offsetPosition = hit.point + (hit.normal * wallOffset);
+                currentObject.transform.position = offsetPosition;
+                
+                // 벽에 대해 객체 방향 조정 (벽에 수직으로)
+                currentObject.transform.forward = hit.normal;
+                UpdatePlacementMaterial(true); // 설치 가능 상태로 표시
+            }
+            else
+            {
+                // 벽이 아닌 곳에도 미리보기는 표시
+                Vector3 offsetPosition = hit.point + (hit.normal * wallOffset);
+                currentObject.transform.position = offsetPosition;
+                currentObject.transform.forward = hit.normal;
+                UpdatePlacementMaterial(false); // 설치 불가능 상태로 표시
+            }
         }
         else
         {
-            isValidPlacement = false;
-            UpdatePlacementMaterial(false);
-        }
-    }
-
-    // 배치 유효성에 따라 재질 업데이트
-    void UpdatePlacementMaterial(bool isValid)
-    {
-        if (currentObject == null) return;
-        
-        Renderer[] renderers = currentObject.GetComponentsInChildren<Renderer>();
-        foreach (Renderer renderer in renderers)
-        {
-            renderer.material = isValid ? previewMaterial : invalidPlacementMaterial;
+            // 레이캐스트가 실패한 경우 카메라 전방에 위치시킴
+            currentObject.transform.position = Camera.main.transform.position + Camera.main.transform.forward * 3f;
+            canPlaceOnWall = false;
+            UpdatePlacementMaterial(false); // 설치 불가능 상태로 표시
         }
     }
 
     // 객체 회전 - R 키를 눌러 객체를 회전시킴
     void RotateObject()
     {
-        if (Input.GetKey(KeyCode.R))
+        if (Input.GetKey(KeyCode.R) && (!isWallMountable || !canPlaceOnWall)) // 벽에 설치 중일 때는 회전 제한
         {
-            if (isWallMountable)
-            {
-                // 벽 부착형 객체는 벽에 수직인 축을 기준으로 회전
-                currentObject.transform.Rotate(currentObject.transform.forward, 100 * Time.deltaTime);
-            }
-            else
-            {
-                currentObject.transform.Rotate(Vector3.up, 100 * Time.deltaTime); // Y축 기준으로 회전
-            }
+            currentObject.transform.Rotate(Vector3.up, 100 * Time.deltaTime); // Y축 기준으로 회전
         }
     }
 
     // 객체 배치 확정 - 미리보기 재질 제거 및 Rigidbody 설정
     void PlaceObject()
     {
+        // 벽에만 설치 가능한 객체인데 벽에 설치되지 않으면 리턴
+        if (isWallMountable && !canPlaceOnWall)
+        {
+            Debug.LogWarning("벽에만 설치 가능한 객체는 벽에서만 설치할 수 있습니다.");
+            return;
+        }
+            
         if (currentObject.GetComponent<Rigidbody>() != null)
         {
             Rigidbody rb = currentObject.GetComponent<Rigidbody>();
             rb.isKinematic = true; // Rigidbody 설정 활성화
             rb.useGravity = false; // 중력 활성화
         }
+        
+        // 콜라이더 다시 활성화
+        Collider[] colliders = currentObject.GetComponentsInChildren<Collider>();
+        foreach (Collider collider in colliders)
+        {
+            collider.enabled = true;
+        }
+        
         currentObject.layer = LayerMask.NameToLayer(ETag.Item.ToString());
         RemovePreviewMaterial(currentObject); // 미리보기 재질 제거
         Destroy(currentItem);
@@ -194,6 +226,18 @@ public class BuildSystem : MonoBehaviour
         {
             originalMaterials[renderer] = renderer.material; // 원래 재질 저장
             renderer.material = previewMaterial; // 각 Renderer에 미리보기 재질 적용
+        }
+    }
+
+    // 설치 가능 여부에 따른 재질 업데이트
+    void UpdatePlacementMaterial(bool valid)
+    {
+        if (currentObject == null) return;
+        
+        Renderer[] renderers = currentObject.GetComponentsInChildren<Renderer>();
+        foreach (Renderer renderer in renderers)
+        {
+            renderer.material = valid ? validPlacementMaterial : invalidPlacementMaterial;
         }
     }
 

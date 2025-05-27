@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class ItemCushion : Item
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    public bool isPreview = false;
     void Start()
     {
         
@@ -14,8 +14,12 @@ public class ItemCushion : Item
         
     }
 
+
     public override void Use(Player player)
     {
-        player.buildSystem.StartPlacing(itemData.prefab.gameObject, this.gameObject, true);
+        if (isPreview == false)
+        {
+            player.buildSystem.StartPlacing(itemData.prefab.gameObject, this.gameObject, true);
+        }
     }
 }
