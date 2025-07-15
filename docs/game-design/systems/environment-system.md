@@ -29,24 +29,6 @@
 - **미니맵 의존도**: 최대
 - **심리적 상태**: 극도의 긴장
 
-### 구현 코드 예시
-```csharp
-public class FogController : MonoBehaviour
-{
-    [Header("Fog Settings")]
-    public Volume fogVolume;
-    public AnimationCurve fogIntensityCurve;
-    
-    public void UpdateFogIntensity(float timeProgress)
-    {
-        float intensity = fogIntensityCurve.Evaluate(timeProgress);
-        // URP Volume 조정
-        if (fogVolume.profile.TryGet<Fog>(out var fog))
-        {
-            fog.meanFreePath.value = Mathf.Lerp(200f, 10f, intensity);
-        }
-    }
-}
 ```
 
 ---
@@ -88,29 +70,7 @@ public class FogController : MonoBehaviour
 ### 절차적 생성 알고리즘
 
 #### Level 1: 기본 맵 생성
-```csharp
-public class MapGenerator : MonoBehaviour
-{
-    [Header("Map Settings")]
-    public int mapRadius = 50; // 사이클별 증가
-    public int roomCount = 10; // 기본 방 개수
-    
-    public void GenerateMap(int cycle)
-    {
-        // 사이클에 따른 맵 크기 증가
-        int currentRadius = mapRadius + (cycle * 25);
-        
-        // 방 생성
-        GenerateRooms(currentRadius);
-        
-        // 복도 연결
-        ConnectRooms();
-        
-        // 아이템 배치
-        PlaceItems();
-    }
-}
-```
+
 
 #### Level 2: 방 타입별 생성
 - **일반 방**: 기본 아이템 배치
@@ -138,21 +98,7 @@ public class MapGenerator : MonoBehaviour
   - 고가치 아이템 40%
 
 #### 동적 아이템 리스폰
-```csharp
-public class ItemSpawner : MonoBehaviour
-{
-    public void SpawnItems(Room room, float riskLevel)
-    {
-        // 위험도에 따른 아이템 가치 조정
-        float valueMultiplier = 1f + (riskLevel * 0.5f);
-        
-        // 아이템 종류 결정
-        ItemType itemType = DetermineItemType(riskLevel);
-        
-        // 배치
-        PlaceItem(room, itemType, valueMultiplier);
-    }
-}
+
 ```
 
 ---
@@ -184,21 +130,7 @@ public class ItemSpawner : MonoBehaviour
 - **먼 소리**: 흐릿하고 에코 효과
 - **안개 중 소리**: 왜곡되고 방향 파악 어려움
 
-### 구현 예시
-```csharp
-public class AmbientSoundManager : MonoBehaviour
-{
-    [Header("Fog Sound")]
-    public AudioClip fogAmbient;
-    public AudioClip creatureDistant;
-    
-    public void UpdateAmbientSound(float fogIntensity)
-    {
-        // 안개 농도에 따른 사운드 조정
-        float volume = Mathf.Lerp(0.1f, 0.8f, fogIntensity);
-        ambientSource.volume = volume;
-    }
-}
+
 ```
 
 ---
