@@ -16,11 +16,9 @@ public class CheatSystem : MonoBehaviour
     [SerializeField] private Button btnInitDefaultSchedule;
     [SerializeField] private Button btnFastForwardToNearestSchedule;
     [SerializeField] private Button btnCheatEggHatchIntoEnemy;
-
     [SerializeField] private Transform scheduleContentParent;
     [SerializeField] private GameObject scheduleItemPrefab;
     [SerializeField] private GameObject schedulePanel;
-
     private List<GameObject> scheduleItems = new List<GameObject>();
     
     void Awake()
@@ -34,7 +32,7 @@ public class CheatSystem : MonoBehaviour
             Destroy(gameObject);
         }
     }   
-    void Start()
+     void Start()
     {
         btnInitEgg.onClick.AddListener(InitEgg);
         

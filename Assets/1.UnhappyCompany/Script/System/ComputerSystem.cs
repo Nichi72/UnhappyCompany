@@ -17,8 +17,6 @@ public class ComputerSystem : MonoBehaviour
         {
             instance = this;
         }
-        LoadShopItems();
-
     }
     void Start()
     {
@@ -71,16 +69,7 @@ public class ComputerSystem : MonoBehaviour
         BuyItem(itemData);
     }
 
-    private void LoadShopItems()
-    {
-        ItemData[] shopItems = Resources.LoadAll<ItemData>("ScriptableObj/Item/Shop");
-        foreach (ItemData item in shopItems)
-        {
-            Debug.Log($"Loaded item: {item.itemName}");
-            GameObject shopItemBuyItem = Instantiate(shopSystem.shopUIPrefab, shopSystem.shopUIParent);
-            shopItemBuyItem.GetComponent<ShopItemBuyItem>().Init(item);
-        }
-    }
+   
     public void BtnEvtPressed(GameObject view)
     {
         Debug.Log("BtnEvtPressed");

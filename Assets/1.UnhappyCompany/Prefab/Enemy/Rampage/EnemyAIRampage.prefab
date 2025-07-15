@@ -1351,12 +1351,11 @@ GameObject:
   - component: {fileID: 5107399055157498797}
   - component: {fileID: 4274998198178572762}
   - component: {fileID: 6265528150528264352}
-  - component: {fileID: 4306973073141096235}
   - component: {fileID: 1874152015462924092}
   - component: {fileID: 8453064065871598536}
   m_Layer: 8
   m_Name: EnemyAIRampage
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1394,12 +1393,6 @@ MonoBehaviour:
   agent: {fileID: 4274998198178572762}
   playerTr: {fileID: 0}
   enemyData: {fileID: 11400000, guid: 637f8672a828be44792615e8ea0f5307, type: 2}
-  patrolGizmoRangeColor: {r: 0, g: 1, b: 0, a: 1}
-  chaseGizmoRangeColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  attackGizmoRangeColor: {r: 1, g: 0, b: 0, a: 1}
-  enableDebugUI: 1
-  debugUIPrefab: {fileID: 0}
-  debugUI: {fileID: 0}
   budgetFlag: 0
   vision:
     sightRange: 21.04
@@ -1413,10 +1406,11 @@ MonoBehaviour:
     drawGizmos: 1
     sightColor: {r: 1, g: 0, b: 0, a: 0.6862745}
   enemyData: {fileID: 11400000, guid: 637f8672a828be44792615e8ea0f5307, type: 2}
+  baseCollider: {fileID: 8453064065871598536}
+  lineRenderer: {fileID: 1874152015462924092}
   isCollided: 0
   chargeCount: 0
   currentPanelHealth: 0
-  lineRenderer: {fileID: 1874152015462924092}
   panels:
   - {fileID: 7160734160470130578}
   - {fileID: 3168987439671106108}
@@ -1472,27 +1466,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 36
   m_CollisionDetection: 0
---- !u!65 &4306973073141096235
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8405395881932533920}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 0
-  serializedVersion: 3
-  m_Size: {x: 1.7508678, y: 0.9889965, z: 3.4857936}
-  m_Center: {x: -0.012535104, y: 0.26632023, z: 0.14080478}
 --- !u!120 &1874152015462924092
 LineRenderer:
   serializedVersion: 2

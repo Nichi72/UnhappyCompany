@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class SalesStore : MonoBehaviour
 {
-
     public TMPro.TextMeshPro textMeshPro;
     public List<GameObject> sellObjects;
     public SalesStoreSellPoint salesStoreSellPoint;

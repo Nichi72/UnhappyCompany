@@ -4973,7 +4973,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &4766103611090298159
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5649,7 +5649,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &8241052261643919802
 RectTransform:
   m_ObjectHideFlags: 0
@@ -9379,9 +9379,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2f6e68cf57fea30499fe68eee2489674, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5029820763325078274}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2f6e68cf57fea30499fe68eee2489674, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 3346154576230855503}
   m_SourcePrefab: {fileID: 100100000, guid: 2f6e68cf57fea30499fe68eee2489674, type: 3}
 --- !u!4 &3776720530165313230 stripped
 Transform:
@@ -9503,33 +9500,6 @@ MonoBehaviour:
   - name: IllustratedGuide
     computerView: {fileID: 2919488546861631744}
     mayaPosition: {fileID: 1423909854047236616}
---- !u!114 &3346154576230855503
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4549282013720212596}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b42b769b12d28944abd97e3462e3fef2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mayaImage: {fileID: 5521507293657991229}
-  mainMayaPosition:
-    name: Main
-    computerView: {fileID: 2073744137694844451}
-    mayaPosition: {fileID: 7783614656171885397}
-  computerMayaPositions:
-  - name: NotificationSystem
-    computerView: {fileID: 2996708391425527715}
-    mayaPosition: {fileID: 4602073187910045467}
-  - name: Shop
-    computerView: {fileID: 2147205401700775398}
-    mayaPosition: {fileID: 2996857128669637289}
-  - name: IllustratedGuide
-    computerView: {fileID: 2919488546861631744}
-    mayaPosition: {fileID: 8976611042727038772}
 --- !u!1001 &3794631258380696954
 PrefabInstance:
   m_ObjectHideFlags: 0

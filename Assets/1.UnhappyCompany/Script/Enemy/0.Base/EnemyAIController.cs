@@ -40,7 +40,7 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
     // public bool enableDebugUI = true;
     // public GameObject debugUIPrefab;  // Inspector에서 디버그 UI 프리팹 할당
     // [SerializeField] protected EnemyStateDebugUI debugUI;
-    public EnemyBudgetFlag budgetFlag;
+    [ReadOnly] public EnemyBudgetFlag budgetFlag;
 
     [Header("Vision Settings")]
     public EnemyVision vision = new EnemyVision();
@@ -226,6 +226,12 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
         return true;
     }
 
+    /// <summary>
+    /// 이 적이 피해를 받았을 때 호출되는 메서드
+    /// HP를 감소시키고, HP가 0 이하가 되면 사망 처리를 수행합니다.
+    /// </summary>
+    /// <param name="damage">받을 피해량</param>
+    /// <param name="damageType">피해 타입</param>
     public virtual void TakeDamage(int damage, DamageType damageType)
     {
         hp -= damage;
@@ -237,6 +243,12 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
         }
     }
 
+    /// <summary>
+    /// 이 적이 다른 대상에게 피해를 입힐 때 호출되는 메서드
+    /// 타겟의 TakeDamage를 호출하여 피해를 전달합니다.
+    /// </summary>
+    /// <param name="damage">입힐 피해량</param>
+    /// <param name="target">피해를 받을 대상 (IDamageable 인터페이스를 구현한 객체)</param>
     public virtual void DealDamage(int damage, IDamageable target)
     {
         target.TakeDamage(damage, DamageType.Nomal);

@@ -14,7 +14,15 @@ public enum ETag
     Item,
     Wall,
     Player,
-    Pushable
+    Pushable,
+    Enemy,
+}
+public enum DoorTrapBtnType
+{
+        Fire,
+        Water,
+        Hammer,
+        Electric
 }
 
 public enum EItem

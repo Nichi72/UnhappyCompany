@@ -53,7 +53,7 @@ public class RampageChargeState : IState
     public void Exit()
     {
         DebugManager.Log("Rampage: Charge 상태 종료", isShowDebug);
-        
+        controller.baseCollider.enabled = false; // 돌진 할 때 충돌 처리 안하려고 끔. 데미지 처리는 RampageTrigger에서 함.
         // 실행 중인 코루틴이 있다면 중지
         if (chargeCoroutine != null)
         {

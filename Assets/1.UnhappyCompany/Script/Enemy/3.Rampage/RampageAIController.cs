@@ -9,7 +9,11 @@ using System.Collections.Generic;
 /// </summary>
 public class RampageAIController : EnemyAIController<RampageAIData>
 {
+    // 기본적인 컴포넌트
     private Rigidbody rb;
+    public Collider baseCollider;
+     // LineRenderer for visualizing detection
+    [SerializeField] private LineRenderer lineRenderer;
 
     public new RampageAIData EnemyData => enemyData;
 
@@ -31,15 +35,13 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     public float ExplodeRadius => enemyData.explodeRadius;
     public int ExplodeDamage => enemyData.explodeDamage;
 
-    // LineRenderer for visualizing detection
-    [SerializeField] private LineRenderer lineRenderer;
+   
     public List<RampagePanel> panels;
 
     private float stuckTime = 0f;
     private Vector3 lastPosition;
     private float stuckThreshold = 0.1f; // 낑김으로 판단할 최소 이동 거리
     private float maxStuckTime = 3f; // 최대 낑김 허용 시간
-
     public bool onceReduceHP = true; // 충돌시 false로 바꾸고 ChargeCoroutine에서 충돌전 회전할때 true로 만듬.
 
     protected override void Start()
@@ -169,98 +171,7 @@ public class RampageAIController : EnemyAIController<RampageAIData>
         // 현재는 임시로 collision.collider 태그가 "Cushion"이면 쿠션 있다고 가정
         return collision.collider.CompareTag("Cushion"); 
     }
-    /// <summary>
-    /// 물리 충돌 시 쿠션 여부 판단 후 상태 전환
-    /// </summary>
-    private void OnCollisionEnter(Collision collision)
-    {
-        /*
-        if (currentState is RampageChargeState chargeState)
-        {
-            if(collision.collider.CompareTag(ETag.Pushable.ToString()))
-            {
-                Push(collision);
-                Debug.Log("Pushable 충돌 발생");
-                AudioManager.instance.PlayTestBeep("Pushable 충돌하는 소리",transform);
-            }
-        }
-        */
-    }
     
-    void OnCollisionStay(Collision collision)
-    {
-        /*
-        // 현재 상태가 Charge 상태인지 확인
-        if (currentState is RampageChargeState chargeState)
-        {
-            bool hasCushion = IsCushionAtCollision(collision);
-            // int panelCount = hasCushion
-            //     ? enemyData.cushionPanelCount
-            //     : enemyData.noCushionPanelCount;
-
-            if (!hasCushion && onceReduceHP) 
-            {
-                // HP 감소
-                ReduceHP(enemyData.hpLossOnNoCushion);
-                onceReduceHP = false;
-            }
-
-
-            Debug.Log("Rampage: Charge 상태에서 충돌 발생 collision " + collision.gameObject.tag + " ETag " + collision.gameObject.name);
-           
-            if (collision.collider.CompareTag(ETag.Wall.ToString()))
-            {
-                isCollided = true;
-                Debug.Log("충돌 발생");
-                AudioManager.instance.PlayTestBeep("Rampage 벽에 처박히는 소리",transform);
-            }
-
-            if(collision.collider.CompareTag(ETag.Player.ToString()))
-            {
-                Debug.Log("플레이어와 충돌 발생");
-                isCollided = true;
-                AudioManager.instance.PlayTestBeep("Rampage 플레이어와 충돌 소리",transform);
-                collision.transform.GetComponent<IDamageable>().TakeDamage(50,DamageType.Nomal);
-                // Push(collision);
-
-            }
-            if(collision.collider.CompareTag(ETag.Cushion.ToString()))
-            {
-                Debug.Log("쿠션과 충돌 발생");
-                isCollided = true;
-                AudioManager.instance.PlayTestBeep("Rampage 쿠션과 충돌 소리",transform);
-            }
-        }
-        */
-    }
-
-    private float pushStrength = 10f;    
-    private void Push(Collision collision)
-    {
-        /*
-        Rigidbody otherRb = collision.rigidbody;
-
-        if (otherRb == null)
-        {
-            // Rigidbody가 없으면 추가
-            otherRb = collision.gameObject.AddComponent<Rigidbody>();
-            otherRb.mass = 1f;              // 기본 Mass
-            otherRb.linearDamping = 0f;               // 기본 Drag
-            otherRb.angularDamping = 0.05f;     // 기본 Angular Drag
-            otherRb.interpolation = RigidbodyInterpolation.Interpolate; // 부드럽게
-            otherRb.collisionDetectionMode = CollisionDetectionMode.Continuous; // 충돌 튐 방지
-        }
-
-        if (otherRb != null && !otherRb.isKinematic)
-        {
-            Vector3 pushDir = collision.transform.position - transform.position;
-            pushDir.y = 0;
-            pushDir.Normalize();
-
-            otherRb.AddForce(pushDir * pushStrength, ForceMode.Impulse);
-        }
-        */
-    }
     private void InitPannel()
     {
         foreach (var panel in panels)

@@ -3,13 +3,10 @@ using MyUtility;
 
 public class DoorTrapBtn : MonoBehaviour,IInteractableF
 {
-    enum DoorTrapBtnType{
-        Fire,
-        Water,
-        Hammer,
-        Electric
-    }
     [SerializeField] private DoorTrapBtnType doorTrapBtnType;
+    [SerializeField] private DoorTrapFire doorTrapFire;
+    [SerializeField] private DoorTrapWaterCannon doorTrapWaterCannon;
+    [SerializeField] private DoorTrapHammer doorTrapHammer;
 
     public bool IgnoreInteractionF { get; set; } = false;
     public string InteractionTextF { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "DoorTrapBtn_ITR"); set => InteractionTextF = value; }
@@ -19,7 +16,7 @@ public class DoorTrapBtn : MonoBehaviour,IInteractableF
         if(doorTrapBtnType == DoorTrapBtnType.Fire)
         {
             FireTrap();
-        }   
+        }
         else if(doorTrapBtnType == DoorTrapBtnType.Water)
         {
             WaterTrap();
@@ -37,16 +34,19 @@ public class DoorTrapBtn : MonoBehaviour,IInteractableF
 
     void FireTrap()
     {
+        doorTrapFire.On();
         Debug.Log("FireTrap");
     }
 
     void WaterTrap()
     {
+        doorTrapWaterCannon.On();
         Debug.Log("WaterTrap");
     }
 
     void HammerTrap()
     {
+        doorTrapHammer.On();
         Debug.Log("HammerTrap");
     }
 
