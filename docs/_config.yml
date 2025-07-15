@@ -1,0 +1,82 @@
+# GitHub Pages Jekyll 설정
+
+# 사이트 정보
+title: "Lab Watcher 게임 기획서"
+description: "오전-오후 사이클 기반 생존 호러 게임의 완전한 설계 문서"
+author: "세찬 & 민영"
+
+# 테마 설정 (GitHub Pages 지원 테마)
+theme: minima
+# 다른 테마 옵션:
+# theme: jekyll-theme-cayman
+# theme: jekyll-theme-architect
+
+# 마크다운 설정
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+  syntax_highlighter: rouge
+
+highlighter: rouge
+
+# 플러그인 설정
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-seo-tag
+  - jekyll-relative-links
+  - jekyll-optional-front-matter
+  - jekyll-default-layout
+  - jekyll-titles-from-headings
+
+# 상대 링크 설정
+relative_links:
+  enabled: true
+  collections: true
+
+# 제목 자동 생성 설정
+titles_from_headings:
+  enabled: true
+  strip_title: true
+  collections: true
+
+# 기본 레이아웃 설정
+defaults:
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: "default"
+  - scope:
+      path: "game-design"
+    values:
+      layout: "page"
+      category: "게임 설계"
+  - scope:
+      path: "technical"
+    values:
+      layout: "page"
+      category: "기술 문서"
+  - scope:
+      path: "progress"
+    values:
+      layout: "page"
+      category: "진행 상황"
+
+# 시간대 설정
+timezone: Asia/Seoul
+
+# 빌드 설정
+safe: true
+incremental: false
+
+# 제외할 파일/폴더
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/
+  - .sass-cache/
+  - .jekyll-cache/
+  - .jekyll-metadata
