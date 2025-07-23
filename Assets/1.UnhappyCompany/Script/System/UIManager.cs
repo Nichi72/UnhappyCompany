@@ -77,12 +77,11 @@ public class UIManager : MonoBehaviour
     
     private void Update()
     {
-        // 현재 사용되지 않는 Update 메서드
         UpdateCenterBatteryLevel();
-        if(Input.GetKeyDown(KeyCode.Escape))
-        {
-            ToggleObject(settingsUI);
-        }
+        // if(Input.GetKeyDown(KeyCode.Escape))
+        // {
+        //     ToggleObject(settingsUI);
+        // }
     }
 
     public void UpdateCenterBatteryLevel()

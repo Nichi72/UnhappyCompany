@@ -1092,6 +1092,28 @@ MonoBehaviour:
   chromaticAbberationSampleCount:
     m_OverrideState: 1
     m_Value: 3
+--- !u!114 &-5219307608607574023
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cff9614614d225c4ab3083cf8a4e706d, type: 3}
+  m_Name: LowResolutionEffect
+  m_EditorClassIdentifier: 
+  active: 1
+  resolutionScale:
+    m_OverrideState: 1
+    m_Value: 0.5
+  pixelatedLook:
+    m_OverrideState: 1
+    m_Value: 1
+  enableEffect:
+    m_OverrideState: 1
+    m_Value: 1
 --- !u!114 &-5147738881629203417
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -1882,6 +1904,7 @@ MonoBehaviour:
   - {fileID: -3667222017450293808}
   - {fileID: 5749577710260009538}
   - {fileID: 7967873095003578708}
+  - {fileID: -5219307608607574023}
 --- !u!114 &31491410892545890
 MonoBehaviour:
   m_ObjectHideFlags: 3

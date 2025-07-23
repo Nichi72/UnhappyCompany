@@ -1,5 +1,105 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-8514795052202413848
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7aec9469ec3070046b632052b10a89a8, type: 3}
+  m_Name: LowRes_RLPRO
+  m_EditorClassIdentifier: 
+  active: 0
+  intensity:
+    m_OverrideState: 1
+    m_Value: 1
+  downscale:
+    m_OverrideState: 1
+    m_Value: 0.494
+  mask:
+    m_OverrideState: 0
+    m_Value: {fileID: 0}
+    dimension: 1
+  maskChannel:
+    m_OverrideState: 0
+    m_Value: 0
+--- !u!114 &-8323570247991972037
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 46b8f341bcb0fbf49a37e772b8f54e6d, type: 3}
+  m_Name: Noise_RLPRO
+  m_EditorClassIdentifier: 
+  active: 1
+  intensity:
+    m_OverrideState: 1
+    m_Value: 1
+  stretchResolution:
+    m_OverrideState: 1
+    m_Value: 480
+  VerticalResolution:
+    m_OverrideState: 1
+    m_Value: 480
+  Granularity:
+    m_OverrideState: 1
+    m_Value: 0
+  GranularityAmount:
+    m_OverrideState: 1
+    m_Value: 0.5
+  TapeNoise:
+    m_OverrideState: 1
+    m_Value: 0
+  TapeNoiseSignalProcessing:
+    m_OverrideState: 1
+    m_Value: 0.69
+  TapeNoiseFade:
+    m_OverrideState: 1
+    m_Value: 1
+  TapeNoiseAmount:
+    m_OverrideState: 1
+    m_Value: 1
+  tapeLinesAmount:
+    m_OverrideState: 1
+    m_Value: 0.8
+  TapeNoiseSpeed:
+    m_OverrideState: 1
+    m_Value: 0.5
+  LineNoise:
+    m_OverrideState: 1
+    m_Value: 0
+  LineNoiseAmount:
+    m_OverrideState: 1
+    m_Value: 1
+  LineNoiseSpeed:
+    m_OverrideState: 1
+    m_Value: 1
+  SignalNoise:
+    m_OverrideState: 0
+    m_Value: 0
+  SignalNoisePower:
+    m_OverrideState: 0
+    m_Value: 0.9
+  SignalNoiseAmount:
+    m_OverrideState: 0
+    m_Value: 1
+  unscaledTime:
+    m_OverrideState: 0
+    m_Value: 0
+  mask:
+    m_OverrideState: 0
+    m_Value: {fileID: 0}
+    dimension: 1
+  maskChannel:
+    m_OverrideState: 0
+    m_Value: 0
 --- !u!114 &-7150676801411399086
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -248,6 +348,37 @@ MonoBehaviour:
   opacity:
     m_OverrideState: 0
     m_Value: 1
+--- !u!114 &-6091285769269161401
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c604242b4dd4c8caa4d1944b94189e0, type: 3}
+  m_Name: HighQualityLineRenderingVolumeComponent
+  m_EditorClassIdentifier: 
+  active: 1
+  enable:
+    m_OverrideState: 0
+    m_Value: 0
+  compositionMode:
+    m_OverrideState: 0
+    m_Value: 0
+  clusterCount:
+    m_OverrideState: 0
+    m_Value: 24
+  sortingQuality:
+    m_OverrideState: 0
+    m_Value: 0
+  tileOpacityThreshold:
+    m_OverrideState: 0
+    m_Value: 1
+  writeDepthAlphaThreshold:
+    m_OverrideState: 0
+    m_Value: 0
 --- !u!114 &-3514595313643928360
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -294,6 +425,28 @@ MonoBehaviour:
   m_SampleCount:
     m_OverrideState: 1
     m_Value: 12
+--- !u!114 &-2566625245471513601
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cff9614614d225c4ab3083cf8a4e706d, type: 3}
+  m_Name: LowResolutionEffect
+  m_EditorClassIdentifier: 
+  active: 1
+  resolutionScale:
+    m_OverrideState: 1
+    m_Value: 10
+  pixelatedLook:
+    m_OverrideState: 1
+    m_Value: 1
+  enableEffect:
+    m_OverrideState: 0
+    m_Value: 1
 --- !u!114 &-466525434632250678
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -403,6 +556,10 @@ MonoBehaviour:
   - {fileID: -7150676801411399086}
   - {fileID: -3514595313643928360}
   - {fileID: 991178047098562989}
+  - {fileID: -2566625245471513601}
+  - {fileID: -8514795052202413848}
+  - {fileID: -8323570247991972037}
+  - {fileID: -6091285769269161401}
 --- !u!114 &991178047098562989
 MonoBehaviour:
   m_ObjectHideFlags: 3
