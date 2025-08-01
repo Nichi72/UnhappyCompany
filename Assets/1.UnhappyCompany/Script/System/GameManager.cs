@@ -112,8 +112,12 @@ public class GameManager : MonoBehaviour
         EnemyManager.instance.SpawnEggsInEachRoom();
         OpenCenterDoor();
         CentralBatterySystem.Instance.isStop = false;
+        RoomManager.Instance.centerNavMeshSurface.enabled = true; // 센터에 몬스터 접근 가능해짐.
     }
 
+    /// <summary>
+    /// 게임 진행 상태에서 게임 종료 상태로 전환
+    /// </summary>
     private void OnChangePlayingToEnd()
     {
         currentGameState = EGameState.End;
@@ -124,7 +128,12 @@ public class GameManager : MonoBehaviour
         FadeManager.instance.FadeInThenFadeOut(1f, 1f, 1f);
         CloseCenterDoor();
         CentralBatterySystem.Instance.isStop = true;
+        RoomManager.Instance.centerNavMeshSurface.enabled = false; // 센터에 몬스터 접근 불가하게 하기 위해서
     }
+
+    /// <summary>
+    /// 게임 종료 상태에서 게임 준비 상태로 전환
+    /// </summary>
     private void OnChangeEndToReady()
     {
         currentGameState = EGameState.Ready;
@@ -132,6 +141,7 @@ public class GameManager : MonoBehaviour
         TimeManager.instance.IsStop = true;
         CentralBatterySystem.Instance.isStop = true;
         CloseCenterDoor();
+        RoomManager.Instance.centerNavMeshSurface.enabled = false; // 센터에 몬스터 접근 불가하게 하기 위해서
     }
     
 

@@ -6,7 +6,7 @@ using System;
 public class EnemyManager : MonoBehaviour
 {
     public static EnemyManager instance;
-    public int EggID = 0;
+    
 
     // 이벤트 선언
     public event Action<List<GameObject>> OnEggsListChanged;
@@ -14,6 +14,8 @@ public class EnemyManager : MonoBehaviour
     [Header("Enemy Spawning")]
     // [Tooltip("적 생성 위치 리스트")] public List<RoomS> spawnPoints;
     public List<RoomSetting> roomSettings;
+    public List<RoomSettingsByDoorDirection> roomSettingsByDoorDirection;
+    
     List<EggSpawnPoint> eggSpawnPoints = new List<EggSpawnPoint>();
 
     [Tooltip("알 상태의 적 프리팹")] public GameObject eggPrefab;
@@ -35,7 +37,7 @@ public class EnemyManager : MonoBehaviour
     [SerializeField] public List<GameObject> activeEnemies = new List<GameObject>();
     
     private int enemySpawnIndex = 0;
-
+    [HideInInspector] public int EggID = 0;
 
 
 
@@ -67,6 +69,7 @@ public class EnemyManager : MonoBehaviour
     void Start()
     {
         RoomManager.Instance.roomGenerator.OnGenerationComplete += SpawnEggsInEachRoom;
+        RoomManager.Instance.roomGenerator.OnGenerationComplete += InitializeRoomSettingsByDoorDirection;
     }
 
     private void OnDestroy()
@@ -193,6 +196,59 @@ public class EnemyManager : MonoBehaviour
         enemySpawnIndex++;
     }
 
+    /// <summary>
+    /// DoorDirection별로 RoomSetting을 분류하여 roomSettingsByDoorDirection 리스트를 초기화합니다.
+    /// </summary>
+    public void InitializeRoomSettingsByDoorDirection()
+    {
+        roomSettingsByDoorDirection = new List<RoomSettingsByDoorDirection>();
+        
+        // DoorDirection 열거형의 모든 값에 대해 RoomSettingsByDoorDirection 객체 생성
+        System.Array doorDirections = System.Enum.GetValues(typeof(DoorDirection));
+        
+        foreach (DoorDirection direction in doorDirections)
+        {
+            RoomSettingsByDoorDirection roomSettingsByDirection = new RoomSettingsByDoorDirection
+            {
+                doorDirection = direction,
+                roomSettings = new List<RoomSetting>()
+            };
+            roomSettingsByDoorDirection.Add(roomSettingsByDirection);
+        }
+        
+        // RoomManager에서 생성된 모든 RoomNode를 가져와서 DoorDirection별로 분류
+        if (RoomManager.Instance != null && RoomManager.Instance.roomGenerator != null)
+        {
+            List<RoomNode> allRooms = RoomManager.Instance.roomGenerator.allRoomList;
+            
+            foreach (RoomNode roomNode in allRooms)
+            {
+                if (roomNode.roomSetting != null)
+                {
+                    // 해당 DoorDirection에 맞는 RoomSettingsByDoorDirection 찾기
+                    RoomSettingsByDoorDirection targetGroup = roomSettingsByDoorDirection.Find(
+                        group => group.doorDirection == roomNode.doorDirection
+                    );
+                    
+                    if (targetGroup != null)
+                    {
+                        targetGroup.roomSettings.Add(roomNode.roomSetting);
+                    }
+                }
+            }
+            
+            // 결과 로그 출력
+            foreach (var group in roomSettingsByDoorDirection)
+            {
+                Debug.Log($"{group.doorDirection} 방향: {group.roomSettings.Count}개의 방");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("RoomManager 또는 RoomGenerator가 null입니다. roomSettingsByDoorDirection 초기화를 완료할 수 없습니다.");
+        }
+    }
+
     public void CheatEggHatchIntoEnemy()
     {
         foreach(var egg in activeEggs)
@@ -200,4 +256,11 @@ public class EnemyManager : MonoBehaviour
             egg.GetComponent<Egg>().HatchIntoEnemy();
         }
     }
+}
+
+[System.Serializable]
+public class RoomSettingsByDoorDirection
+{
+    public DoorDirection doorDirection;
+    public List<RoomSetting> roomSettings;
 }

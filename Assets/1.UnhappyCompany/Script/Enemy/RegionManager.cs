@@ -18,11 +18,13 @@ public class RegionManager : MonoBehaviour
         }
     }
 
+    
 
     void Update()
     {
         
     }
+
     //  시간이 되면 Budget을 차감해서 그만큼 적이 행동하게 됨.
     public void TryScheduleEnemy()
     {

@@ -2,6 +2,7 @@ using System;
 
 /// <summary>
 /// 메서드를 치트 명령어로 등록하는 어트리뷰트
+/// 사용법: [CheatCommand("spawn", "적을 스폰합니다")]
 /// </summary>
 [AttributeUsage(AttributeTargets.Method)]
 public class CheatCommandAttribute : Attribute
@@ -20,17 +21,11 @@ public class CheatCommandAttribute : Attribute
     /// 명령어 카테고리 (예: "Enemy", "Player", "System")
     /// </summary>
     public string Category { get; }
-    
-    /// <summary>
-    /// 개발자 전용 명령어인지 여부
-    /// </summary>
-    public bool DeveloperOnly { get; }
 
-    public CheatCommandAttribute(string commandName, string description = "", string category = "General", bool developerOnly = false)
+    public CheatCommandAttribute(string commandName, string description = "", string category = "General")
     {
         CommandName = commandName;
         Description = description;
         Category = category;
-        DeveloperOnly = developerOnly;
     }
 } 

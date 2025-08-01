@@ -11,7 +11,7 @@ public class RoomManager : MonoBehaviour
     public GameObject centerRoom;
 
     [Header("NavMesh 설정")]
-    public NavMeshSurface navMeshSurface;
+    public NavMeshSurface centerNavMeshSurface;
     private NavMeshData navMeshData;
     private bool isNavMeshBuilding = false;
 
@@ -29,6 +29,15 @@ public class RoomManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
+    private void Start()
+    {
+        TimeManager.instance.OnMorningStarted += () => {
+            centerNavMeshSurface.enabled = false;
+        };
+        TimeManager.instance.OnNightStarted += () => {
+            centerNavMeshSurface.enabled = true;
+        };
+    }
 
     private void Update()
     {
@@ -41,14 +50,14 @@ public class RoomManager : MonoBehaviour
     /// </summary>
     public void InitializeNavMesh()
     {
-        if (navMeshSurface == null)
+        if (centerNavMeshSurface == null)
         {
             Debug.LogError("NavMeshSurface가 설정되지 않았습니다.");
             return;
         }
 
         navMeshData = new NavMeshData();
-        navMeshSurface.navMeshData = navMeshData;
+        centerNavMeshSurface.navMeshData = navMeshData;
         NavMesh.AddNavMeshData(navMeshData);
     }
 
@@ -108,7 +117,7 @@ public class RoomManager : MonoBehaviour
             }
 
             // 각 방의 NavMesh 빌드
-            roomSetting.navMeshSurface.BuildNavMesh();
+            // roomSetting.navMeshSurface.BuildNavMesh();
             
             processedRooms++;
             Debug.Log($"NavMesh 빌드 진행률: {processedRooms}/{totalRooms} ({(float)processedRooms/totalRooms * 100:F1}%)");
@@ -127,7 +136,7 @@ public class RoomManager : MonoBehaviour
         Debug.Log("NavMesh 비동기 빌드 시작");
         
         // 메인 스레드에서 NavMesh 소스 수집
-        navMeshSurface.BuildNavMesh();
+        // navMeshSurface.BuildNavMesh();
         
         yield return null;
         
