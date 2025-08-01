@@ -5,6 +5,9 @@ public class DoorTrapReloadBottle : MonoBehaviour, IInteractableF
     public GameObject bottle;
     public Transform bottlePos;
     [SerializeField] private DoorTrapBtnType doorTrapBtnType;
+    [SerializeField] private DoorTrapFire doorTrapFire;
+    [SerializeField] private DoorTrapWaterCannon doorTrapWaterCannon;
+    [SerializeField] private DoorTrapHammer doorTrapHammer;
     
 
     // 사출 관련 설정
@@ -21,10 +24,28 @@ public class DoorTrapReloadBottle : MonoBehaviour, IInteractableF
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        if(bottle == null)
+        if(bottle != null )
         {
             bottle.GetComponent<Rigidbody>().isKinematic = true;
         }
+
+        #region 컴포넌트 할당 체크
+        // DoorTrap 컴포넌트들이 null인지 체크
+        if (doorTrapFire == null)
+        {
+            Debug.LogError("DoorTrapFire 컴포넌트가 할당되지 않았습니다.", this);
+        }
+        
+        if (doorTrapWaterCannon == null)
+        {
+            Debug.LogError("DoorTrapWaterCannon 컴포넌트가 할당되지 않았습니다.", this);
+        }
+        
+        if (doorTrapHammer == null)
+        {
+            Debug.LogError("DoorTrapHammer 컴포넌트가 할당되지 않았습니다.", this);
+        }
+        #endregion
     }
 
     public void HitEventInteractionF(Player rayOrigin)
@@ -47,6 +68,7 @@ public class DoorTrapReloadBottle : MonoBehaviour, IInteractableF
                     itemBottleFire = rayOrigin.quickSlotSystem.DropItem().GetComponent<ItemBottleFire>();
                     SetBottle(currentItemObject);
                     itemBottleFire.enabled = false;
+                    doorTrapFire.ResetCount();
                 }
                 else
                 {
@@ -63,6 +85,7 @@ public class DoorTrapReloadBottle : MonoBehaviour, IInteractableF
                     itemBottleWater = rayOrigin.quickSlotSystem.DropItem().GetComponent<ItemBottleWater>();
                     SetBottle(currentItemObject);
                     itemBottleWater.enabled = false;
+                    doorTrapWaterCannon.ResetCount();
                 }
                 else
                 {
@@ -78,6 +101,7 @@ public class DoorTrapReloadBottle : MonoBehaviour, IInteractableF
                     itemBottleGas = rayOrigin.quickSlotSystem.DropItem().GetComponent<ItemBottleGas>();
                     SetBottle(currentItemObject);
                     itemBottleGas.enabled = false;
+                    doorTrapHammer.ResetCount();
                 }
                 else
                 {

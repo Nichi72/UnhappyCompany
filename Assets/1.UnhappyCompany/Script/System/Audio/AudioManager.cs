@@ -149,12 +149,31 @@ public class AudioManager : MonoBehaviour
     /// <summary>
     /// 기본적인 3D 사운드 재생 (위치 기반)
     /// </summary>
-    public EventInstance PlayOneShot(EventReference eventReference, Transform targetTransform)
+    public EventInstance PlayOneShot(EventReference eventReference, Transform targetTransform , string logMessage = null)
     {
+        if(logMessage != null)
+        {
+            Debug.Log($"PlayOneShot: {logMessage}");
+        }
+        else
+        {
+            Debug.Log($"PlayOneShot: {eventReference.Path}");
+        }
         EventInstance eventInstance = RuntimeManager.CreateInstance(eventReference);
         StartCoroutine(PlayOneShotCoroutine(eventInstance, targetTransform));
         return eventInstance;
     }
+
+    // /// <summary>
+    // /// 로그 메시지와 함께 3D 사운드 재생 (위치 기반)
+    // /// </summary>
+    // public EventInstance PlayOneShot(EventReference eventReference, Transform targetTransform, string logMessage)
+    // {
+    //     Debug.Log($"PlayOneShot: {logMessage}");
+    //     EventInstance eventInstance = RuntimeManager.CreateInstance(eventReference);
+    //     StartCoroutine(PlayOneShotCoroutine(eventInstance, targetTransform));
+    //     return eventInstance;
+    // }
 
     private EventInstance PlayOneShotTestBeep(EventReference eventReference, Transform targetTransform)
     {
@@ -192,7 +211,8 @@ public class AudioManager : MonoBehaviour
     // 설정 UI 테스트용 사운드 재생
     public void PlaySettingsTestSound()
     {
-        // 기존에 있는 PlayTestBeep 메서드 활용
-        PlayTestBeep("UI Click Test", GameManager.instance.currentPlayer.transform);
+        PlayOneShot(FMODEvents.instance.uiButtonClick, GameManager.instance.currentPlayer.transform, "UI Click Test");
     }
+
+
 }

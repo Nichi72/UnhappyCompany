@@ -33,7 +33,7 @@ public class RampageChargeState : IState
         rb.isKinematic = true;
         
         // 돌진 준비 애니메이션 재생
-        AudioManager.instance.PlayTestBeep("돌진 준비 애니메이션 재생", controller.transform);
+        AudioManager.instance.PlayOneShot(FMODEvents.instance.rampageChargePrep, controller.transform, "돌진 준비 애니메이션 재생");
         
         // 돌진 시작
         chargeCoroutine = controller.StartCoroutine(ChargeCoroutine());

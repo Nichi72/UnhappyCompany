@@ -94,7 +94,7 @@ public class RSPUI : MonoBehaviour
             currentIndex = (currentIndex + 1) % cenerRSPs.Count;
             
             // 소리 재생 (기존 코드와 유사하게)
-            AudioManager.instance.PlayTestBeep("RSP 중앙 회전 돌아가는 소리", transform);
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.rspWheelSpin, transform, "RSP 중앙 회전 돌아가는 소리");
         }
     }
 
@@ -129,7 +129,7 @@ public class RSPUI : MonoBehaviour
             numbers[currentNumber].SetActive(false);
             
             currentNumber++;
-            AudioManager.instance.PlayTestBeep("RSP 중앙 회전 돌아가는 소리" , transform);
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.rspWheelSpin, transform, "RSP 중앙 회전 돌아가는 소리");
             if (currentNumber >= maxNumber)
             {
                 Debug.Log("loopCount: " + loopCount);

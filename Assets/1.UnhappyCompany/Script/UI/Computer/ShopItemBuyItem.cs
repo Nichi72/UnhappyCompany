@@ -21,11 +21,11 @@ public class ShopItemBuyItem : MonoBehaviour, IPointerEnterHandler
     {
         ComputerSystem.instance.BtnEvtBuyItem(itemData);
         Debug.Log("BuyItem");
-        AudioManager.instance.PlayTestBeep("BuyItem BtnPressed", transform);
+        AudioManager.instance.PlayOneShot(FMODEvents.instance.shopItemBuy, transform, "BuyItem BtnPressed");
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        AudioManager.instance.PlayTestBeep("BuyItem OnPointerEnter", transform);
+        AudioManager.instance.PlayOneShot(FMODEvents.instance.uiButtonHover, transform, "BuyItem OnPointerEnter");
     }
 }

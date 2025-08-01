@@ -12,7 +12,7 @@ public class StartBtn : MonoBehaviour , IInteractableF
             GameManager.instance.currentGameState = EGameState.Ready;
             GameManager.instance.isPressedStartBtn = true;
             Debug.Log("StartBtn HitEventInteractionF");
-            AudioManager.instance.PlayTestBeep("StartBtn HitEventInteractionF", transform);
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.startButtonPress, transform, "StartBtn HitEventInteractionF");
             StartCoroutine(GameManager.instance.ShowDayText());
 
         }

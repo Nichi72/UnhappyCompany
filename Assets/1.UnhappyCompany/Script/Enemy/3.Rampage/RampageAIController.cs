@@ -137,7 +137,7 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     {
         // Rampage는 기본적으로 무적입니다. 돌진에 의해 벽에 박았을 때만 데미지를 입습니다.
         // 따라서 플레이어에 의해 데미지는 입지 않습니다. 그래서 데미지 계산을 하지않습니다.
-        AudioManager.instance.PlayTestBeep("Rampage_Hit 하지만 데미지 안받아서 둔탁한 소리가 나야함.",transform);
+        AudioManager.instance.PlayOneShot(FMODEvents.instance.rampageHitBlock, transform, "Rampage_Hit 하지만 데미지 안받아서 둔탁한 소리가 나야함.");
     }
 
     /// <summary>

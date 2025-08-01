@@ -57,7 +57,7 @@ public class DoorTrapHammer : MonoBehaviour
         if (isOnProcessing)
         {
             Debug.Log("해머 트랩이 이미 실행 중입니다.");   
-            AudioManager.instance.PlayTestBeep("해머 트랩이 이미 실행 중입니다.", gameObject.transform);
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.trapHammerAlreadyActive, gameObject.transform, "해머 트랩이 이미 실행 중입니다.");
             return;
         }
 
@@ -65,7 +65,7 @@ public class DoorTrapHammer : MonoBehaviour
         if (count <= 0)
         {
             Debug.Log("해머 트랩 발사 횟수를 초과했습니다.");
-            AudioManager.instance.PlayTestBeep("해머 트랩 발사 횟수를 초과했습니다.", gameObject.transform);
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.trapHammerLimitExceeded, gameObject.transform, "해머 트랩 발사 횟수를 초과했습니다.");
             return;
         }
 
@@ -85,7 +85,7 @@ public class DoorTrapHammer : MonoBehaviour
         
         // 해머 움직임 완료 후 자동으로 끄기
         autoOffCoroutine = StartCoroutine(AutoOffAfterMovement());
-        AudioManager.instance.PlayTestBeep("해머 트랩 작동 소리. 무거운 해머가 내려치는 듯한 강력한 타격음. 쾅! 하는 느낌의 임팩트 있는 소리." , gameObject.transform);
+        AudioManager.instance.PlayOneShot(FMODEvents.instance.trapHammerStrike, gameObject.transform, "해머 트랩 작동 소리. 무거운 해머가 내려치는 듯한 강력한 타격음. 쾅! 하는 느낌의 임팩트 있는 소리.");
     }
 
     private void HammerAction()

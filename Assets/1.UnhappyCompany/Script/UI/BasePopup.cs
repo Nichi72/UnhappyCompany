@@ -452,7 +452,7 @@ public abstract class BasePopup : MonoBehaviour
     {
         if (clip != null && AudioManager.instance != null)
         {
-            AudioManager.instance.PlayTestBeep("팝업 열림", GameManager.instance.currentPlayer.transform);
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.uiPopupOpen, GameManager.instance.currentPlayer.transform, "팝업 열림");
         }
     }
     

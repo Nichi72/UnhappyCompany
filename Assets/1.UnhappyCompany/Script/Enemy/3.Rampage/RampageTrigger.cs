@@ -22,7 +22,7 @@ public class RampageTrigger : MonoBehaviour
             {
                 Push(other);
                 Debug.Log("Pushable 충돌 발생");
-                AudioManager.instance.PlayTestBeep("Pushable 충돌하는 소리", transform);
+                AudioManager.instance.PlayOneShot(FMODEvents.instance.rampageCollisionObject, transform, "Pushable 충돌하는 소리");
             }
         }
     }
@@ -47,7 +47,7 @@ public class RampageTrigger : MonoBehaviour
             {
                 rampageAIController.SetCollided(true);
                 Debug.Log("충돌 발생");
-                AudioManager.instance.PlayTestBeep("Rampage 벽에 처박히는 소리", transform);
+                AudioManager.instance.PlayOneShot(FMODEvents.instance.rampageCollisionWall, transform, "Rampage 벽에 처박히는 소리");
 
                 if (hasCushion == false && rampageAIController.onceReduceHP) 
                 {
@@ -66,7 +66,7 @@ public class RampageTrigger : MonoBehaviour
             {
                 Debug.Log("플레이어와 충돌 발생");
                 rampageAIController.SetCollided(true);
-                AudioManager.instance.PlayTestBeep("Rampage 플레이어와 충돌 소리", transform);
+                AudioManager.instance.PlayOneShot(FMODEvents.instance.rampageCollisionPlayer, transform, "Rampage 플레이어와 충돌 소리");
                 other.GetComponent<IDamageable>()?.TakeDamage(rampageAIController.EnemyData.rushDamage, DamageType.Nomal);
                 StartCoroutine(DamageCooldown());
             }
