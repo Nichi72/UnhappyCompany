@@ -40,7 +40,28 @@ public class RoomSetting : MonoBehaviour
         UnityEditor.EditorUtility.SetDirty(this);
         #endif
     }
+    public void UpdateOtherObjects()
+    {
+        otherObjects = new List<GameObject>();
+        // 모든 자식 오브젝트중 OtherObj를 찾아서 otherObjects에 삽입
+        
+        Transform[] allChildren = GetComponentsInChildren<Transform>();
+        foreach (Transform child in allChildren)
+        {
+            if (child == transform) continue; // 자기 자신은 제외
+            
+            if (child.name.Contains("OtherObj"))
+            {
+                otherObjects.Add(child.gameObject);
+            }
+        }
+        
+        Debug.Log($"Updated other objects for {gameObject.name}: Found {otherObjects.Count} OtherObj objects.");
 
+        #if UNITY_EDITOR
+        UnityEditor.EditorUtility.SetDirty(this);
+        #endif
+    }
 
     public void UpdateRoomObjects()
     {
@@ -76,7 +97,7 @@ public class RoomSetting : MonoBehaviour
         UnityEditor.EditorUtility.SetDirty(this);
         #endif
     }
-
+    
     public void ToggleOtherObjects()
     {
         if (otherObjects == null || otherObjects.Count == 0)
@@ -95,7 +116,6 @@ public class RoomSetting : MonoBehaviour
         UnityEditor.EditorUtility.SetDirty(this);
         #endif
     }
-
     public void RemoveNonPrefabObjects()
     {
         if (otherObjects == null || otherObjects.Count == 0)
@@ -122,7 +142,6 @@ public class RoomSetting : MonoBehaviour
         UnityEditor.EditorUtility.SetDirty(this);
         #endif
     }
-
     public void FindNavMeshSurface()
     {
         navMeshSurface = GetComponentInChildren<NavMeshSurface>(true); // 비활성 오브젝트도 포함하여 검색
@@ -191,6 +210,10 @@ public class RoomSettingEditor : Editor
         if (GUILayout.Button("Update Room Objects"))
         {
             roomSetting.UpdateRoomObjects();
+        }
+        if (GUILayout.Button("Update Other Objects"))
+        {
+            roomSetting.UpdateOtherObjects();
         }
         if (GUILayout.Button("Toggle Other Objects"))
         {
