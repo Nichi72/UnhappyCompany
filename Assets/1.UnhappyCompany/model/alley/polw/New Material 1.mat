@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-3209136282586454036
+--- !u!114 &-5739443932308200710
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}
@@ -23,14 +23,13 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: trim2
+  m_Name: New Material 1
   m_Shader: {fileID: -6465566751694194690, guid: 8d7180d86aab44f15bb161c4ab3113a9, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _DISABLE_SSR_TRANSPARENT
-  - _MASKMAP
-  - _NORMALMAP
+  - _USEHSVSHIFT
   m_InvalidKeywords:
   - _NORMALMAP_TANGENT_SPACE
   m_LightmapFlags: 4
@@ -49,7 +48,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _AlbedoMap:
-        m_Texture: {fileID: 2800000, guid: baad1fa9d97a79243a906ba9c819af61, type: 3}
+        m_Texture: {fileID: 2800000, guid: f74b6f754dac03b4eb4a8f64d94e4253, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _AlbedoMap_P1:
@@ -65,7 +64,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BaseColorMap:
-        m_Texture: {fileID: 2800000, guid: baad1fa9d97a79243a906ba9c819af61, type: 3}
+        m_Texture: {fileID: 2800000, guid: f74b6f754dac03b4eb4a8f64d94e4253, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BentNormalMap:
@@ -573,11 +572,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: baad1fa9d97a79243a906ba9c819af61, type: 3}
+        m_Texture: {fileID: 2800000, guid: f74b6f754dac03b4eb4a8f64d94e4253, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MaskMap:
-        m_Texture: {fileID: 2800000, guid: 6ebbb0adb060c0242ae40a8b4f16cc07, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MaskMap_P1:
@@ -593,7 +592,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
-        m_Texture: {fileID: 2800000, guid: 5d7d684c938f80647af060f99d235b12, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMapOS:
@@ -799,7 +798,7 @@ Material:
     - _AlbedoBrightness: 0
     - _AlbedoContrast: 1
     - _AlbedoHue: 0
-    - _AlbedoSaturation: 1
+    - _AlbedoSaturation: 0.79
     - _AlphaCutoff: 0.5
     - _AlphaCutoffEnable: 0
     - _AlphaCutoffPostpass: 0.5
@@ -1086,7 +1085,7 @@ Material:
     - _RenderQueueType: 1
     - _RequireSplitLighting: 0
     - _ShiverDrag: 0.05
-    - _Smoothness: 0.5
+    - _Smoothness: 0.323
     - _SmoothnessRemapMax: 1
     - _SmoothnessRemapMin: 0
     - _SnowAmount: 1
@@ -1181,7 +1180,7 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _AColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-    - _AORemap: {r: 0.37642586, g: 1, b: 0, a: 0}
+    - _AORemap: {r: 0, g: 1, b: 0, a: 0}
     - _BColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _CheapSSSTint: {r: 1, g: 1, b: 1, a: 1}
@@ -1292,7 +1291,7 @@ Material:
     - _PuddleColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 0.95}
     - _RColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
     - _RainIntensityScale: {r: 1, g: 25, b: 0, a: 400}
-    - _SmoothnessRemap: {r: 0, g: 0.59695816, b: 0, a: 0}
+    - _SmoothnessRemap: {r: 0, g: 1, b: 0, a: 0}
     - _SnowFresnelBSP: {r: 0, g: 9, b: 3, a: 0}
     - _SnowFresnelColor: {r: 0, g: 0, b: 0, a: 0}
     - _SnowSparkleTCI: {r: 1, g: 0.7, b: 1, a: 0}
