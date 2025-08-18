@@ -12,16 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59b6606ef2548734bb6d11b9d160bc7e, type: 3}
   m_Name: HDRISky
   m_EditorClassIdentifier: 
-  active: 0
+  active: 1
   rotation:
     m_OverrideState: 1
-    m_Value: 360
+    m_Value: 286
   skyIntensityMode:
     m_OverrideState: 1
     m_Value: 0
   exposure:
     m_OverrideState: 1
-    m_Value: 15
+    m_Value: -2.4
   multiplier:
     m_OverrideState: 1
     m_Value: 1
@@ -237,6 +237,7 @@ MonoBehaviour:
   - {fileID: -9132469054494175100}
   - {fileID: 8424821983017998411}
   - {fileID: 7864274451098340929}
+  - {fileID: 7639886349203506826}
 --- !u!114 &4161556920449031377
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -395,7 +396,7 @@ MonoBehaviour:
   active: 1
   skyType:
     m_OverrideState: 1
-    m_Value: 4
+    m_Value: 1
   cloudType:
     m_OverrideState: 0
     m_Value: 0
@@ -424,6 +425,31 @@ MonoBehaviour:
     m_OverrideState: 1
     m_Value: 0
   m_Version: 1
+--- !u!114 &7639886349203506826
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 598e2d32e2c7b0c418e030c3236d663a, type: 3}
+  m_Name: ChromaticAberration
+  m_EditorClassIdentifier: 
+  active: 0
+  quality:
+    m_OverrideState: 1
+    m_Value: 3
+  spectralLut:
+    m_OverrideState: 1
+    m_Value: {fileID: 0}
+  intensity:
+    m_OverrideState: 1
+    m_Value: 0.302
+  m_MaxSamples:
+    m_OverrideState: 1
+    m_Value: 18
 --- !u!114 &7864274451098340929
 MonoBehaviour:
   m_ObjectHideFlags: 3

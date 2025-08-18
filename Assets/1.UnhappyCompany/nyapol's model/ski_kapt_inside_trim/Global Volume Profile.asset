@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d877ec3e844f2ca46830012e8e79319b, type: 3}
   m_Name: PhysicallyBasedSky
   m_EditorClassIdentifier: 
-  active: 0
+  active: 1
   rotation:
     m_OverrideState: 1
     m_Value: 0
@@ -164,7 +164,7 @@ MonoBehaviour:
     m_Value: 0
   intensity:
     m_OverrideState: 1
-    m_Value: 1.05
+    m_Value: 2.28
   directLightingStrength:
     m_OverrideState: 1
     m_Value: 0.865
@@ -239,25 +239,25 @@ MonoBehaviour:
   active: 0
   intensity:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0.992
   fade:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0.012
   maskDark:
     m_OverrideState: 1
-    m_Value: 0.3
+    m_Value: 0.5
   maskLight:
     m_OverrideState: 1
-    m_Value: 0.28
+    m_Value: 0
   hardScan:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 3.42
   ScaleWithActualScreenSize:
-    m_OverrideState: 1
-    m_Value: 1
+    m_OverrideState: 0
+    m_Value: 0
   resScale:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 4.63
   hardPix:
     m_OverrideState: 1
     m_Value: -3
@@ -431,16 +431,16 @@ MonoBehaviour:
   active: 0
   intensity:
     m_OverrideState: 1
-    m_Value: 0.737
+    m_Value: 1
   pixelSize:
     m_OverrideState: 1
     m_Value: 3
   opacity:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 1
   dither:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 0.996
   presetsList:
     m_OverrideState: 1
     m_Value: {fileID: 11400000, guid: dd7382c28c09da7428be888044bba323, type: 2}
@@ -483,7 +483,7 @@ MonoBehaviour:
     m_Value: 1
   fixedExposure:
     m_OverrideState: 1
-    m_Value: -3.9615386
+    m_Value: -4.5789475
   compensation:
     m_OverrideState: 1
     m_Value: 0
@@ -631,7 +631,7 @@ MonoBehaviour:
     m_Value: 0
   intensity:
     m_OverrideState: 1
-    m_Value: 0.157
+    m_Value: 0.226
   scatter:
     m_OverrideState: 1
     m_Value: 0.605
@@ -671,7 +671,7 @@ MonoBehaviour:
   active: 1
   intensity:
     m_OverrideState: 1
-    m_Value: 0.15
+    m_Value: 0.1
   tintColor:
     m_OverrideState: 1
     m_Value: {r: 0.18560876, g: 0.89529073, b: 0.9150943, a: 1}
@@ -788,7 +788,7 @@ MonoBehaviour:
     m_Value: {r: 0.9339772, g: 1.6363897, b: 1.1857221, a: 1}
   maxFogDistance:
     m_OverrideState: 1
-    m_Value: 4234.8
+    m_Value: 5310
   mipFogMaxMip:
     m_OverrideState: 0
     m_Value: 0.5
@@ -800,31 +800,31 @@ MonoBehaviour:
     m_Value: 1000
   baseHeight:
     m_OverrideState: 1
-    m_Value: 6.9
+    m_Value: 387.02
   maximumHeight:
     m_OverrideState: 1
-    m_Value: 340.5
+    m_Value: 444.89
   meanFreePath:
     m_OverrideState: 1
-    m_Value: 191.5
+    m_Value: 704.1
   enableVolumetricFog:
     m_OverrideState: 1
     m_Value: 1
   albedo:
     m_OverrideState: 1
-    m_Value: {r: 0.7949448, g: 0.8256339, b: 0.8301887, a: 1}
+    m_Value: {r: 0.763617, g: 0.8301887, b: 0.79864174, a: 1}
   globalLightProbeDimmer:
     m_OverrideState: 1
     m_Value: 1
   depthExtent:
     m_OverrideState: 1
-    m_Value: 29.8
+    m_Value: 63
   denoisingMode:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 1
   anisotropy:
     m_OverrideState: 0
-    m_Value: 0.973
+    m_Value: -1
   sliceDistributionUniformity:
     m_OverrideState: 0
     m_Value: 0.75
@@ -832,7 +832,7 @@ MonoBehaviour:
     m_OverrideState: 0
     m_Value: 0
   m_FogControlMode:
-    m_OverrideState: 0
+    m_OverrideState: 1
     m_Value: 0
   screenResolutionPercentage:
     m_OverrideState: 0
@@ -864,13 +864,13 @@ MonoBehaviour:
   active: 1
   rotation:
     m_OverrideState: 1
-    m_Value: 230
+    m_Value: 241
   skyIntensityMode:
     m_OverrideState: 1
     m_Value: 0
   exposure:
     m_OverrideState: 1
-    m_Value: -1.7
+    m_Value: -3.2
   multiplier:
     m_OverrideState: 1
     m_Value: 1
@@ -994,16 +994,16 @@ MonoBehaviour:
     m_Value: 2.47
   contrast:
     m_OverrideState: 1
-    m_Value: -5.8
+    m_Value: 27.5
   colorFilter:
     m_OverrideState: 1
-    m_Value: {r: 0.49803922, g: 0.5128192, b: 0.6313726, a: 1}
+    m_Value: {r: 0.36084905, g: 0.39515358, b: 0.5, a: 1}
   hueShift:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: -10
   saturation:
     m_OverrideState: 1
-    m_Value: -16.6
+    m_Value: -27.4
 --- !u!114 &6551091027933014699
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -1016,7 +1016,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b24b200358312b4fa1004e2431c2f1f, type: 3}
   m_Name: ShadowsMidtonesHighlights
   m_EditorClassIdentifier: 
-  active: 1
+  active: 0
   shadows:
     m_OverrideState: 1
     m_Value: {x: 0.85746866, y: 1, z: 0.9130382, w: 0.014825801}
@@ -1050,13 +1050,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 32ef33d7d6999ef4d9c853e7f0407ab8, type: 3}
   m_Name: Bleed_RLPRO_HDRP
   m_EditorClassIdentifier: 
-  active: 0
+  active: 1
   bleedMode:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0
   bleedAmount:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 0.85
   bleedLength:
     m_OverrideState: 1
     m_Value: 0
@@ -1078,7 +1078,25 @@ MonoBehaviour:
       m_Range: 1.118034
       m_Curve:
         serializedVersion: 2
-        m_Curve: []
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 1
+          outSlope: 1
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 1
+          outSlope: 1
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
@@ -1178,16 +1196,16 @@ MonoBehaviour:
     m_Value: 0
   color:
     m_OverrideState: 1
-    m_Value: {r: 0, g: 0, b: 0, a: 1}
+    m_Value: {r: 0.06719472, g: 0.07240345, b: 0.09433961, a: 1}
   center:
     m_OverrideState: 1
     m_Value: {x: 0.5, y: 0.5}
   intensity:
     m_OverrideState: 1
-    m_Value: 0.424
+    m_Value: 0.444
   smoothness:
     m_OverrideState: 1
-    m_Value: 0.2
+    m_Value: 0.136
   roundness:
     m_OverrideState: 1
     m_Value: 1
