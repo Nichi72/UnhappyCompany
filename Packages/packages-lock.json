@@ -7,6 +7,32 @@
       "dependencies": {},
       "url": "https://packages.unity.com"
     },
+    "com.gurbu.gpui-pro": {
+      "version": "file:com.gurbu.gpui-pro",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "com.unity.burst": "1.6.0",
+        "com.unity.collections": "1.2.0",
+        "com.unity.mathematics": "1.2.0"
+      }
+    },
+    "com.gurbu.gpui-pro.prefab": {
+      "version": "file:com.gurbu.gpui-pro.prefab",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "com.gurbu.gpui-pro": "0.11.3"
+      }
+    },
+    "com.gurbu.gpui-pro.terrain": {
+      "version": "file:com.gurbu.gpui-pro.terrain",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "com.gurbu.gpui-pro": "0.11.3"
+      }
+    },
     "com.jbooth.better-lit-shader": {
       "version": "file:com.jbooth.better-lit-shader",
       "depth": 0,

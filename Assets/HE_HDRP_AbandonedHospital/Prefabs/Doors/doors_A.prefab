@@ -13,6 +13,8 @@ GameObject:
   - component: {fileID: 2300000}
   - component: {fileID: 6400000}
   - component: {fileID: 4988908253399068320}
+  - component: {fileID: 462758752175194947}
+  - component: {fileID: 5208844912983632391}
   m_Layer: 13
   m_Name: doors_A
   m_TagString: Untagged
@@ -139,6 +141,34 @@ MonoBehaviour:
   m_Bidirectional: 1
   m_AutoUpdatePosition: 1
   m_Area: 0
+--- !u!114 &462758752175194947
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c671be8cae081bb4bad571d31fb0eb4a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _prefabID: 446464596
+  childOptionalRenderers: []
+  _isRenderersDisabled: 0
+--- !u!114 &5208844912983632391
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6110b0203c3d2ca49805b7cda707117c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gpuiPrefab: {fileID: 462758752175194947}
 --- !u!1 &48632785969266761
 GameObject:
   m_ObjectHideFlags: 0
