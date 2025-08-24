@@ -843,7 +843,7 @@ PlayerSettings:
     QNX: UNITY_POST_PROCESSING_STACK_V2;UNITY_VISUAL_SCRIPTING;ES3_TMPRO;ES3_UGUI
     ReservedCFE: UNITY_POST_PROCESSING_STACK_V2
     Server: UNITY_VISUAL_SCRIPTING;ES3_TMPRO;ES3_UGUI
-    Standalone: UNITY_POST_PROCESSING_STACK_V2;MAGICACLOTH2;UNITY_VISUAL_SCRIPTING;ES3_TMPRO;ES3_UGUI;GSPAWN_HDRP
+    Standalone: UNITY_POST_PROCESSING_STACK_V2;MAGICACLOTH2;UNITY_VISUAL_SCRIPTING;ES3_TMPRO;ES3_UGUI;GSPAWN_HDRP;APP_UI_EDITOR_ONLY
     VisionOS: UNITY_POST_PROCESSING_STACK_V2;UNITY_VISUAL_SCRIPTING;ES3_TMPRO;ES3_UGUI
     WebGL: UNITY_POST_PROCESSING_STACK_V2;UNITY_VISUAL_SCRIPTING;ES3_TMPRO;ES3_UGUI
     Windows Store Apps: UNITY_VISUAL_SCRIPTING;ES3_TMPRO;ES3_UGUI
@@ -940,7 +940,13 @@ PlayerSettings:
   XboxOneOverrideIdentityName: 
   XboxOneOverrideIdentityPublisher: 
   vrEditorSettings: {}
-  cloudServicesEnabled: {}
+  cloudServicesEnabled:
+    Build: 0
+    Game Performance: 0
+    Legacy Analytics: 0
+    Purchasing: 0
+    UDP: 0
+    Unity Ads: 0
   luminIcon:
     m_Name: 
     m_ModelFolderPath: 
@@ -962,11 +968,11 @@ PlayerSettings:
   captureStartupLogs: {}
   activeInputHandler: 2
   windowsGamepadBackendHint: 0
-  cloudProjectId: ba04546c-0fcf-4eee-b018-1680f5d427f1
+  cloudProjectId: c7ec0066-fcb9-4254-87ab-d171bf1539ce
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: UnhappyCompany
-  organizationId: enabang
+  projectName: Observer
+  organizationId: daisy648903
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}
