@@ -98,7 +98,7 @@ public class ItemCharger : MonoBehaviour, IInteractableF, IToolTip
         }
     }
 
-    private void ChargeItem(IRechargeable rechargeableItem)
+    private void ChargeItem(ICentralBatteryRechargeable rechargeableItem)
     {
         // 충전 로직 구현
         Debug.Log("Charging item...");
@@ -106,7 +106,7 @@ public class ItemCharger : MonoBehaviour, IInteractableF, IToolTip
         // 1. 플레이어를 cameraTarget 위치로 이동
     }
 
-    public void BtnEvtChargeItem(IRechargeable rechargeableItem)
+    public void BtnEvtChargeItem(ICentralBatteryRechargeable rechargeableItem)
     {
         ChargeItem(rechargeableItem);
     }
