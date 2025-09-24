@@ -39,6 +39,22 @@ public interface ICentralBatteryConsumer
 }
 
 /// <summary>
+/// 중앙 배터리로 충전 가능한 아이템을 정의하는 인터페이스입니다.
+/// </summary>
+public interface ICentralBatteryRechargeable
+{
+    string ID { get; }
+    float MaxBatteryCapacity { get; set; }      // 최대 배터리 용량
+    float CurrentBatteryAmount { get; set; }     // 현재 배터리 양
+    float RechargeRatePerSecond { get; set; }   // 충전 속도
+    bool IsFullyCharged { get; }                // 완전 충전 상태  
+    
+    void RechargeFromCentralBattery();          // 중앙 배터리로부터 충전
+    void DrainBattery(float amount);          // 배터리 소모 (아이템 사용 시)
+    string GetItemName();                       // 아이템 이름
+}
+
+/// <summary>
 /// 피해를 입을 수 있는 객체를 정의하는 인터페이스입니다.
 /// </summary>
 public interface IDamageable

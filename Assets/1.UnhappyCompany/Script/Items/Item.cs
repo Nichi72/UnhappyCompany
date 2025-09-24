@@ -86,6 +86,7 @@ public abstract class Item : MonoBehaviour , IInteractableF , IToolTip
 
     public virtual void Mount(Player player , object state = null)
     {
+        
         Debug.Log($"{itemData.itemName} mounted.");
         if(state != null)
         {
@@ -108,7 +109,7 @@ public abstract class Item : MonoBehaviour , IInteractableF , IToolTip
         {
             transform.localScale = itemData.ItemScale;
         }
-        
+        Debug.Log($"{transform.position} mounted pos.");
         ToolTipUI.instance.SetToolTip(this);
     }
 
