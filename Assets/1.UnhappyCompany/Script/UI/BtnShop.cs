@@ -22,5 +22,5 @@ public class BtnShop : MonoBehaviour
     public void BtnBuyItem()
     {
         ComputerSystem.instance.BtnEvtBuyItem(itemData);
-    }   
+    }
 }

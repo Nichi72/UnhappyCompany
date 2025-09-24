@@ -34,6 +34,7 @@ public abstract class Item : MonoBehaviour , IInteractableF , IToolTip
 
     private void Start()
     {
+        
     }
 
     public string GetUniqueInstanceID()

@@ -57,7 +57,6 @@ public class InteractionSystem : MonoBehaviour
                     hitEventF.HitEventInteractionF(player);
                     Debug.Log(hitEventF.InteractionTextF);
                 }
-               
             }
 
             var hitEventE = hit.transform.GetComponent<IInteractableE>();

@@ -67,7 +67,4 @@ public class Computer : MonoBehaviour , IInteractableF , IToolTip
         yield return new WaitForSeconds(1f);
         computerState = state;
     }
-   
-
-
 }

@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class EggSpawnPoint : MonoBehaviour
 {
-    public static bool isDrawGizmos = false;
+    public static bool isDrawGizmos = true;
     private void OnDrawGizmos()
     {
         if (isDrawGizmos)

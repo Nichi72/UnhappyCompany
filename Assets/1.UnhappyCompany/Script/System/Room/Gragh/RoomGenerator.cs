@@ -14,10 +14,10 @@ public class DoorGeneration
     public DoorEdge door;
     public bool shouldGenerate = true;
     public int stair = 0;
-    [Tooltip("현재 다른 방향으로 생성될 확률")]
+    [Tooltip("현재 다른 방향으로 생성될 확률 ")]
     public float currentOtherDirectionProbability = 0f;
     public float directionProbabilityIncreaseRate = 0.15f;
-    [Tooltip("처음 생성시 몇번동안 다른 방향으로 생성하지 않을지")]
+    // [Tooltip("처음 생성시 몇번동안 다른 방향으로 생성하지 않을지")]
     public int initialDirectionChangeDelay = 5; // 
     public int currentInitialDirectionChangeDelay = 0; // 
     public bool isGenerating = false;

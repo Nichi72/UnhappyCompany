@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class ItemSpawnPoint : MonoBehaviour
 {
-    public static bool isDrawGizmos = false;
+    public static bool isDrawGizmos = true;
     private void OnDrawGizmos()
     {
         if (isDrawGizmos)
