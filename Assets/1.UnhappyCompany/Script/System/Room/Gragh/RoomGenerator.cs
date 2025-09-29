@@ -217,10 +217,19 @@ public class RoomGenerator : MonoBehaviour
                 }
 
                 doorGenerationSettings = tempList.ToArray();
-                doorGenerationSettings[0].stair = -1;
-                doorGenerationSettings[1].stair = 0;
-                doorGenerationSettings[2].stair = 1;
-                doorGenerationSettings[3].stair = 2;
+                
+                // 하드 코딩버전
+                // doorGenerationSettings[0].stair = -1;
+                // doorGenerationSettings[1].stair = 0;
+                // doorGenerationSettings[2].stair = 1;
+                // doorGenerationSettings[3].stair = 2;
+
+                // 개선된 버전
+                int stairNumcount = -1;
+                for (int i = 0; i < doorGenerationSettings.Length; i++)
+                {
+                    doorGenerationSettings[i].stair = stairNumcount;
+                }
 
                 currentLoadingState = "초기 방 생성 중...";
 

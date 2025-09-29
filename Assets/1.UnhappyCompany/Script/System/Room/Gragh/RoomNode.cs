@@ -59,15 +59,22 @@ public class RoomNode : MonoBehaviour
 
     public DoorEdge ConnectToParentRoom(RoomNode otherRoom, DoorGeneration doorGeneration)
     {
-        DoorDirection oppositeDirection = GetOppositeDirection(doorDirection);
-        foreach (var door in doorList)
-        {
-            if(oppositeDirection == door.direction)
-            {
-                connectToParentDoor = door;
-                break;
-            }
-        }
+        // 기존 코드인데 
+        // DoorDirection oppositeDirection = GetOppositeDirection(doorDirection);
+        // Debug.Log("@@@@doorDirection: " + doorDirection);
+        // foreach (var door in doorList)
+        // {
+        //     Debug.Log("@@DoorDirection: " + door.direction);
+        //     if(oppositeDirection == door.direction)
+        //     {
+        //         Debug.Log("@@ConnectToParentRoom: " + door.direction);
+        //         connectToParentDoor = door;
+        //         break;
+        //     }
+        // }
+        //테스트용
+        connectToParentDoor = doorList[UnityEngine.Random.Range(0, doorList.Count)];
+        Debug.Log("@@@@ConnectToParentRoom: " + connectToParentDoor.direction);
         //connectToParentDoor = doorList[0]; // forTest
         connectToParentDoor.toRoomNode = otherRoom;
         depth = otherRoom.depth + 1; // 부모 방의 깊이 + 1
@@ -143,6 +150,8 @@ public class RoomNode : MonoBehaviour
         void GenerateInSameDirection()
         {
             Debug.Log("같은 방향으로 생성될 확률");
+            
+            // 먼저 같은 방향의 문을 찾아서 추가
             foreach(var door in doorList)
             {
                 if(door.direction == doorDirection)
@@ -150,6 +159,30 @@ public class RoomNode : MonoBehaviour
                     SelectedDoors.Add(door);
                 }
             }
+            
+            // 같은 방향의 문이 없을 경우 fallback 처리
+            if(SelectedDoors.Count == 0)
+            {
+                Debug.LogWarning($"같은 방향({doorDirection})의 문을 찾을 수 없습니다. 사용 가능한 다른 문을 선택합니다.");
+                
+                var tempDoorList = new List<DoorEdge>(doorList);
+                tempDoorList.Remove(connectToParentDoor); // 부모와 연결된 문은 제외
+                
+                if(tempDoorList.Count > 0)
+                {
+                    // 사용 가능한 문이 있으면 모두 추가
+                    foreach(var door in tempDoorList)
+                    {
+                        SelectedDoors.Add(door);
+                    }
+                    Debug.Log($"Fallback: {tempDoorList.Count}개의 사용 가능한 문을 선택했습니다.");
+                }
+                else
+                {
+                    Debug.LogError("사용 가능한 문이 전혀 없습니다!");
+                }
+            }
+            
             var randomValue = UnityEngine.Random.Range(0, doorGeneration.directionProbabilityIncreaseRate);
             doorGeneration.currentOtherDirectionProbability = randomValue;
         }

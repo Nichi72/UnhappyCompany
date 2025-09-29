@@ -7523,7 +7523,7 @@ LODGroup:
     - renderer: {fileID: 1195747334213786126}
     - renderer: {fileID: 268870013745483257}
     - renderer: {fileID: 7718328789540392626}
-  - screenRelativeHeight: 0.3
+  - screenRelativeHeight: 0
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 3858942773509407228}
@@ -21373,7 +21373,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75b71a363dcf91d45917bf089f7c12df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoomNode
-  roomSetting: {fileID: 0}
+  roomSetting: {fileID: 3707920448790520103}
   currentRoomType: 1
   connectToParentDoor: {fileID: 0}
   SelectedDoors: []
@@ -21385,7 +21385,7 @@ MonoBehaviour:
   isOverlap: 0
   multipleDoorProbability: 0.6
   depth: 0
-  doorDirection: 0
+  doorDirection: 2
   isOtherDirection: 0
 --- !u!114 &3707920448790520103
 MonoBehaviour:

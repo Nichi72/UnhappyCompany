@@ -1,12 +1,16 @@
 {
     "version": "0.2.0",
     "configurations": [
-        
         {
-            "name": "Attach to Unity",
+            "name": "C#: <project-name> Debug",
+            "type": "dotnet",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}/<relative-path-to-project-folder><project-name>.csproj"
+        },
+        {
+            "name": "Unity Debugger123",
             "type": "vstuc",
-            "request": "attach",
-            "endPoint": "127.0.0.1:565656"
+            "request": "attach"
         }
      ]
 }

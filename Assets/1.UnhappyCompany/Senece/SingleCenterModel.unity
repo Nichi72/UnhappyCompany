@@ -192,8 +192,6 @@ MonoBehaviour:
   centerNavMeshSurface: {fileID: 1685016733}
   centerDoorList:
   - {fileID: 15805404}
-  - {fileID: 0}
-  - {fileID: 0}
   - {fileID: 451267139}
 --- !u!1 &137823976 stripped
 GameObject:
@@ -929,22 +927,6 @@ MonoBehaviour:
     initialDirectionChangeDelay: 3
     currentInitialDirectionChangeDelay: 0
     isGenerating: 0
-  - door: {fileID: 0}
-    shouldGenerate: 0
-    stair: 0
-    currentOtherDirectionProbability: 0
-    directionProbabilityIncreaseRate: 0.4
-    initialDirectionChangeDelay: 5
-    currentInitialDirectionChangeDelay: 0
-    isGenerating: 0
-  - door: {fileID: 0}
-    shouldGenerate: 0
-    stair: 0
-    currentOtherDirectionProbability: 0
-    directionProbabilityIncreaseRate: 0.3
-    initialDirectionChangeDelay: 5
-    currentInitialDirectionChangeDelay: 0
-    isGenerating: 0
   - door: {fileID: 1120219625}
     shouldGenerate: 1
     stair: 0
@@ -953,7 +935,7 @@ MonoBehaviour:
     initialDirectionChangeDelay: 3
     currentInitialDirectionChangeDelay: 0
     isGenerating: 0
-  createRoomTime: 0.1
+  createRoomTime: 3
   roomTypeGenerationSettingsForSmallRoom: []
   roomTypeGenerationSettingsForStairRoom: []
   currentActiveRoomCount: 0
@@ -962,8 +944,12 @@ MonoBehaviour:
   - roomType: 1
     roomPrefabList:
     - room: {fileID: 5105610068861487072, guid: 301d62f7a0287c54e9d65de53dea1667, type: 3}
-      probability: 1
-  roomCountFirstTime: 8
+      probability: 0
+    - room: {fileID: 4529537360015408786, guid: 54e30a3aa2965fa4f9ada8c6bb01dffd, type: 3}
+      probability: 0.5
+    - room: {fileID: 3221810028805143719, guid: d91c07082d22faa4daf4e46612e3d086, type: 3}
+      probability: 0.5
+  roomCountFirstTime: 18
   depthCount: 10
   roomCountPerDepth: 6
   farRoomProbability: 0.1
@@ -6734,8 +6720,6 @@ MonoBehaviour:
   SelectedDoors: []
   doorList:
   - {fileID: 18596402}
-  - {fileID: 0}
-  - {fileID: 0}
   - {fileID: 1120219625}
   roomGeneratorZones:
   - {fileID: 8413486632277171609}

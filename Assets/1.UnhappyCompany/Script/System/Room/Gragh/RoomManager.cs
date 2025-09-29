@@ -84,7 +84,7 @@ public class RoomManager : MonoBehaviour
             Debug.LogError("RoomGenerator가 설정되지 않았습니다.");
             return;
         }
-        roomGenerator.allRoomList[0].roomSetting.navMeshSurface.BuildNavMesh();
+        //roomGenerator.allRoomList[0].roomSetting.navMeshSurface.BuildNavMesh();
         // StartCoroutine(UpdateRoomsNavMeshCoroutine());
     }
 
