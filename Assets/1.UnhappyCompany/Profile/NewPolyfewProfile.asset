@@ -12,26 +12,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d204a869981007b4e8ebb4c7b64a70f2, type: 3}
   m_Name: NewPolyfewProfile
   m_EditorClassIdentifier: Assembly-CSharp::UnhappyCompany.Utility.PolyfewOptimizationProfile
-  lod1SimplificationStrength: 48
-  lod1PreserveUVFoldover: 0
-  lod1PreserveBorders: 1
-  lod1PreserveUVSeams: 1
-  lod1UseEdgeSort: 0
-  lod1RecalculateNormals: 1
-  lod1ClearBlendshapes: 1
-  lod1GenerateUV2: 1
-  lod2SimplificationStrength: 70
-  lod2PreserveUVFoldover: 0
-  lod2PreserveBorders: 0
-  lod2PreserveUVSeams: 0
-  lod2UseEdgeSort: 0
-  lod2RecalculateNormals: 1
-  lod2ClearBlendshapes: 1
-  lod2GenerateUV2: 0
-  enableParallelProcessing: 0
-  stopOnError: 1
-  createBackup: 1
-  meshSaveMode: 1
-  customSaveFolder: {fileID: 102900000, guid: f5dc4ab80da430e439ea53e66a39521a, type: 3}
-  createSubfolders: 1
-  meshNameSuffix: _Optimized
+  simplificationStrength: 50
+  preserveUVFoldover: 0
+  preserveBorders: 1
+  preserveUVSeams: 1
+  useEdgeSort: 0
+  recalculateNormals: 1
+  clearBlendshapes: 1
+  generateUV2: 1
+  enableSmartlinking: 1
+  regardCurvature: 0
+  maxIterations: 100
+  aggressiveness: 7
+  lodLevels: 2
+  lodLevelSettings:
+  - reductionStrength: 25
+    transitionHeight: 0.6666667
+    combineMeshes: 0
+  - reductionStrength: 50
+    transitionHeight: 0.33333334
+    combineMeshes: 0
+  batchSize: 5
