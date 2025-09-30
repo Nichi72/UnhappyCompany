@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef5d33f047b1be24686234bcf69f285a, type: 3}
+  m_Name: GameStatePreset
+  m_EditorClassIdentifier: 
+  presetName: Test
+  description: "\uC77C\uBC18\uC801\uC778 \uC0C1\uD669\n"
+  day: 3
+  hour: 12
+  minute: 20
+  timeMultiplier: 1
+  eggSettings:
+    eggCount: 5
+    randomizeEggType: 1
+    randomizeInitialStage: 1
+    randomizeEnemyData: 1
+    randomizeStageDuration: 1
+    fixedEggType: 0
+    fixedInitialStage: 0
+    fixedEnemyDataName: 
+    machineTypeChance: 0.33
+    humanTypeChance: 0.33
+    stage1StartChance: 0.7
+    stage1DurationRange: {x: 8, y: 12}
+    stage2DurationRange: {x: 3, y: 8}
+  enemySettings:
+    enemiesToSpawn:
+    - {fileID: 11400000, guid: 682f52a097136bf40aac1d5dae74c130, type: 2}
+    - {fileID: 11400000, guid: 682f52a097136bf40aac1d5dae74c130, type: 2}
+    - {fileID: 11400000, guid: 682f52a097136bf40aac1d5dae74c130, type: 2}
+    - {fileID: 11400000, guid: 637f8672a828be44792615e8ea0f5307, type: 2}
+    - {fileID: 11400000, guid: 637f8672a828be44792615e8ea0f5307, type: 2}
+    showSpawnCount: 1
+  clearExistingEggs: 1
+  clearExistingEnemies: 1
+  pauseTimeOnApply: 1

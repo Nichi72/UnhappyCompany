@@ -1,0 +1,99 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-8630101886682150482
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e65aff9267f84c04e9ceb3f9b5e44777, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _belowGrid: 1
+  _aboveGrid: 1
+  _onGrid: 1
+--- !u!114 &-1213131276845094949
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d78f77521bb1424d90dc20b0de9cee3, type: 3}
+  m_Name: ObjectGroupDbUI_ObjectGroupViewState
+  m_EditorClassIdentifier: 
+  selectedItems:
+    _serializedList:
+    - _guidString: 390e7f93-e971-46b8-b095-1efa5b1d8fe5
+  collapsedItems:
+    _serializedList: []
+  selectRangeBeginId:
+    _guidString: 00000000-0000-0000-0000-000000000000
+  selectRangeEndId:
+    _guidString: 00000000-0000-0000-0000-000000000000
+  hasSelectRange: 0
+  scrollOffset: {x: 0, y: 0}
+  vertScrollHighValue: 0
+  vertScrollLowValue: 0
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4cdc5f1e3ddab65418bb342193ece696, type: 3}
+  m_Name: ObjectGroupDb
+  m_EditorClassIdentifier: 
+  _actionFilters: {fileID: -8630101886682150482}
+  _sceneToObjectGroups:
+    _serializedKeys:
+    - 7aef32ffaee789f4f8ef5cdc7af839b1
+    _serializedValues:
+    - _serializedList: []
+  _sceneToDefaultObjectGroup:
+    _serializedKeys: []
+    _serializedValues: []
+--- !u!114 &5053591041287089594
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e89507e0fc6bfa42a8f0a65a2632bdd, type: 3}
+  m_Name: wall
+  m_EditorClassIdentifier: 
+  _parentGroup: {fileID: 0}
+  _guid:
+    _guidString: 390e7f93-e971-46b8-b095-1efa5b1d8fe5
+  _objectGroupName: wall
+  _globalObjectIdString: GlobalObjectId_V1-2-7aef32ffaee789f4f8ef5cdc7af839b1-461752373-0
+  _uiSelected: 1
+--- !u!114 &8582885526350528016
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e89507e0fc6bfa42a8f0a65a2632bdd, type: 3}
+  m_Name: floor
+  m_EditorClassIdentifier: 
+  _parentGroup: {fileID: 0}
+  _guid:
+    _guidString: 415b8566-83f1-4311-8204-3d446cbfe575
+  _objectGroupName: floor
+  _globalObjectIdString: GlobalObjectId_V1-2-7aef32ffaee789f4f8ef5cdc7af839b1-1381375504-0
+  _uiSelected: 0
