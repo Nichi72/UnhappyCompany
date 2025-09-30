@@ -924,7 +924,7 @@ MonoBehaviour:
     stair: 0
     currentOtherDirectionProbability: 0
     directionProbabilityIncreaseRate: 0.4
-    initialDirectionChangeDelay: 3
+    initialDirectionChangeDelay: 5
     currentInitialDirectionChangeDelay: 0
     isGenerating: 0
   - door: {fileID: 1120219625}
@@ -932,10 +932,10 @@ MonoBehaviour:
     stair: 0
     currentOtherDirectionProbability: 0
     directionProbabilityIncreaseRate: 0.4
-    initialDirectionChangeDelay: 3
+    initialDirectionChangeDelay: 5
     currentInitialDirectionChangeDelay: 0
     isGenerating: 0
-  createRoomTime: 3
+  createRoomTime: 0.5
   roomTypeGenerationSettingsForSmallRoom: []
   roomTypeGenerationSettingsForStairRoom: []
   currentActiveRoomCount: 0
@@ -944,12 +944,12 @@ MonoBehaviour:
   - roomType: 1
     roomPrefabList:
     - room: {fileID: 5105610068861487072, guid: 301d62f7a0287c54e9d65de53dea1667, type: 3}
-      probability: 0
+      probability: 0.2
     - room: {fileID: 4529537360015408786, guid: 54e30a3aa2965fa4f9ada8c6bb01dffd, type: 3}
-      probability: 0.5
+      probability: 0.4
     - room: {fileID: 3221810028805143719, guid: d91c07082d22faa4daf4e46612e3d086, type: 3}
-      probability: 0.5
-  roomCountFirstTime: 18
+      probability: 0.4
+  roomCountFirstTime: 40
   depthCount: 10
   roomCountPerDepth: 6
   farRoomProbability: 0.1
@@ -8392,6 +8392,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: CenterDoor
       objectReference: {fileID: 0}
+    - target: {fileID: 6031100884545488458, guid: e6cb4a55c3fd8e54eb533d0231ed5187, type: 3}
+      propertyPath: direction
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 6688501857608903375, guid: e6cb4a55c3fd8e54eb533d0231ed5187, type: 3}
       propertyPath: m_LocalPosition.x
       value: 14.53
@@ -9349,6 +9353,10 @@ PrefabInstance:
     - target: {fileID: 3476395248175727862, guid: e6cb4a55c3fd8e54eb533d0231ed5187, type: 3}
       propertyPath: m_Name
       value: CenterDoor
+      objectReference: {fileID: 0}
+    - target: {fileID: 6031100884545488458, guid: e6cb4a55c3fd8e54eb533d0231ed5187, type: 3}
+      propertyPath: direction
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 6688501857608903375, guid: e6cb4a55c3fd8e54eb533d0231ed5187, type: 3}
       propertyPath: m_LocalPosition.x
