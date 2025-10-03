@@ -142,6 +142,11 @@ namespace StarterAssets
 			{
 				_input.look = Vector2.zero;
 			}
+			// Block movement and gravity updates when input is frozen
+			if (_input != null && _input.IsFrozen)
+			{
+				return;
+			}
 			JumpAndGravity();
 			GroundedCheck();
 			Move();
@@ -149,6 +154,10 @@ namespace StarterAssets
 
 		private void LateUpdate()
 		{
+			if (_input != null && _input.IsFrozen)
+			{
+				return;
+			}
 			CameraRotation();
 			HandFollowCamera(); // 손 회전 업데이트
 		}

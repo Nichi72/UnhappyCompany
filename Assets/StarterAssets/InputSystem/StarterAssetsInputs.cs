@@ -13,6 +13,10 @@ namespace StarterAssets
 		public bool jump;
 		public bool sprint;
 
+		[Header("Runtime State")]
+		[SerializeField] private bool isFrozen;
+		public bool IsFrozen => isFrozen;
+
 		[Header("Movement Settings")]
 		public bool analogMovement;
 
@@ -23,12 +27,13 @@ namespace StarterAssets
 #if ENABLE_INPUT_SYSTEM
 		public void OnMove(InputValue value)
 		{
+			if (isFrozen) return;
 			MoveInput(value.Get<Vector2>());
 		}
 
 		public void OnLook(InputValue value)
 		{
-			if(cursorInputForLook)
+			if(!isFrozen && cursorInputForLook)
 			{
 				LookInput(value.Get<Vector2>());
 			}
@@ -36,11 +41,13 @@ namespace StarterAssets
 
 		public void OnJump(InputValue value)
 		{
+			if (isFrozen) return;
 			JumpInput(value.isPressed);
 		}
 
 		public void OnSprint(InputValue value)
 		{
+			if (isFrozen) return;
 			SprintInput(value.isPressed);
 		}
 #endif
@@ -48,21 +55,25 @@ namespace StarterAssets
 
 		public void MoveInput(Vector2 newMoveDirection)
 		{
+			if (isFrozen) return;
 			move = newMoveDirection;
 		} 
 
 		public void LookInput(Vector2 newLookDirection)
 		{
+			if (isFrozen) return;
 			look = newLookDirection;
 		}
 
 		public void JumpInput(bool newJumpState)
 		{
+			if (isFrozen) return;
 			jump = newJumpState;
 		}
 
 		public void SprintInput(bool newSprintState)
 		{
+			if (isFrozen) return;
 			sprint = newSprintState;
 		}
 		
@@ -91,6 +102,7 @@ namespace StarterAssets
 
 		public void FreezePlayerInput(bool freeze)
 		{
+			isFrozen = freeze;
 			if(freeze)
 			{
 				move = Vector2.zero;

@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using Cinemachine;
 using MyUtility;
 
 
@@ -16,6 +17,10 @@ public class ItemCharger : MonoBehaviour, IInteractableF, IToolTip
     public Transform playerTarget;
     private Player currentUsePlayer;
     [SerializeField] private ChargerState chargerState;
+
+    [Header("Camera Return Timing")]
+    [SerializeField] private float cameraReturnHoldDuration = 0.35f; // was 0.7f
+    [SerializeField] private float cameraReturnLerpDuration = 0.15f; // was 0.3f
 
     // public string InteractionTextF { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "ItemCharger_ITR"); set => InteractionTextF = value; }
     public string InteractionTextF { get => "IF_충전하기"; set => InteractionTextF = value; }
@@ -78,10 +83,11 @@ public class ItemCharger : MonoBehaviour, IInteractableF, IToolTip
 
     public void CloseCharger(Player player)
     {
-        player.firstPersonController._input.SetCursorLock(true);
-        player.firstPersonController._input.FreezePlayerInput(false);
+        // 카메라를 원래 타겟으로 전환하되, 입력은 잠시 더 고정해서 스냅 현상 방지
         player.firstPersonController.SmoothChangeCinemachineCameraTarget(player.firstPersonController.CinemachineCameraTarget.gameObject);
-        StartCoroutine(ResetCinemachineCameraDamping(player, 0.7f));
+
+        // 부드러운 전환이 끝날 때까지 감쇠를 유지하고 점진적으로 0으로 낮춘 뒤 입력 해제
+        StartCoroutine(CloseChargerSequence(player));
 
         // 툴팁 클리어
         if (ToolTipUI.instance != null)
@@ -94,6 +100,40 @@ public class ItemCharger : MonoBehaviour, IInteractableF, IToolTip
     {
         yield return new WaitForSeconds(delay);
         player.firstPersonController.ResetCinemachineCameraDamping();
+    }
+
+    private IEnumerator CloseChargerSequence(Player player)
+    {
+        // 입력은 아직 해제하지 않음 (Open 시점에서 이미 freeze 상태)
+        yield return new WaitForSeconds(cameraReturnHoldDuration);
+
+        // 감쇠를 점진적으로 낮춤 (스냅 방지)
+        var vcam = player.firstPersonController.cinemachineVirtualCamera;
+        var follow = vcam != null ? vcam.GetCinemachineComponent<Cinemachine3rdPersonFollow>() : null;
+        if (follow != null)
+        {
+            Vector3 start = follow.Damping;
+            Vector3 end = new Vector3(0f, 0f, 0f);
+            float t = 0f;
+            while (t < cameraReturnLerpDuration)
+            {
+                t += Time.deltaTime;
+                float k = Mathf.Clamp01(t / cameraReturnLerpDuration);
+                Vector3 v = Vector3.Lerp(start, end, k);
+                follow.Damping.x = v.x;
+                follow.Damping.y = v.y;
+                follow.Damping.z = v.z;
+                yield return null;
+            }
+            // 최종 스냅 방지용 아주 미세한 감쇠 유지가 필요하면 아래 값을 0.05f 등으로 조정 가능
+            follow.Damping.x = 0f;
+            follow.Damping.y = 0f;
+            follow.Damping.z = 0f;
+        }
+
+        // 이제 입력 해제 및 커서 잠금 복구
+        player.firstPersonController._input.SetCursorLock(true);
+        player.firstPersonController._input.FreezePlayerInput(false);
     }
 
     public void BtnEvtCloseCharger()
