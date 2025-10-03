@@ -22,6 +22,10 @@ public class ItemCharger : MonoBehaviour, IInteractableF, IToolTip
     [SerializeField] private float cameraReturnHoldDuration = 0.35f; // was 0.7f
     [SerializeField] private float cameraReturnLerpDuration = 0.15f; // was 0.3f
 
+    [Header("Ground Snap")]
+    [SerializeField] private float groundCheckUp = 1.5f;
+    [SerializeField] private float groundCheckDown = 5f;
+
     // public string InteractionTextF { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "ItemCharger_ITR"); set => InteractionTextF = value; }
     public string InteractionTextF { get => "IF_충전하기"; set => InteractionTextF = value; }
     public bool IgnoreInteractionF { get; set; } = false;
@@ -71,8 +75,8 @@ public class ItemCharger : MonoBehaviour, IInteractableF, IToolTip
         // 플레이어를 playerTarget 위치로 이동
         if (playerTarget != null)
         {
-            player.transform.position = playerTarget.position;
-            player.transform.rotation = playerTarget.rotation;
+            Vector3 groundedPos = GetGroundedPositionForCharacter(player, playerTarget.position);
+            TeleportCharacterController(player, groundedPos, playerTarget.rotation);
             player.firstPersonController.SmoothChangeCinemachineCameraTarget(cameraTarget.gameObject);
         }
 
@@ -92,7 +96,7 @@ public class ItemCharger : MonoBehaviour, IInteractableF, IToolTip
         // 툴팁 클리어
         if (ToolTipUI.instance != null)
         {
-            ToolTipUI.instance.SetToolTip(null); // TODO: SetToolTip Item으로 ㄱㄱ헛? item의 내용이 떠야 하는뎅
+            ToolTipUI.instance.SetToolTip(null); // TODO: QuickSlotCurrentItem 같은거 참조해서 tooltip불러올 수 있도록 만듬
         }
     }
 
@@ -134,6 +138,55 @@ public class ItemCharger : MonoBehaviour, IInteractableF, IToolTip
         // 이제 입력 해제 및 커서 잠금 복구
         player.firstPersonController._input.SetCursorLock(true);
         player.firstPersonController._input.FreezePlayerInput(false);
+    }
+
+    private Vector3 GetGroundedPositionForCharacter(Player player, Vector3 targetPosition)
+    {
+        if (player == null) return targetPosition;
+
+        var cc = player.GetComponent<CharacterController>();
+        if (cc == null)
+        {
+            // CharacterController가 없으면 y만 유지하고 xz만 이동
+            return new Vector3(targetPosition.x, player.transform.position.y, targetPosition.z);
+        }
+
+        // 위에서 아래로 레이캐스트하여 지면 위치를 찾음
+        Vector3 rayOrigin = targetPosition + Vector3.up * groundCheckUp;
+        float rayDistance = groundCheckUp + groundCheckDown;
+
+        // 플레이어 컨트롤러가 쓰는 GroundLayers 우선 사용, 없으면 기본값으로 처리
+        LayerMask groundMask = (player.firstPersonController != null) ? player.firstPersonController.GroundLayers : Physics.DefaultRaycastLayers;
+
+        if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, rayDistance, groundMask, QueryTriggerInteraction.Ignore))
+        {
+            // 캡슐의 최하단이 지면에 스치도록 오프셋 계산
+            float epsilon = Mathf.Max(cc.skinWidth, 0.02f);
+            Vector3 desiredLowestPoint = hit.point + Vector3.up * epsilon;
+            // CharacterController의 최하단점은 transform.position + center - up*(height/2)
+            Vector3 newPosition = desiredLowestPoint + Vector3.up * (cc.height / 2f) - cc.center;
+            return newPosition;
+        }
+
+        // 지면을 찾지 못했을 경우 현재 y 유지 (부유 방지)
+        return new Vector3(targetPosition.x, player.transform.position.y, targetPosition.z);
+    }
+
+    private void TeleportCharacterController(Player player, Vector3 position, Quaternion rotation)
+    {
+        if (player == null) return;
+        var cc = player.GetComponent<CharacterController>();
+        bool wasEnabled = false;
+        if (cc != null)
+        {
+            wasEnabled = cc.enabled;
+            cc.enabled = false;
+        }
+        player.transform.SetPositionAndRotation(position, rotation);
+        if (cc != null)
+        {
+            cc.enabled = wasEnabled;
+        }
     }
 
     public void BtnEvtCloseCharger()
