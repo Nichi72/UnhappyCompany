@@ -95,7 +95,16 @@ public class ItemCharger : MonoBehaviour, IInteractableF, IToolTip
         // 툴팁 클리어
         if (ToolTipUI.instance != null)
         {
-            ToolTipUI.instance.SetToolTip(null); // TODO: QuickSlotCurrentItem 같은거 참조해서 tooltip불러올 수 있도록 만듬
+			IToolTip toolTipSource = null;
+			if (player != null && player.quickSlotSystem != null && player.quickSlotSystem.currentItemObject != null)
+			{
+				var heldItem = player.quickSlotSystem.currentItemObject.GetComponent<Item>();
+				if (heldItem != null)
+				{
+					toolTipSource = heldItem as IToolTip;
+				}
+			}
+			ToolTipUI.instance.SetToolTip(toolTipSource);
         }
     }
 
