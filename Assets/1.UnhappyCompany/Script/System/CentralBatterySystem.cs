@@ -8,6 +8,9 @@ public class CentralBatterySystem : MonoBehaviour
     [ReadOnly] public float currentBatteryLevel = 1000.0f; // 중앙 배터리의 총량
     [SerializeField]
     private Dictionary<string, ICentralBatteryConsumer> batteryConsumers = new Dictionary<string, ICentralBatteryConsumer>();
+    
+    [SerializeField]
+    private Dictionary<string, ICentralBatteryRechargeable> rechargeableItems = new Dictionary<string, ICentralBatteryRechargeable>();
 
     public bool isStop = false;
     void Awake()
@@ -93,6 +96,41 @@ public class CentralBatterySystem : MonoBehaviour
         return null;
     }
     
+    // 충전 가능한 아이템을 등록하는 메서드
+    public void RegisterRechargeable(ICentralBatteryRechargeable rechargeableItem)
+    {
+        if (!rechargeableItems.ContainsValue(rechargeableItem))
+        {
+            rechargeableItems.Add(rechargeableItem.ID, rechargeableItem);
+        }
+    }
+
+    // 충전 가능한 아이템을 제거하는 메서드
+    public void UnregisterRechargeable(ICentralBatteryRechargeable rechargeableItem)
+    {
+        if (rechargeableItems.ContainsValue(rechargeableItem))
+        {
+            rechargeableItems.Remove(rechargeableItem.ID);
+        }
+    }
+
+    // 전력을 요청하는 메서드 (실제 공급 가능한 양을 반환)
+    public float RequestPower(float requestedAmount)
+    {
+        Debug.Log($"currentBatteryLevel: {currentBatteryLevel}");
+
+        if (isStop || currentBatteryLevel <= 0 || requestedAmount <= 0)
+        {
+            return 0f;
+        }
+
+        float actualAmount = Mathf.Min(requestedAmount, currentBatteryLevel);
+        currentBatteryLevel -= actualAmount;
+
+        UIManager.instance.UpdateTotalBatteryLevel(currentBatteryLevel);
+        return actualAmount;
+    }
+
     [ContextMenu("DebugBatteryConsumers")]
     public void DebugBatteryConsumers()
     {
@@ -104,6 +142,42 @@ public class CentralBatterySystem : MonoBehaviour
             ICentralBatteryConsumer consumer = pair.Value;
             
             Debug.Log($"ID: {id} | 이름: {consumer.GetConsumerName()} | 소모량: {consumer.BatteryDrainPerSecond}/초 | 타입: {consumer.GetType().Name}");
+        }
+        
+        Debug.Log("=======================================");
+    }
+
+    [ContextMenu("DebugRechargeableItems")]
+    public void DebugRechargeableItems()
+    {
+        Debug.Log($"===== 충전 가능한 아이템 목록 (총 {rechargeableItems.Count}개) =====");
+        
+        foreach (var pair in rechargeableItems)
+        {
+            string id = pair.Key;
+            ICentralBatteryRechargeable rechargeableItem = pair.Value;
+            
+            Debug.Log($"ID: {id} | 이름: {rechargeableItem.GetItemName()} | " +
+                     $"배터리: {rechargeableItem.CurrentBatteryAmount:F1}/{rechargeableItem.MaxBatteryCapacity:F1} " +
+                     $"({(rechargeableItem.CurrentBatteryAmount/rechargeableItem.MaxBatteryCapacity*100):F1}%) | " +
+                     $"충전속도: {rechargeableItem.RechargeRatePerSecond:F1}/초 | " +
+                     $"완전충전: {rechargeableItem.IsFullyCharged}");
+        }
+        
+        Debug.Log("=======================================");
+    }
+
+    [ContextMenu("TestChargeAllItems")]
+    public void TestChargeAllItems()
+    {
+        Debug.Log($"===== 모든 아이템 충전 테스트 =====");
+        
+        foreach (var pair in rechargeableItems)
+        {
+            ICentralBatteryRechargeable rechargeableItem = pair.Value;
+            
+            var result = rechargeableItem.TryChargeFromCentralBattery();
+            Debug.Log($"{rechargeableItem.GetItemName()} 충전 결과: {result}");
         }
         
         Debug.Log("=======================================");
