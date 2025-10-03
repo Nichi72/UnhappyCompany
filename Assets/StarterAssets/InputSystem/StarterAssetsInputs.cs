@@ -17,6 +17,11 @@ namespace StarterAssets
 		[SerializeField] private bool isFrozen;
 		public bool IsFrozen => isFrozen;
 
+		[Header("Buffered Inputs (applied on unfreeze)")]
+		[SerializeField] private Vector2 bufferedMove;
+		[SerializeField] private Vector2 bufferedLook;
+		[SerializeField] private bool bufferedSprint;
+
 		[Header("Movement Settings")]
 		public bool analogMovement;
 
@@ -27,15 +32,19 @@ namespace StarterAssets
 #if ENABLE_INPUT_SYSTEM
 		public void OnMove(InputValue value)
 		{
+			Vector2 v = value.Get<Vector2>();
+			bufferedMove = v;
 			if (isFrozen) return;
-			MoveInput(value.Get<Vector2>());
+			MoveInput(v);
 		}
 
 		public void OnLook(InputValue value)
 		{
+			Vector2 v = value.Get<Vector2>();
+			bufferedLook = v;
 			if(!isFrozen && cursorInputForLook)
 			{
-				LookInput(value.Get<Vector2>());
+				LookInput(v);
 			}
 		}
 
@@ -47,8 +56,10 @@ namespace StarterAssets
 
 		public void OnSprint(InputValue value)
 		{
+			bool pressed = value.isPressed;
+			bufferedSprint = pressed;
 			if (isFrozen) return;
-			SprintInput(value.isPressed);
+			SprintInput(pressed);
 		}
 #endif
 
@@ -119,6 +130,10 @@ namespace StarterAssets
 				cursorInputForLook = true;
 				// SetCursorState(true);
 				Cursor.visible = false;
+				// Apply buffered inputs so held keys take effect immediately
+				move = bufferedMove;
+				look = bufferedLook;
+				sprint = bufferedSprint;
 			}
 		}
 	}

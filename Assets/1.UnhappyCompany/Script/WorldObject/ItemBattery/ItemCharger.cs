@@ -19,8 +19,8 @@ public class ItemCharger : MonoBehaviour, IInteractableF, IToolTip
     [SerializeField] private ChargerState chargerState;
 
     [Header("Camera Return Timing")]
-    [SerializeField] private float cameraReturnHoldDuration = 0.35f; // was 0.7f
-    [SerializeField] private float cameraReturnLerpDuration = 0.15f; // was 0.3f
+    [SerializeField] private float cameraReturnHoldDuration = 0.05f; // was 0.7f
+    [SerializeField] private float cameraReturnLerpDuration = 0.1f; // was 0.3f
 
     [Header("Ground Snap")]
     [SerializeField] private float groundCheckUp = 1.5f;
