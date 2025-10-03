@@ -33,14 +33,15 @@ public class Egg : MonoBehaviour, IDamageable
     [Tooltip("현실 기준 경과 시간(분)")]
     public float realElapsedMinutes;
 
-    public BaseEnemyAIData enemyAIData;
     [Header("Basic Settings")]
+    [Tooltip("알이 부화할 적 데이터")] 
+    public BaseEnemyAIData enemyAIData;
     [Tooltip("알이 부서졌을 때 생성할 파편 프리팹")] 
     public GameObject eggShatterItemPrefab;
     
     [Header("Egg Type Settings")]
-    [Tooltip("알의 타입 (기계형/인간형/동물형)")]
-    public EnemyType eggType;
+    [Tooltip("알의 타입 (기계형/인간형/동물형)")] 
+    public EnemyType eggType; // 현재는 안씀
     
     [Header("Stage Settings (현실 시간)")]
     [Tooltip("현실 시간으로 Stage 1의 기본 지속 시간(분)")]
@@ -287,12 +288,12 @@ public class Egg : MonoBehaviour, IDamageable
         // Stage 2에서만 데미지를 받음
         if (currentStage == EggStage.Stage2)
         {
-            if (!IsWeakTo(damageType))
-            {
-                Debug.Log($"{gameObject.name}({eggType})은(는) {damageType} 속성에 면역입니다!");
-                AudioManager.instance.PlayOneShot(FMODEvents.instance.missDamage, transform);
-                return;
-            }
+            // if (!IsWeakTo(damageType))
+            // {
+            //     Debug.Log($"{gameObject.name}({eggType})은(는) {damageType} 속성에 면역입니다!");
+            //     AudioManager.instance.PlayOneShot(FMODEvents.instance.missDamage, transform);
+            //     return;
+            // }
 
             hp -= damage;
             Debug.Log($"{gameObject.name}({eggType}) Take Damage {damage} from {damageType} _ Left HP :{hp}");
@@ -309,19 +310,13 @@ public class Egg : MonoBehaviour, IDamageable
     {
         Vector3 eggPosition = transform.position;
         Debug.Log("Egg 부화!");
-        
-        // 랜덤한 적 타입 선택
-        var soEnemies = EnemyManager.instance.soEnemies;
-        int randomIndex = UnityEngine.Random.Range(0, soEnemies.Count);
-        var adultEnemyPrefab = soEnemies[randomIndex];
-        
+
         // 성체 생성
-        GameObject adult = Instantiate(adultEnemyPrefab.prefab, eggPosition, Quaternion.identity);
+        GameObject adult = Instantiate(enemyAIData.prefab, eggPosition, Quaternion.identity);
         EnemyManager.instance.activeEnemies.Add(adult);
         
         // AI 상태 설정
         var enemyBehavior = adult.GetComponent<EnemyAIController<BaseEnemyAIData>>();
-       
         EnemyManager.instance.activeEggs.Remove(gameObject);
         Destroy(gameObject);
     }

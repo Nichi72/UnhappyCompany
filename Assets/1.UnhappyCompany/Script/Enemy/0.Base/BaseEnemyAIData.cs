@@ -7,6 +7,8 @@ public abstract class BaseEnemyAIData : ScriptableObject
 
     [Header("Enemy Prefab")]
     public GameObject prefab;
+    [Header("dangerLevel")]
+    public EnemyDangerLevel dangerLevel = EnemyDangerLevel.Low;
 
     [Header("Notification Category")]
     public ENotificationCategory category = ENotificationCategory.Normal;

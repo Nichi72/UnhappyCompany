@@ -87,15 +87,6 @@ public class EnemyManager : MonoBehaviour
         // 여기에 알 리스트가 변경될 때 실행하고 싶은 추가 로직을 구현하세요
     }
 
-    private void InitEggSpawnPoints()
-    {
-        eggSpawnPoints.Clear();
-        foreach (RoomSetting roomSetting in roomSettings)
-        {
-            eggSpawnPoints.AddRange(roomSetting.eggSpawnPoints);
-        }
-    }
-
     public void SpawnEggsInEachRoom()
     {
         foreach (RoomSetting room in roomSettings)
@@ -157,6 +148,7 @@ public class EnemyManager : MonoBehaviour
     private GameObject InitEgg(Transform spawnPoint)
     {
         GameObject egg = Instantiate(eggPrefab, spawnPoint.position, Quaternion.identity);
+        egg.GetComponent<Egg>().enemyAIData = soEnemies[UnityEngine.Random.Range(0, soEnemies.Count)];
         AddEgg(egg);  // activeEggs.Add() 대신 AddEgg() 메서드 사용
         Debug.Log("Egg 생성!");
         

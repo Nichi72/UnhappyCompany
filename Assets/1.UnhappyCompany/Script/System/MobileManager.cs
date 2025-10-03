@@ -89,7 +89,7 @@ public class MobileManager : MonoBehaviour
             }
             player.firstPersonController._input.SetCursorLock(!uiObjmobile.activeSelf);
         }
-        else if (Input.GetKeyDown(KeyCode.Q) && scanObj.activeSelf == true)
+        else if (Input.GetKeyDown(KeyCode.Mouse1) && scanObj.activeSelf == true)
         {
             multiRaycastOcclusionCheck.ScanForEnemies();
         }

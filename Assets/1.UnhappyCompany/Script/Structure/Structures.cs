@@ -59,6 +59,12 @@ public enum ENotificationCategory
     Error,
     Danger
 }
+public enum EnemyDangerLevel
+{
+    Low,        // 낮음
+    Medium,     // 보통
+    High        // 높음
+}
 public enum EnemyType
 {
     Machine,    // 기계형 (물 속성)

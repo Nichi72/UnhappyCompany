@@ -154,13 +154,13 @@ public class ObjectTrackerUI : MonoBehaviour
                         if(egg.isScanningOver)
                         {
                             // 이미 스캔된 상태면 바로 eggType 표시
-                            scanInfo.SetScanInfoText(egg.eggType.ToString());
+                            scanInfo.SetScanInfoText(GetEggDangerLevel(egg));
                         }
                         else
                         {
-                            // 아직 스캔되지 않은 상태면 Scanning... 표시 후 2초 후에 eggType으로 변경
+                            // 아직 스캔되지 않은 상태면 Scanning... 표시 후 1초 후에 eggType으로 변경
                             scanInfo.SetScanInfoText("Scanning...");
-                            StartCoroutine(UpdateEggInfoAfterDelay(scanInfo, egg, 2f));
+                            StartCoroutine(UpdateEggInfoAfterDelay(scanInfo, egg, 1f));
                         }
                     }
                     break;
@@ -192,8 +192,13 @@ public class ObjectTrackerUI : MonoBehaviour
         yield return new WaitForSeconds(delay);
         if(scanInfo != null && egg != null)
         {
-            scanInfo.SetScanInfoText(egg.eggType.ToString());
+            scanInfo.SetScanInfoText(GetEggDangerLevel(egg));
         }
+    }
+
+    private string GetEggDangerLevel(Egg egg)
+    {
+        return egg.enemyAIData.dangerLevel.ToString();
     }
 
     private IEnumerator RemoveUIAfterDelay(Transform target, GameObject uiElement, float delay)
