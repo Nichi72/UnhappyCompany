@@ -19,7 +19,6 @@ public class ItemCharger : MonoBehaviour, IInteractableF, IToolTip
     [SerializeField] private ChargerState chargerState;
 
     [Header("Camera Return Timing")]
-    [SerializeField] private float cameraReturnHoldDuration = 0.05f; // was 0.7f
     [SerializeField] private float cameraReturnLerpDuration = 0.1f; // was 0.3f
 
     [Header("Ground Snap")]
@@ -108,8 +107,9 @@ public class ItemCharger : MonoBehaviour, IInteractableF, IToolTip
 
     private IEnumerator CloseChargerSequence(Player player)
     {
-        // 입력은 아직 해제하지 않음 (Open 시점에서 이미 freeze 상태)
-        yield return new WaitForSeconds(cameraReturnHoldDuration);
+        // 입력 해제 및 커서 잠금 복구
+        player.firstPersonController._input.SetCursorLock(true);
+        player.firstPersonController._input.FreezePlayerInput(false);
 
         // 감쇠를 점진적으로 낮춤 (스냅 방지)
         var vcam = player.firstPersonController.cinemachineVirtualCamera;
@@ -134,10 +134,6 @@ public class ItemCharger : MonoBehaviour, IInteractableF, IToolTip
             follow.Damping.y = 0f;
             follow.Damping.z = 0f;
         }
-
-        // 이제 입력 해제 및 커서 잠금 복구
-        player.firstPersonController._input.SetCursorLock(true);
-        player.firstPersonController._input.FreezePlayerInput(false);
     }
 
     private Vector3 GetGroundedPositionForCharacter(Player player, Vector3 targetPosition)
