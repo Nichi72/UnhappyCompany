@@ -940,15 +940,16 @@ MonoBehaviour:
   roomTypeGenerationSettingsForStairRoom: []
   currentActiveRoomCount: 0
   isGenerating: 0
+  isRoomDataLoaded: 0
   roomTypeGenerationSettings:
   - roomType: 1
     roomPrefabList:
     - room: {fileID: 5105610068861487072, guid: 301d62f7a0287c54e9d65de53dea1667, type: 3}
-      probability: 0.2
+      probability: 0
     - room: {fileID: 4529537360015408786, guid: 54e30a3aa2965fa4f9ada8c6bb01dffd, type: 3}
-      probability: 0.4
+      probability: 0.5
     - room: {fileID: 3221810028805143719, guid: d91c07082d22faa4daf4e46612e3d086, type: 3}
-      probability: 0.4
+      probability: 0.5
   roomCountFirstTime: 10
   depthCount: 10
   roomCountPerDepth: 6
@@ -8291,6 +8292,7 @@ MonoBehaviour:
   roomTypeGenerationSettingsForStairRoom: []
   currentActiveRoomCount: 0
   isGenerating: 0
+  isRoomDataLoaded: 0
   roomTypeGenerationSettings:
   - roomType: 0
     roomPrefabList:
@@ -9346,6 +9348,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: West
       objectReference: {fileID: 0}
+    - target: {fileID: 1767479676066798290, guid: e6cb4a55c3fd8e54eb533d0231ed5187, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2547579835178953265, guid: e6cb4a55c3fd8e54eb533d0231ed5187, type: 3}
       propertyPath: itemData
       value: 
@@ -9353,6 +9359,10 @@ PrefabInstance:
     - target: {fileID: 3476395248175727862, guid: e6cb4a55c3fd8e54eb533d0231ed5187, type: 3}
       propertyPath: m_Name
       value: CenterDoor
+      objectReference: {fileID: 0}
+    - target: {fileID: 3852212636496050415, guid: e6cb4a55c3fd8e54eb533d0231ed5187, type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6031100884545488458, guid: e6cb4a55c3fd8e54eb533d0231ed5187, type: 3}
       propertyPath: direction

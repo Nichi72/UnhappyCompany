@@ -65,7 +65,16 @@ public class CCTV : CentralBatteryConsumerItem, IMinimapTrackable , IInteractabl
 
     private void InitCCTV()
     {
-       
+        // GPUI 렌더링을 위해 GPUICamera 컴포넌트 추가
+        if (currentCamera != null)
+        {
+            var gpuiCamera = currentCamera.GetComponent<GPUInstancerPro.GPUICamera>();
+            if (gpuiCamera == null)
+            {
+                gpuiCamera = currentCamera.gameObject.AddComponent<GPUInstancerPro.GPUICamera>();
+                Debug.Log($"CCTV 카메라에 GPUICamera 컴포넌트를 추가했습니다: {currentCamera.name}");
+            }
+        }
     }
 
     public void OnMinimapAdd()
@@ -128,12 +137,22 @@ public class CCTV : CentralBatteryConsumerItem, IMinimapTrackable , IInteractabl
     private void OnTurnOn()
     {
         Debug.Log("CCTV가 켜졌습니다.");
-        // CCTV가 켜질 때 실행할 추가 코드 작성
+        
+        // GPUI 카메라 컴포넌트 활성화
+        if (currentCamera != null)
+        {
+            var gpuiCamera = currentCamera.GetComponent<GPUInstancerPro.GPUICamera>();
+            if (gpuiCamera == null)
+            {
+                gpuiCamera = currentCamera.gameObject.AddComponent<GPUInstancerPro.GPUICamera>();
+            }
+            gpuiCamera.enabled = true;
+        }
+        
         CentralBatterySystem.Instance.RegisterConsumer(this);
-        CCTVManager.instance.cctvs.Add(this); // CCTV 매니저에 등록
-        UIManager.instance.InitCCTVButton(); // UI 매니저에 미니맵 버튼 등록
+        CCTVManager.instance.cctvs.Add(this);
+        UIManager.instance.InitCCTVButton();
         OnMinimapAdd();
-
     }
 
     /// <summary>
@@ -142,13 +161,23 @@ public class CCTV : CentralBatteryConsumerItem, IMinimapTrackable , IInteractabl
     private void OnTurnOff()
     {
         Debug.Log("CCTV가 꺼졌습니다.");
-        // CCTV가 꺼질 때 실행할 추가 코드 작성
+        
+        // GPUI 카메라 컴포넌트 비활성화
+        if (currentCamera != null)
+        {
+            var gpuiCamera = currentCamera.GetComponent<GPUInstancerPro.GPUICamera>();
+            if (gpuiCamera != null)
+            {
+                gpuiCamera.enabled = false;
+            }
+        }
+        
         CentralBatterySystem.Instance.UnregisterConsumer(this);
         currentCamera.enabled = false;
-        CCTVManager.instance.cctvs.Remove(this); // CCTV 매니저에서 제거
+        CCTVManager.instance.cctvs.Remove(this);
         if (CCTVIcon != null) 
         {
-            UIManager.instance.RemoveCCTVButton(CCTVIcon.gameObject); // UI 매니저에서 미니맵 버튼 제거
+            UIManager.instance.RemoveCCTVButton(CCTVIcon.gameObject);
         }
     }
 }

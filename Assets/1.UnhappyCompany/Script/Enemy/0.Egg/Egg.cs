@@ -71,6 +71,22 @@ public class Egg : MonoBehaviour, IDamageable
     public int id;
     public bool isScanning = false;
     public bool isScanningOver = false;
+    
+    [HideInInspector] public bool isLoadedFromSave = false; // 로드된 알인지 여부
+
+    /// <summary>
+    /// 현재 알의 스테이지 반환 (세이브 시스템용)
+    /// </summary>
+    public EggStage GetCurrentStage() => currentStage;
+    
+    /// <summary>
+    /// 알의 스테이지를 설정 (로드 시스템용)
+    /// </summary>
+    public void SetCurrentStage(EggStage stage)
+    {
+        currentStage = stage;
+        UpdateVisuals(stage);
+    }
 
     // 게임 시간 기반 타이머
     private TimeSpan createTime; // 생성 시간
@@ -81,6 +97,14 @@ public class Egg : MonoBehaviour, IDamageable
 
     private void Start()
     {
+        // 로드된 알인 경우 초기화를 건너뜀
+        if (isLoadedFromSave)
+        {
+            Debug.Log($"Egg {id} 로드 완료. 현재 단계: {currentStage}, 부화 진행도: {realElapsedMinutes:F2}분");
+            return;
+        }
+        
+        // 새로 생성된 알인 경우에만 초기화
         id = EnemyManager.instance.EggID;
         EnemyManager.instance.EggID++;
         
@@ -250,22 +274,52 @@ public class Egg : MonoBehaviour, IDamageable
         switch (currentStage)
         {
             case EggStage.Stage1:
-                stage1Visual.SetActive(false);
+                if (stage1Visual != null)
+                    stage1Visual.SetActive(false);
                 break;
             case EggStage.Stage2:
-                stage2Visual.SetActive(false);
+                if (stage2Visual != null)
+                    stage2Visual.SetActive(false);
                 break;
         }
 
         // 새로운 단계의 비주얼을 활성화
+        GameObject targetVisual = null;
         switch (newStage)
         {
             case EggStage.Stage1:
-                stage1Visual.SetActive(true);
+                if (stage1Visual != null)
+                {
+                    stage1Visual.SetActive(true);
+                    targetVisual = stage1Visual;
+                }
                 break;
             case EggStage.Stage2:
-                stage2Visual.SetActive(true);
+                if (stage2Visual != null)
+                {
+                    stage2Visual.SetActive(true);
+                    targetVisual = stage2Visual;
+                }
                 break;
+        }
+
+        // 렌더러 상태 디버깅
+        if (targetVisual != null)
+        {
+            Renderer[] renderers = targetVisual.GetComponentsInChildren<Renderer>();
+            Debug.Log($"[Egg {id}] UpdateVisuals - Stage: {newStage}, Visual Active: {targetVisual.activeSelf}, Renderers: {renderers.Length}");
+            
+            foreach (Renderer renderer in renderers)
+            {
+                if (renderer != null)
+                {
+                    Debug.Log($"  - {renderer.gameObject.name}: enabled={renderer.enabled}, isVisible={renderer.isVisible}");
+                }
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"[Egg {id}] UpdateVisuals - Stage {newStage}의 비주얼이 null입니다!");
         }
 
         // 단계 변화 이펙트 재생
@@ -288,6 +342,7 @@ public class Egg : MonoBehaviour, IDamageable
         // Stage 2에서만 데미지를 받음
         if (currentStage == EggStage.Stage2)
         {
+            // 일단 속성에 
             // if (!IsWeakTo(damageType))
             // {
             //     Debug.Log($"{gameObject.name}({eggType})은(는) {damageType} 속성에 면역입니다!");

@@ -1258,7 +1258,7 @@ Light:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 941826430671579837}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 11
   m_Type: 2
   m_Color: {r: 0.9009434, g: 0.98623115, b: 1, a: 1}
@@ -1761,7 +1761,7 @@ Light:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1114032095426968207}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 11
   m_Type: 2
   m_Color: {r: 0.9009434, g: 0.98623115, b: 1, a: 1}
@@ -2858,7 +2858,7 @@ Light:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1344283410576764102}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 11
   m_Type: 0
   m_Color: {r: 1, g: 0.8471573, b: 0.6444096, a: 1}
@@ -3664,7 +3664,6 @@ Transform:
   m_Children:
   - {fileID: 853170447701757285}
   - {fileID: 1633752637045150066}
-  - {fileID: 2390728909246346995}
   - {fileID: 2635211685548545405}
   - {fileID: 7031901275633736930}
   - {fileID: 6804587265467262021}
@@ -3731,7 +3730,18 @@ MonoBehaviour:
   - {fileID: 9050727622367548269}
   - {fileID: 1002206259367105720}
   - {fileID: 2146092953236363784}
-  roomLights: []
+  roomLights:
+  - {fileID: 5029877017549534428}
+  - {fileID: 6950744222987363123}
+  - {fileID: 4362504546169550843}
+  - {fileID: 3164494609518368407}
+  - {fileID: 1425917816523715957}
+  - {fileID: 8254189058448016235}
+  - {fileID: 7883753523011219108}
+  - {fileID: 201521570979451726}
+  - {fileID: 4225122781122262707}
+  lodGroup: {fileID: 4902122112871563745}
+  enableLODLightControl: 1
   eggSpawnPointPrefabPath: Assets/1.UnhappyCompany/Prefab/Room/Common/EggSpawnPoint.prefab
   itemSpawnPointPrefabPath: Assets/1.UnhappyCompany/Prefab/Room/Common/ItemSpawnPoint.prefab
 --- !u!1 &1894055635768066513
@@ -4994,7 +5004,7 @@ Light:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2638828382473889736}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 11
   m_Type: 0
   m_Color: {r: 0.63235295, g: 0.63235295, b: 0.63235295, a: 1}
@@ -5676,7 +5686,7 @@ Transform:
   m_GameObject: {fileID: 2818388178398437097}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -34.09}
+  m_LocalPosition: {x: 0.5, y: 1000.5, z: -33.59}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -5689,7 +5699,7 @@ Transform:
   - {fileID: 8646239707857014510}
   - {fileID: 3009958081880683157}
   - {fileID: 7044340131796523104}
-  m_Father: {fileID: 5292650762758570832}
+  m_Father: {fileID: 853170447701757285}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2970376245946852783
 GameObject:
@@ -6118,6 +6128,7 @@ Transform:
   - {fileID: 1181774158906674752}
   - {fileID: 3473232456919912984}
   - {fileID: 4316493514816479710}
+  - {fileID: 2390728909246346995}
   m_Father: {fileID: 5292650762758570832}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!205 &4902122112871563745
@@ -6128,13 +6139,13 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3171260111448395768}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: -16.02343, y: 1003.2212, z: -33.1453}
+  m_LocalReferencePoint: {x: -16.02343, y: 1004.1, z: -34.34268}
   m_Size: 32.64686
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
   m_LODs:
-  - screenRelativeHeight: 0.6
+  - screenRelativeHeight: 0.5599054
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 84899901932947148}
@@ -6155,7 +6166,7 @@ LODGroup:
     - renderer: {fileID: 3158622454679969773}
     - renderer: {fileID: 3787753130299275771}
     - renderer: {fileID: 1897547786922602920}
-  - screenRelativeHeight: 0
+  - screenRelativeHeight: 0.29726508
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 6658461734728406321}
@@ -9993,7 +10004,7 @@ Light:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5461538322298940345}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 11
   m_Type: 2
   m_Color: {r: 0.9009434, g: 0.98623115, b: 1, a: 1}
@@ -13051,7 +13062,7 @@ Light:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6664417966370974070}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 11
   m_Type: 2
   m_Color: {r: 0.9009434, g: 0.98623115, b: 1, a: 1}
@@ -14976,7 +14987,7 @@ Light:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7497099486982448306}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 11
   m_Type: 2
   m_Color: {r: 0.9009434, g: 0.98623115, b: 1, a: 1}
@@ -16607,7 +16618,7 @@ Light:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8309336341442931971}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 11
   m_Type: 0
   m_Color: {r: 1, g: 0.8471573, b: 0.6444096, a: 1}
@@ -18410,7 +18421,7 @@ Light:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8840833908385234697}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 11
   m_Type: 0
   m_Color: {r: 1, g: 0.8471573, b: 0.6444096, a: 1}

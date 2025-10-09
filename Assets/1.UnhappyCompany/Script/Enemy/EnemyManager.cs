@@ -147,10 +147,62 @@ public class EnemyManager : MonoBehaviour
 
     private GameObject InitEgg(Transform spawnPoint)
     {
-        GameObject egg = Instantiate(eggPrefab, spawnPoint.position, Quaternion.identity);
+        // 스폰 포인트가 속한 방 찾기
+        // 부모에 RoomNode 검색을 반복
+        RoomNode room = null;
+        Transform current = spawnPoint;
+        int maxIterations = 20; // 무한 루프 방지
+        int iterations = 0;
+        
+        while (current != null && room == null && iterations < maxIterations)
+        {
+            room = current.GetComponent<RoomNode>();
+            current = current.parent;
+            iterations++;
+        }
+        
+        if (iterations >= maxIterations)
+        {
+            Debug.LogWarning($"RoomNode 검색 중 최대 반복 횟수({maxIterations})에 도달했습니다. spawnPoint: {spawnPoint.name}");
+        }
+
+        
+        Transform parentTransform = room != null ? room.transform : null;
+        
+        // 알 생성 (방의 자식으로)
+        GameObject egg = Instantiate(eggPrefab, spawnPoint.position, Quaternion.identity, parentTransform);
         egg.GetComponent<Egg>().enemyAIData = soEnemies[UnityEngine.Random.Range(0, soEnemies.Count)];
         AddEgg(egg);  // activeEggs.Add() 대신 AddEgg() 메서드 사용
-        Debug.Log("Egg 생성!");
+        
+        // RoomSetting의 spawnedEggs 리스트에 추가
+        if (room != null && room.roomSetting != null)
+        {
+            room.roomSetting.spawnedEggs.Add(egg);
+            
+            // LODGroup에서 알 렌더러 제외 (방의 LOD에 영향받지 않도록)
+            LODGroup roomLOD = room.roomSetting.lodGroup;
+            if (roomLOD != null)
+            {
+                Renderer[] eggRenderers = egg.GetComponentsInChildren<Renderer>();
+                if (eggRenderers.Length > 0)
+                {
+                    Debug.Log($"Egg 생성! (방: {room.gameObject.name}, RoomSetting에 추가됨, LODGroup 확인됨)");
+                    // LODGroup이 자동으로 알의 렌더러를 포함하지 않도록 주의 필요
+                }
+            }
+            else
+            {
+                Debug.Log($"Egg 생성! (방: {room.gameObject.name}, RoomSetting에 추가됨)");
+            }
+        }
+        else if (room != null)
+        {
+            Debug.LogWarning($"Egg 생성! (방: {room.gameObject.name}, 경고: RoomSetting을 찾을 수 없음)");
+        }
+        else
+        {
+            Debug.LogWarning("Egg 생성! (경고: 방을 찾을 수 없어 부모 없이 생성됨)");
+        }
         
         Vector3 rayOrigin = egg.transform.position;
         RaycastHit hit;

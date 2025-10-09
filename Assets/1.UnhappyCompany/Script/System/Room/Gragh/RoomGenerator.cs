@@ -54,6 +54,9 @@ public class RoomGenerator : MonoBehaviour
     public RoomTypeGeneration[] roomTypeGenerationSettingsForStairRoom;
     [ReadOnly] [SerializeField] private int currentActiveRoomCount = 0;
     public bool isGenerating = false;
+    
+    [Header("세이브/로드 시스템")]
+    [ReadOnly] public bool isRoomDataLoaded = false; // 방 데이터가 로드되었는지 여부
     [Header("==== 밸런스 처리 ====")]
     [Header("각각의 방이 생성 될 확률(!!반드시!!총합이 1이 되어야함)")]
     [Header("[new Room Generator] 다른 방향으로 생성될 확률")]
@@ -111,16 +114,15 @@ public class RoomGenerator : MonoBehaviour
     }   
     void Start()
     {
+        // isRoomDataLoaded가 true면 SaveManager가 데이터를 로드할 예정이므로 방 생성 건너뛰기
+        if (isRoomDataLoaded)
+        {
+            Debug.Log("[RoomGenerator] 저장된 방 데이터가 있어 새로운 방 생성을 건너뜁니다.");
+            return;
+        }
         
+        Debug.Log("[RoomGenerator] 저장된 방 데이터가 없어 새로운 방을 생성합니다.");
         StartCoroutine(GenerateRoomFirstTime());
-        // foreach(var doorGeneration in doorGenerationSettings)
-        // {
-        //     if(doorGeneration.shouldGenerate)
-        //     {
-        //         currentActiveRoomCount++;
-        //     }
-        // }
-        
     }
 
     void Update()
@@ -245,20 +247,64 @@ public class RoomGenerator : MonoBehaviour
       
         for(int i = 0; i < depthCount; i++)
         {
-            
             if (roomsWithUnconnectedDoors.Count > 0)
             {
+                // 유효한 방을 찾을 때까지 시도
+                RoomNode roomToExpand = null;
+                int attempts = 0;
+                int maxAttempts = roomsWithUnconnectedDoors.Count * 2;
+                
+                while (roomToExpand == null && attempts < maxAttempts)
+                {
+                    attempts++;
+                    
                 // roomList에서 랜덤으로 방을 선택
                 int randomIndex = Random.Range(0, roomsWithUnconnectedDoors.Count);
+                    
                 if(tempRoomList.Contains(randomIndex))
                 {
                     continue;
                 }
-                RoomNode roomToExpand = roomsWithUnconnectedDoors[randomIndex];
+                    
+                    RoomNode candidate = roomsWithUnconnectedDoors[randomIndex];
+                    
+                    // 방이 확장 가능한지 확인
+                    if (IsRoomExpandable(candidate))
+                    {
+                        roomToExpand = candidate;
                 tempRoomList.Add(randomIndex);
+                    }
+                    else
+                    {
+                        // 확장 불가능한 방이면 roomsWithUnconnectedDoors에서 제거
+                        Debug.Log($"[ExpandRoom] 방 {candidate.gameObject.name}은(는) 더 이상 확장 가능하지 않아 제거됩니다.");
+                        roomsWithUnconnectedDoors.Remove(candidate);
+                        
+                        // 리스트가 변경되었으므로 인덱스 체크
+                        if (roomsWithUnconnectedDoors.Count == 0)
+                        {
+                            Debug.LogWarning("[ExpandRoom] 더 이상 확장 가능한 방이 없습니다.");
+                            return;
+                        }
+                    }
+                }
+                
+                // 유효한 방을 찾았다면 확장 시작
+                if (roomToExpand != null)
+                {
                 DoorGeneration doorGeneration = GetDoorGeneration(roomToExpand.doorDirection);
                 // 선택된 방을 기준으로 확장
-                StartCoroutine(GenerateRoom(roomToExpand, roomCountPerDepth,doorGeneration));
+                    StartCoroutine(GenerateRoom(roomToExpand, roomCountPerDepth, doorGeneration));
+                }
+                else
+                {
+                    Debug.LogWarning($"[ExpandRoom] {attempts}번 시도 후에도 확장 가능한 방을 찾지 못했습니다.");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("[ExpandRoom] 확장 가능한 방이 없습니다.");
+                break;
             }
             
             currentLoadingState = $"추가 방 생성 중... ({i+1}/{depthCount})";
@@ -425,7 +471,10 @@ public class RoomGenerator : MonoBehaviour
                 }
                 else
                 {
-                    Debug.Log($"문 {beforeDoor.name}은(는) 실패 횟수({retryInfo.failCount})가 너무 많거나 확률({adjustedProbability:P0})에 의해 재시도하지 않습니다.");
+                    Debug.Log($"문 {beforeDoor.name}은(는) 실패 횟수({retryInfo.failCount})가 너무 많거나 확률({adjustedProbability:P0})에 의해 재시도하지 않습니다. 영구 제외됩니다.");
+                    
+                    // 문이 영구 제외되었으므로, 해당 방의 모든 문이 실패했는지 확인
+                    CheckAndRemoveFullyFailedRoom(beforeRoom);
                 }
             }
             
@@ -873,6 +922,696 @@ public class RoomGenerator : MonoBehaviour
             RoomGenerator.instance.OnGenerationComplete -= HandleGenerationComplete;
         }
     }
+
+    #region 방 저장/로드 시스템
+
+    /// <summary>
+    /// 현재 생성된 모든 방의 데이터를 수집하여 저장 가능한 형태로 반환
+    /// </summary>
+    public RoomSystemSaveData SerializeRooms()
+    {
+        RoomSystemSaveData saveData = new RoomSystemSaveData();
+        
+        // 저장 시간 기록
+        saveData.saveTimestamp = Time.time;
+        
+        // 시작 방 인덱스 저장
+        if (startRoomNode != null)
+        {
+            saveData.startRoomIndex = allRoomList.IndexOf(startRoomNode);
+        }
+        else
+        {
+            saveData.startRoomIndex = -1;
+            Debug.LogWarning("[RoomGenerator] 시작 방이 설정되지 않았습니다.");
+        }
+
+        // 모든 방 데이터 변환
+        foreach (RoomNode room in allRoomList)
+        {
+            if (room == null)
+            {
+                Debug.LogWarning("[RoomGenerator] allRoomList에 null 방이 포함되어 있습니다. 건너뜁니다.");
+                continue;
+            }
+
+            RoomSaveData roomData = RoomSaveData.FromRoomNode(room, allRoomList.IndexOf(room), allRoomList);
+            
+            // Phase 2: 방 내부의 알들 저장
+            SerializeEggsInRoom(room, roomData);
+            
+            saveData.allRooms.Add(roomData);
+        }
+
+        Debug.Log($"[RoomGenerator] 방 저장 완료: {saveData.allRooms.Count}개 방, 시작 방 인덱스: {saveData.startRoomIndex}");
+        
+        return saveData;
+    }
+
+    /// <summary>
+    /// 방 내부의 알들을 저장 (Phase 2)
+    /// </summary>
+    private void SerializeEggsInRoom(RoomNode room, RoomSaveData roomData)
+    {
+        // 방 내부의 모든 Egg 컴포넌트 찾기
+        Egg[] eggsInRoom = room.GetComponentsInChildren<Egg>(false); // 비활성화된 오브젝트는 제외
+        
+        foreach (Egg egg in eggsInRoom)
+        {
+            if (egg != null)
+            {
+                EggSpawnData eggData = new EggSpawnData(egg);
+                roomData.eggs.Add(eggData);
+            }
+        }
+        
+        if (eggsInRoom.Length > 0)
+        {
+            Debug.Log($"[RoomGenerator] 방 '{room.gameObject.name}'에서 {eggsInRoom.Length}개 알 저장");
+        }
+    }
+
+    /// <summary>
+    /// 모든 활성화된 적들을 저장 (Phase 2 - 전역 저장)
+    /// </summary>
+    public EnemySystemSaveData SerializeEnemies()
+    {
+        EnemySystemSaveData saveData = new EnemySystemSaveData();
+        
+        if (EnemyManager.instance == null)
+        {
+            Debug.LogWarning("[RoomGenerator] EnemyManager가 없어 적을 저장할 수 없습니다.");
+            return saveData;
+        }
+        
+        // EnemyManager의 activeEnemies 리스트에서 모든 적 저장
+        foreach (GameObject enemyObj in EnemyManager.instance.activeEnemies)
+        {
+            if (enemyObj == null) continue;
+            
+            // 적의 BaseEnemyAIData 찾기
+            // 방법: 프리팹 이름으로 soEnemies에서 찾기
+            BaseEnemyAIData enemyData = FindEnemyDataByPrefabName(enemyObj.name);
+            
+            if (enemyData != null)
+            {
+                EnemySpawnData enemySpawnData = new EnemySpawnData(enemyObj, enemyData);
+                saveData.allEnemies.Add(enemySpawnData);
+            }
+            else
+            {
+                Debug.LogWarning($"[RoomGenerator] 적 '{enemyObj.name}'의 BaseEnemyAIData를 찾을 수 없어 저장하지 못했습니다.");
+            }
+        }
+        
+        // 다음 알 ID 저장
+        saveData.nextEggID = EnemyManager.instance.EggID;
+        
+        Debug.Log($"[RoomGenerator] 적 저장 완료: {saveData.allEnemies.Count}개 적, 다음 알 ID: {saveData.nextEggID}");
+        
+        return saveData;
+    }
+
+    /// <summary>
+    /// 저장된 방 데이터로부터 방을 복원
+    /// </summary>
+    public void DeserializeRooms(RoomSystemSaveData saveData)
+    {
+        if (saveData == null || saveData.allRooms == null || saveData.allRooms.Count == 0)
+        {
+            Debug.LogWarning("[RoomGenerator] 로드할 방 데이터가 없습니다.");
+            isRoomDataLoaded = false;
+            return;
+        }
+
+        Debug.Log($"[RoomGenerator] 방 로드 시작: {saveData.allRooms.Count}개 방");
+
+        // 로드 플래그 설정 (방 생성 방지)
+        isRoomDataLoaded = true;
+
+        // 기존 방 제거
+        ClearAllRooms();
+
+        // 1단계: 모든 방 인스턴스화 (연결 정보 없이)
+        List<RoomNode> loadedRooms = new List<RoomNode>();
+        
+        for (int i = 0; i < saveData.allRooms.Count; i++)
+        {
+            RoomSaveData roomData = saveData.allRooms[i];
+            
+            // 프리팹 찾기
+            RoomNode roomPrefab = FindRoomPrefabByName(roomData.roomPrefabName, roomData.roomType);
+            
+            if (roomPrefab == null)
+            {
+                Debug.LogError($"[RoomGenerator] 프리팹을 찾을 수 없습니다: {roomData.roomPrefabName}");
+                loadedRooms.Add(null);
+                continue;
+            }
+
+            // 방 인스턴스화
+            RoomNode newRoom = Instantiate(roomPrefab, roomData.position.ToVector3(), roomData.rotation.ToQuaternion());
+            newRoom.gameObject.name = roomData.roomPrefabName; // (Clone) 제거
+            
+            // 방 속성 복원
+            newRoom.currentRoomType = roomData.roomType;
+            newRoom.depth = roomData.depth;
+            newRoom.doorDirection = roomData.doorDirection;
+            newRoom.isOtherDirection = roomData.isOtherDirection;
+            
+            // connectToParentDoor는 문 연결 복원 시 처리됨 (아직 doorList가 준비되지 않음)
+
+            loadedRooms.Add(newRoom);
+            allRoomList.Add(newRoom);
+        }
+
+        // 2단계: 문 연결 정보 복원 및 알 로드
+        for (int i = 0; i < saveData.allRooms.Count; i++)
+        {
+            RoomSaveData roomData = saveData.allRooms[i];
+            RoomNode room = loadedRooms[i];
+
+            if (room == null)
+                continue;
+
+            RestoreDoorConnections(room, roomData, loadedRooms);
+            
+            // Phase 2: 방 내부의 알들 복원
+            DeserializeEggsInRoom(room, roomData);
+        }
+
+        // 3단계: 시작 방 설정
+        if (saveData.startRoomIndex >= 0 && saveData.startRoomIndex < loadedRooms.Count)
+        {
+            startRoomNode = loadedRooms[saveData.startRoomIndex];
+            Debug.Log($"[RoomGenerator] 시작 방 설정: {startRoomNode.gameObject.name}");
+        }
+        else
+        {
+            Debug.LogWarning($"[RoomGenerator] 유효하지 않은 시작 방 인덱스: {saveData.startRoomIndex}");
+        }
+
+        // 4단계: roomsWithUnconnectedDoors 리스트 복원 (ExpandRoom을 위해 필요)
+        UpdateRoomsWithUnconnectedDoors();
+
+        // 5단계: 연결된 문 비활성화 (로드 시 양쪽 문이 모두 활성화되는 이슈 해결)
+        DisableConnectedDoors(loadedRooms);
+
+        // 6단계: 로드 완료 후처리 (NavMesh, EnemyManager 등)
+        PostLoadProcessing();
+
+        Debug.Log($"[RoomGenerator] 방 로드 완료: {allRoomList.Count}개 방 복원, {roomsWithUnconnectedDoors.Count}개 방에 연결되지 않은 문 있음");
+    }
+
+    /// <summary>
+    /// 방 로드 후 후처리 (NavMesh 재생성, EnemyManager 설정 등)
+    /// </summary>
+    private void PostLoadProcessing()
+    {
+        Debug.Log("[RoomGenerator] 로드 후처리 시작...");
+
+        // roomSettings 초기화 (HandleGenerationComplete와 동일)
+        if (EnemyManager.instance != null)
+        {
+            List<RoomSetting> roomSettings = new List<RoomSetting>();
+            foreach(var room in allRoomList)
+            {
+                if (room != null && room.roomSetting != null)
+                {
+                    roomSettings.Add(room.roomSetting);
+                }
+            }
+            EnemyManager.instance.roomSettings = roomSettings;
+            Debug.Log($"[RoomGenerator] EnemyManager에 {roomSettings.Count}개 방 설정 추가");
+        }
+
+        // NavMesh 재생성
+        if (RoomManager.Instance != null)
+        {
+            RoomManager.Instance.UpdateAllRoomsNavMeshAsync();
+            Debug.Log("[RoomGenerator] NavMesh 재생성 시작");
+        }
+        else
+        {
+            Debug.LogWarning("[RoomGenerator] RoomManager를 찾을 수 없어 NavMesh를 재생성할 수 없습니다.");
+        }
+
+        Debug.Log("[RoomGenerator] 로드 후처리 완료");
+    }
+
+    /// <summary>
+    /// 방 내부의 알들을 로드 (Phase 2)
+    /// </summary>
+    private void DeserializeEggsInRoom(RoomNode room, RoomSaveData roomData)
+    {
+        if (roomData.eggs == null || roomData.eggs.Count == 0)
+            return;
+        
+        if (EnemyManager.instance == null)
+        {
+            Debug.LogWarning("[RoomGenerator] EnemyManager가 없어 알을 로드할 수 없습니다.");
+            return;
+        }
+        
+        foreach (EggSpawnData eggData in roomData.eggs)
+        {
+            // 적 데이터 찾기
+            BaseEnemyAIData enemyAIData = FindEnemyDataByName(eggData.enemyDataName);
+            
+            if (enemyAIData == null)
+            {
+                Debug.LogWarning($"[RoomGenerator] 적 데이터를 찾을 수 없습니다: {eggData.enemyDataName}");
+                continue;
+            }
+            
+            // 알 생성
+            GameObject eggObj = Instantiate(
+                EnemyManager.instance.eggPrefab, 
+                eggData.position.ToVector3(), 
+                eggData.rotation.ToQuaternion(),
+                room.transform // 방의 자식으로 생성
+            );
+            
+            // 알 컴포넌트 설정
+            Egg eggComponent = eggObj.GetComponent<Egg>();
+            if (eggComponent != null)
+            {
+                // 로드 플래그 설정 (Start() 실행 전에 설정해야 함)
+                eggComponent.isLoadedFromSave = true;
+                eggComponent.enemyAIData = enemyAIData;
+                eggComponent.createdRealTime = eggData.createdRealTime;
+                eggComponent.realElapsedMinutes = eggData.realElapsedMinutes;
+                eggComponent.hp = eggData.hp;
+                eggComponent.id = eggData.id;
+                eggComponent.SetCurrentStage(eggData.currentStage);
+            }
+            
+            // EnemyManager에 등록
+            EnemyManager.instance.activeEggs.Add(eggObj);
+            
+            // RoomSetting의 spawnedEggs 리스트에 추가
+            if (room != null && room.roomSetting != null)
+            {
+                room.roomSetting.spawnedEggs.Add(eggObj);
+            }
+            
+            // 로드 직후 렌더러 상태 확인
+            Renderer[] eggRenderers = eggObj.GetComponentsInChildren<Renderer>();
+            Debug.Log($"[RoomGenerator] 알 로드 직후 - 총 렌더러 수: {eggRenderers.Length}");
+            foreach (Renderer r in eggRenderers)
+            {
+                if (r != null)
+                {
+                    Debug.Log($"  - {r.gameObject.name}: enabled={r.enabled}, GameObject active={r.gameObject.activeSelf}");
+                }
+            }
+        }
+        
+        Debug.Log($"[RoomGenerator] 방 '{room.gameObject.name}'에 {roomData.eggs.Count}개 알 로드 완료");
+    }
+    
+    /// <summary>
+    /// 적 이름으로 BaseEnemyAIData 찾기
+    /// </summary>
+    private BaseEnemyAIData FindEnemyDataByName(string enemyName)
+    {
+        if (EnemyManager.instance == null || EnemyManager.instance.soEnemies == null)
+            return null;
+        
+        foreach (BaseEnemyAIData data in EnemyManager.instance.soEnemies)
+        {
+            if (data != null && data.enemyName == enemyName)
+            {
+                return data;
+            }
+        }
+        
+        return null;
+    }
+    
+    /// <summary>
+    /// 프리팹 이름으로 BaseEnemyAIData 찾기
+    /// </summary>
+    private BaseEnemyAIData FindEnemyDataByPrefabName(string prefabName)
+    {
+        if (EnemyManager.instance == null || EnemyManager.instance.soEnemies == null)
+            return null;
+        
+        // "(Clone)" 제거
+        string cleanName = prefabName.Replace("(Clone)", "").Trim();
+        
+        foreach (BaseEnemyAIData data in EnemyManager.instance.soEnemies)
+        {
+            if (data != null && data.prefab != null)
+            {
+                string prefabCleanName = data.prefab.name;
+                if (prefabCleanName == cleanName)
+                {
+                    return data;
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    /// <summary>
+    /// 모든 적들을 로드 (Phase 2 - 전역 로드)
+    /// </summary>
+    public void DeserializeEnemies(EnemySystemSaveData saveData)
+    {
+        if (saveData == null || saveData.allEnemies == null || saveData.allEnemies.Count == 0)
+        {
+            Debug.Log("[RoomGenerator] 로드할 적 데이터가 없습니다.");
+            return;
+        }
+        
+        if (EnemyManager.instance == null)
+        {
+            Debug.LogWarning("[RoomGenerator] EnemyManager가 없어 적을 로드할 수 없습니다.");
+            return;
+        }
+        
+        Debug.Log($"[RoomGenerator] 적 로드 시작: {saveData.allEnemies.Count}개");
+        
+        int loadedCount = 0;
+        
+        foreach (EnemySpawnData enemyData in saveData.allEnemies)
+        {
+            // 적 데이터 찾기
+            BaseEnemyAIData enemyAIData = FindEnemyDataByName(enemyData.enemyDataName);
+            
+            if (enemyAIData == null)
+            {
+                Debug.LogWarning($"[RoomGenerator] 적 데이터를 찾을 수 없습니다: {enemyData.enemyDataName}");
+                continue;
+            }
+            
+            // 적 생성
+            GameObject enemyObj = Instantiate(
+                enemyAIData.prefab, 
+                enemyData.position.ToVector3(), 
+                enemyData.rotation.ToQuaternion()
+            );
+            
+            // HP 설정
+            var damageable = enemyObj.GetComponent<IDamageable>();
+            if (damageable != null)
+            {
+                damageable.hp = enemyData.hp;
+            }
+            
+            // EnemyManager에 등록
+            EnemyManager.instance.activeEnemies.Add(enemyObj);
+            loadedCount++;
+        }
+        
+        // 다음 알 ID 복원
+        EnemyManager.instance.EggID = saveData.nextEggID;
+        
+        Debug.Log($"[RoomGenerator] 적 로드 완료: {loadedCount}개, 다음 알 ID: {saveData.nextEggID}");
+    }
+
+    /// <summary>
+    /// 연결되지 않은 문이 있는 방 리스트 업데이트
+    /// </summary>
+    private void UpdateRoomsWithUnconnectedDoors()
+    {
+        roomsWithUnconnectedDoors.Clear();
+
+        foreach (RoomNode room in allRoomList)
+        {
+            if (room == null)
+                continue;
+
+            // 방의 연결되지 않은 문 확인
+            List<DoorEdge> unconnectedDoors = room.GetUnconnectedDoors();
+            
+            if (unconnectedDoors.Count > 0)
+            {
+                if (!roomsWithUnconnectedDoors.Contains(room))
+                {
+                    roomsWithUnconnectedDoors.Add(room);
+                }
+            }
+        }
+
+        Debug.Log($"[RoomGenerator] roomsWithUnconnectedDoors 업데이트 완료: {roomsWithUnconnectedDoors.Count}개 방");
+    }
+
+    /// <summary>
+    /// 방의 모든 연결되지 않은 문이 실패했는지 확인하고, 그렇다면 roomsWithUnconnectedDoors에서 제거
+    /// </summary>
+    private void CheckAndRemoveFullyFailedRoom(RoomNode room)
+    {
+        if (room == null || !roomsWithUnconnectedDoors.Contains(room))
+            return;
+
+        // 방의 모든 연결되지 않은 문 확인
+        List<DoorEdge> unconnectedDoors = room.GetUnconnectedDoors();
+        
+        if (unconnectedDoors.Count == 0)
+        {
+            // 연결되지 않은 문이 없으면 제거
+            roomsWithUnconnectedDoors.Remove(room);
+            Debug.Log($"[RoomGenerator] 방 {room.gameObject.name}은(는) 더 이상 연결되지 않은 문이 없어 제거되었습니다.");
+            return;
+        }
+
+        // 모든 연결되지 않은 문이 실패했는지 확인
+        bool allDoorsFailed = true;
+        foreach (DoorEdge door in unconnectedDoors)
+        {
+            // doorRetryData에 없거나, failCount가 maxDoorFailCount 미만이면 아직 시도 가능
+            if (!doorRetryData.ContainsKey(door) || doorRetryData[door].failCount < maxDoorFailCount)
+            {
+                allDoorsFailed = false;
+                break;
+            }
+        }
+
+        // 모든 문이 실패했다면 roomsWithUnconnectedDoors에서 제거
+        if (allDoorsFailed)
+        {
+            roomsWithUnconnectedDoors.Remove(room);
+            Debug.Log($"[RoomGenerator] 방 {room.gameObject.name}의 모든 연결되지 않은 문이 실패하여 확장 대상에서 제거되었습니다.");
+        }
+    }
+
+    /// <summary>
+    /// 방이 확장 가능한지 확인 (연결되지 않은 문이 있고, 실패하지 않은 문이 최소 하나 있는지)
+    /// </summary>
+    private bool IsRoomExpandable(RoomNode room)
+    {
+        if (room == null)
+            return false;
+
+        List<DoorEdge> unconnectedDoors = room.GetUnconnectedDoors();
+        
+        if (unconnectedDoors.Count == 0)
+            return false;
+
+        // 최소 하나의 문이 아직 시도 가능한지 확인
+        foreach (DoorEdge door in unconnectedDoors)
+        {
+            if (!doorRetryData.ContainsKey(door) || doorRetryData[door].failCount < maxDoorFailCount)
+            {
+                return true; // 시도 가능한 문이 있음
+            }
+        }
+
+        return false; // 모든 문이 실패함
+    }
+
+    /// <summary>
+    /// 연결된 문들을 비활성화 (로드 시 양쪽 문이 모두 활성화되는 이슈 해결)
+    /// </summary>
+    private void DisableConnectedDoors(List<RoomNode> rooms)
+    {
+        int disabledDoorCount = 0;
+        
+        foreach (RoomNode room in rooms)
+        {
+            if (DisableConnectedDoor(room))
+            {
+                disabledDoorCount++;
+            }
+        }
+
+        Debug.Log($"[RoomGenerator] 총 {disabledDoorCount}개의 연결된 문 비활성화 완료");
+    }
+
+    /// <summary>
+    /// 단일 방의 연결된 문을 비활성화 (오버로드)
+    /// </summary>
+    public bool DisableConnectedDoor(RoomNode room)
+    {
+        if (room == null || room.connectToParentDoor == null)
+            return false;
+
+        // Door 컴포넌트가 없는 경우 문을 비활성화
+        if (room.connectToParentDoor.gameObject.GetComponent<Door>() == null)
+        {
+            room.connectToParentDoor.gameObject.SetActive(false);
+            Debug.Log($"[RoomGenerator] 방 {room.gameObject.name}의 부모 연결 문 비활성화: {room.connectToParentDoor.name}");
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// 방의 문 연결 정보 복원
+    /// </summary>
+    private void RestoreDoorConnections(RoomNode room, RoomSaveData roomData, List<RoomNode> loadedRooms)
+    {
+        // Reflection을 사용하여 private doorList에 접근
+        var doorListField = typeof(RoomNode).GetField("doorList", 
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        
+        if (doorListField == null)
+        {
+            Debug.LogError("[RoomGenerator] RoomNode의 doorList 필드를 찾을 수 없습니다.");
+            return;
+        }
+
+        List<DoorEdge> doorList = doorListField.GetValue(room) as List<DoorEdge>;
+        
+        if (doorList == null || doorList.Count == 0)
+        {
+            Debug.LogWarning($"[RoomGenerator] 방 {room.gameObject.name}의 doorList가 비어있습니다.");
+            return;
+        }
+
+        // connectToParentDoor 복원
+        if (roomData.connectToParentDoorIndex >= 0 && roomData.connectToParentDoorIndex < doorList.Count)
+        {
+            room.connectToParentDoor = doorList[roomData.connectToParentDoorIndex];
+        }
+        else if (roomData.connectToParentDoorIndex != -1)
+        {
+            Debug.LogWarning($"[RoomGenerator] 유효하지 않은 connectToParentDoor 인덱스: {roomData.connectToParentDoorIndex}");
+        }
+
+        // 저장된 문 연결 정보 복원
+        foreach (DoorConnectionData doorData in roomData.doorConnections)
+        {
+            if (doorData.doorIndex < 0 || doorData.doorIndex >= doorList.Count)
+            {
+                Debug.LogWarning($"[RoomGenerator] 유효하지 않은 문 인덱스: {doorData.doorIndex}");
+                continue;
+            }
+
+            DoorEdge door = doorList[doorData.doorIndex];
+            
+            // 문 방향 설정
+            door.direction = doorData.direction;
+
+            // 연결된 방이 있다면 복원
+            if (doorData.connectedRoomIndex >= 0 && doorData.connectedRoomIndex < loadedRooms.Count)
+            {
+                RoomNode connectedRoom = loadedRooms[doorData.connectedRoomIndex];
+                if (connectedRoom != null)
+                {
+                    door.toRoomNode = connectedRoom;
+                }
+            }
+            else
+            {
+                door.toRoomNode = null;
+            }
+        }
+
+        // SelectedDoors 복원 (연결되지 않은 문들)
+        room.SelectedDoors.Clear();
+        foreach (DoorEdge door in doorList)
+        {
+            // connectToParentDoor가 아니고, 방향이 맞는 문들을 SelectedDoors에 추가
+            if (door != room.connectToParentDoor && door.direction == room.doorDirection)
+            {
+                room.SelectedDoors.Add(door);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 프리팹 이름과 타입으로 방 프리팹 찾기
+    /// </summary>
+    private RoomNode FindRoomPrefabByName(string prefabName, RoomNode.RoomType roomType)
+    {
+        // roomTypeGenerationSettings에서 해당 타입의 프리팹 찾기
+        foreach (RoomTypeGeneration typeGen in roomTypeGenerationSettings)
+        {
+            if (typeGen.roomType == roomType)
+            {
+                foreach (RoomRandomGeneration roomGen in typeGen.roomPrefabList)
+                {
+                    if (roomGen.room != null && roomGen.room.gameObject.name == prefabName)
+                    {
+                        return roomGen.room;
+                    }
+                }
+            }
+        }
+
+        // 찾지 못했다면 roomTypeGenerationSettingsForSmallRoom에서 찾기
+        foreach (RoomTypeGeneration typeGen in roomTypeGenerationSettingsForSmallRoom)
+        {
+            if (typeGen.roomType == roomType)
+            {
+                foreach (RoomRandomGeneration roomGen in typeGen.roomPrefabList)
+                {
+                    if (roomGen.room != null && roomGen.room.gameObject.name == prefabName)
+                    {
+                        return roomGen.room;
+                    }
+                }
+            }
+        }
+
+        // roomTypeGenerationSettingsForStairRoom에서도 찾기
+        foreach (RoomTypeGeneration typeGen in roomTypeGenerationSettingsForStairRoom)
+        {
+            if (typeGen.roomType == roomType)
+            {
+                foreach (RoomRandomGeneration roomGen in typeGen.roomPrefabList)
+                {
+                    if (roomGen.room != null && roomGen.room.gameObject.name == prefabName)
+                    {
+                        return roomGen.room;
+                    }
+                }
+            }
+        }
+
+        Debug.LogError($"[RoomGenerator] 프리팹을 찾을 수 없습니다: {prefabName} (타입: {roomType})");
+        return null;
+    }
+
+    /// <summary>
+    /// 기존에 생성된 모든 방 제거
+    /// </summary>
+    private void ClearAllRooms()
+    {
+        Debug.Log($"[RoomGenerator] 기존 방 제거 중: {allRoomList.Count}개");
+        
+        foreach (RoomNode room in allRoomList)
+        {
+            if (room != null)
+            {
+                Destroy(room.gameObject);
+            }
+        }
+
+        allRoomList.Clear();
+        roomsWithUnconnectedDoors.Clear();
+        startRoomNode = null;
+        isRoomDataLoaded = false;
+
+        Debug.Log("[RoomGenerator] 모든 방 제거 완료");
+    }
+
+    #endregion
 }
 
 

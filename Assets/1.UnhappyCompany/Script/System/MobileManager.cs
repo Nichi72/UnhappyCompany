@@ -25,6 +25,17 @@ public class MobileManager : MonoBehaviour
         CCTVManager.instance.mobileManager = this;
         mobileCamera.enabled = false;
         
+        // GPUI 렌더링을 위해 GPUICamera 컴포넌트 추가
+        if (mobileCamera != null)
+        {
+            var gpuiCamera = mobileCamera.GetComponent<GPUInstancerPro.GPUICamera>();
+            if (gpuiCamera == null)
+            {
+                gpuiCamera = mobileCamera.gameObject.AddComponent<GPUInstancerPro.GPUICamera>();
+                Debug.Log($"모바일 카메라에 GPUICamera 컴포넌트를 추가했습니다: {mobileCamera.name}");
+            }
+        }
+        
         // 초기 상태 저장
         if (uiObjmobile != null)
         {

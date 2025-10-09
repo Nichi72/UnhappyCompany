@@ -61,6 +61,14 @@ public class RoomNode : MonoBehaviour
     {
         DoorDirection oppositeDirection = GetOppositeDirection(doorDirection);
         Debug.Log("@@@@doorDirection: " + doorDirection);
+        
+        // doorList가 비어있는지 확인
+        if(doorList == null || doorList.Count == 0)
+        {
+            Debug.LogError($"[RoomNode] {gameObject.name}의 doorList가 비어있습니다! InitChildRoomList()를 실행해주세요.");
+            return null;
+        }
+        
         foreach (var door in doorList)
         {
             Debug.Log("@@DoorDirection: " + door.direction);
@@ -71,15 +79,25 @@ public class RoomNode : MonoBehaviour
                 break;
             }
         }
+        
+        // connectToParentDoor가 null인 경우 (맞는 방향의 문을 찾지 못한 경우)
+        if(connectToParentDoor == null)
+        {
+            Debug.LogError($"[RoomNode] {gameObject.name}에서 방향 {oppositeDirection}에 맞는 문을 찾을 수 없습니다!");
+            return null;
+        }
+        
         //connectToParentDoor = doorList[0]; // forTest
         connectToParentDoor.toRoomNode = otherRoom;
         depth = otherRoom.depth + 1; // 부모 방의 깊이 + 1
         InitSelectedDoors(doorGeneration);
-        // 
-        if(connectToParentDoor.gameObject.GetComponent<Door>() == null)
+        
+        // 연결된 문 비활성화 (RoomGenerator의 DisableConnectedDoor 재사용)
+        if(RoomGenerator.instance != null)
         {
-            connectToParentDoor.gameObject.SetActive(false);
+            RoomGenerator.instance.DisableConnectedDoor(this);
         }
+        
         return connectToParentDoor;
     }
 
