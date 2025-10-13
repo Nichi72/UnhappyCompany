@@ -151,6 +151,8 @@ SkinnedMeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -172,6 +174,7 @@ SkinnedMeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
@@ -386,12 +389,6 @@ MonoBehaviour:
   agent: {fileID: 0}
   playerTr: {fileID: 0}
   enemyData: {fileID: 11400000, guid: 682f52a097136bf40aac1d5dae74c130, type: 2}
-  patrolGizmoRangeColor: {r: 0, g: 1, b: 0, a: 1}
-  chaseGizmoRangeColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  attackGizmoRangeColor: {r: 1, g: 0, b: 0, a: 1}
-  enableDebugUI: 1
-  debugUIPrefab: {fileID: 0}
-  debugUI: {fileID: 0}
   budgetFlag: 0
   vision:
     sightRange: 10
@@ -406,22 +403,21 @@ MonoBehaviour:
     sightColor: {r: 1, g: 0, b: 0, a: 0.3}
   enemyData: {fileID: 11400000, guid: 682f52a097136bf40aac1d5dae74c130, type: 2}
   CurrentStateName: 
-  isShowDebug: 0
+  isShowDebug: 1
   slimeEmitInterval: 45
-  animator: {fileID: 440928390233893239}
-  wallCheckDistance: 1
-  animatorSpeed: 2
   moveSpeed: 2
-  stressThreshold: 5
-  stress: 0
-  stressIncreaseAmount: 1
-  stressResetDistance: 10
+  soundDetectionRange: 5
+  currentTargetLabel: 
+  maxStamina: 100
+  currentStamina: 100
+  staminaDrainRate: 20
+  staminaRecoveryRate: 5
+  staminaLossOnHit: 30
+  exhaustedThreshold: 10
+  animator: {fileID: 440928390233893239}
+  animatorSpeed: 2
   damageAmount: 10
   damageCooldown: 1
-  characterController: {fileID: 4763442977970754571}
-  gravity: 9.8
-  isGrounded: 0
-  groundCheckDistance: 0.1
 --- !u!195 &5589575264658865346
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -451,10 +447,10 @@ Rigidbody:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2060752047448260306}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -797,6 +793,8 @@ SkinnedMeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -818,6 +816,7 @@ SkinnedMeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
@@ -1004,6 +1003,8 @@ SkinnedMeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -1025,6 +1026,7 @@ SkinnedMeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0

@@ -21,7 +21,68 @@ public class PlayerStatus : MonoBehaviour , IDamageable
     [ReadOnly] [SerializeField] private bool _isConsumingStamina;
     [ReadOnly] [SerializeField] private bool _canRunOrJump;
 
+    [Header("Player Reference")]
+    private Player _player;
+    private StarterAssets.FirstPersonController _firstPersonController;
+
     public float CurrentHealth { get => _currentHealth; set => _currentHealth = value; }
+    
+    /// <summary>
+    /// 플레이어가 현재 달리는 중인지 여부
+    /// </summary>
+    public bool IsCurrentRun
+    {
+        get
+        {
+            if (_firstPersonController == null) return false;
+            return _firstPersonController._input != null && _firstPersonController._input.sprint;
+        }
+    }
+
+    /// <summary>
+    /// 플레이어가 현재 공중에 있는지 (점프 중인지) 여부
+    /// </summary>
+    public bool IsCurrentJump
+    {
+        get
+        {
+            if (_firstPersonController == null) return false;
+            return !_firstPersonController.Grounded;
+        }
+    }
+
+    /// <summary>
+    /// 플레이어가 현재 걷는 중인지 여부 (이동 중이지만 달리지 않음)
+    /// </summary>
+    public bool IsCurrentWalk
+    {
+        get
+        {
+            if (_firstPersonController == null) return false;
+            if (_firstPersonController._input == null) return false;
+            
+            // 이동 입력이 있고, 달리지 않고 있으며, 지면에 있을 때
+            bool hasMovementInput = _firstPersonController._input.move.sqrMagnitude > 0.01f;
+            bool isNotSprinting = !_firstPersonController._input.sprint;
+            bool isGrounded = _firstPersonController.Grounded;
+            
+            return hasMovementInput && isNotSprinting && isGrounded;
+        }
+    }
+
+    /// <summary>
+    /// 플레이어가 이동 중인지 여부 (걷기 또는 달리기)
+    /// </summary>
+    public bool IsMoving
+    {
+        get
+        {
+            if (_firstPersonController == null) return false;
+            if (_firstPersonController._input == null) return false;
+            
+            return _firstPersonController._input.move.sqrMagnitude > 0.01f;
+        }
+    }
     
     // IDamageable 인터페이스 구현
     public int hp { get => (int)_currentHealth; set => _currentHealth = value; }
@@ -47,7 +108,18 @@ public class PlayerStatus : MonoBehaviour , IDamageable
         _currentStamina = MaxStamina;
         _canRunOrJump = true;
 
-        // UI �ʱ�ȭ
+        // Player 및 FirstPersonController 참조 초기화
+        _player = GetComponent<Player>();
+        if (_player != null)
+        {
+            _firstPersonController = _player.firstPersonController;
+        }
+        else
+        {
+            Debug.LogWarning("PlayerStatus: Player 컴포넌트를 찾을 수 없습니다.");
+        }
+
+        // UI 초기화
         UIManager.instance.UpdateHealthBar(_currentHealth, MaxHealth);
         UIManager.instance.UpdateStaminaBar(_currentStamina, MaxStamina);
     }

@@ -14,18 +14,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyName: Moo
   prefab: {fileID: 2060752047448260306, guid: 87d7496d0ba6b4d409c2d2788511a44e, type: 3}
+  dangerLevel: 0
   category: 0
   enemyType: 0
   enemyCost: 30
-  patrolRadius: 113.4
-  patrolRangeMin: 0.86
-  patrolRangeMax: 1.3
-  patrolGizmoRangeColor: {r: 0, g: 1, b: 0, a: 1}
-  patrolGizmoRangeMinMaxColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  patrolRadius: 67.7
+  patrolDistanceMinRatio: 0.432
+  patrolDistanceMaxRatio: 0.624
+  fleeDistanceMinRatio: 0.43
+  fleeDistanceMaxRatio: 1.07
+  patrolRangeColor: {r: 0, g: 1, b: 0, a: 1}
+  fleeRangeColor: {r: 1, g: 0, b: 0, a: 1}
+  showRangesInGame: 1
   attackRadius: 2
-  moveSpeed: 18.1
+  moveSpeed: 2.5
   Cost: 10
   hpMax: 100
   slimeDuration: 5
   slimePrefab: {fileID: 6644645827029413032, guid: 9ba12bc274fd35342ba10347f970f66c, type: 3}
-  fleeSpeed: 50
+  fleeSpeed: 10

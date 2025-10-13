@@ -23,12 +23,17 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
     
     // 공통 프로퍼티
     public float PatrolRadius => EnemyData.patrolRadius;
-
-    [Header("AI GizmoRange Settings")]
-    public Color patrolGizmoRangeColor => EnemyData.patrolGizmoRangeColor;
-    public Color patrolGizmoRangeMinMaxColor => EnemyData.patrolGizmoRangeMinMaxColor;
-    public float patrolRangeMin => EnemyData.patrolRangeMin;
-    public float patrolRangeMax => EnemyData.patrolRangeMax;
+    
+    // Range 설정
+    public float PatrolDistanceMin => EnemyData.patrolRadius * EnemyData.patrolDistanceMinRatio;
+    public float PatrolDistanceMax => EnemyData.patrolRadius * EnemyData.patrolDistanceMaxRatio;
+    public float FleeDistanceMin => EnemyData.patrolRadius * EnemyData.fleeDistanceMinRatio;
+    public float FleeDistanceMax => EnemyData.patrolRadius * EnemyData.fleeDistanceMaxRatio;
+    
+    // 시각화 설정
+    public Color PatrolRangeColor => EnemyData.patrolRangeColor;
+    public Color FleeRangeColor => EnemyData.fleeRangeColor;
+    public bool ShowRangesInGame => EnemyData.showRangesInGame;
    
 
     public TimeOfDay CurrentTimeOfDay { get; private set; }
@@ -128,9 +133,22 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
 
     protected virtual void OnDrawGizmosSelected()
     {
-        MyUtility.UtilityGizmos.DrawCircle(transform.position, PatrolRadius, patrolGizmoRangeColor);
-        MyUtility.UtilityGizmos.DrawCircle(transform.position, PatrolRadius * patrolRangeMin, patrolGizmoRangeMinMaxColor);
-        MyUtility.UtilityGizmos.DrawCircle(transform.position, PatrolRadius * patrolRangeMax, patrolGizmoRangeMinMaxColor);
+        // Patrol 범위
+        Color patrolMinColor = new Color(PatrolRangeColor.r, PatrolRangeColor.g, PatrolRangeColor.b, 0.3f);
+        Color patrolMaxColor = new Color(PatrolRangeColor.r, PatrolRangeColor.g, PatrolRangeColor.b, 0.7f);
+        
+        MyUtility.UtilityGizmos.DrawCircle(transform.position, PatrolDistanceMin, patrolMinColor);
+        MyUtility.UtilityGizmos.DrawCircle(transform.position, PatrolDistanceMax, patrolMaxColor);
+        
+        // Flee 범위 (도망 가능한 Enemy만 표시)
+        if (FleeDistanceMin > 0)
+        {
+            Color fleeMinColor = new Color(FleeRangeColor.r, FleeRangeColor.g, FleeRangeColor.b, 0.3f);
+            Color fleeMaxColor = new Color(FleeRangeColor.r, FleeRangeColor.g, FleeRangeColor.b, 0.7f);
+            
+            MyUtility.UtilityGizmos.DrawCircle(transform.position, FleeDistanceMin, fleeMinColor);
+            MyUtility.UtilityGizmos.DrawCircle(transform.position, FleeDistanceMax, fleeMaxColor);
+        }
     }
 
     // 에디터에서도 항상 기즈모 표시
@@ -138,6 +156,96 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
     {
         // 시야 기즈모 그리기
         DrawVisionGizmos();
+    }
+
+    /// <summary>
+    /// 게임뷰에서 범위 시각화 (OnGUI)
+    /// </summary>
+    protected virtual void OnGUI()
+    {
+        if (!ShowRangesInGame) return;
+        if (Camera.main == null) return;
+
+        // Patrol 범위 시각화
+        Color patrolMinColor = new Color(PatrolRangeColor.r, PatrolRangeColor.g, PatrolRangeColor.b, 0.2f);
+        Color patrolMaxColor = new Color(PatrolRangeColor.r, PatrolRangeColor.g, PatrolRangeColor.b, 0.5f);
+        
+        DrawWorldCircleGUI(transform.position, PatrolDistanceMin, patrolMinColor, 32);
+        DrawWorldCircleGUI(transform.position, PatrolDistanceMax, patrolMaxColor, 32);
+
+        // Flee 범위 시각화 (Flee 기능이 있는 Enemy만)
+        if (FleeDistanceMin > 0)
+        {
+            Color fleeMinColor = new Color(FleeRangeColor.r, FleeRangeColor.g, FleeRangeColor.b, 0.2f);
+            Color fleeMaxColor = new Color(FleeRangeColor.r, FleeRangeColor.g, FleeRangeColor.b, 0.5f);
+            
+            DrawWorldCircleGUI(transform.position, FleeDistanceMin, fleeMinColor, 32);
+            DrawWorldCircleGUI(transform.position, FleeDistanceMax, fleeMaxColor, 32);
+        }
+    }
+
+    /// <summary>
+    /// 월드 공간에 원 그리기 (OnGUI용)
+    /// </summary>
+    protected void DrawWorldCircleGUI(Vector3 center, float radius, Color color, int segments)
+    {
+        Vector3 prevPoint = center + new Vector3(radius, 0, 0);
+        Vector2 prevScreenPoint = WorldToGUIPoint(prevPoint);
+        
+        for (int i = 1; i <= segments; i++)
+        {
+            float angle = i * 360f / segments * Mathf.Deg2Rad;
+            Vector3 newPoint = center + new Vector3(Mathf.Cos(angle) * radius, 0, Mathf.Sin(angle) * radius);
+            Vector2 newScreenPoint = WorldToGUIPoint(newPoint);
+            
+            // 둘 다 카메라 앞에 있을 때만 그리기
+            if (prevScreenPoint != Vector2.zero && newScreenPoint != Vector2.zero)
+            {
+                DrawGUILine(prevScreenPoint, newScreenPoint, color, 2f);
+            }
+            
+            prevPoint = newPoint;
+            prevScreenPoint = newScreenPoint;
+        }
+    }
+
+    /// <summary>
+    /// 월드 좌표를 GUI 좌표로 변환
+    /// </summary>
+    protected Vector2 WorldToGUIPoint(Vector3 worldPoint)
+    {
+        if (Camera.main == null) return Vector2.zero;
+        
+        Vector3 screenPoint = Camera.main.WorldToScreenPoint(worldPoint);
+        
+        // 카메라 뒤에 있으면 제외
+        if (screenPoint.z < 0) return Vector2.zero;
+        
+        // GUI 좌표계로 변환 (Y축 반전)
+        return new Vector2(screenPoint.x, Screen.height - screenPoint.y);
+    }
+
+    /// <summary>
+    /// GUI에 선 그리기
+    /// </summary>
+    protected void DrawGUILine(Vector2 start, Vector2 end, Color color, float thickness)
+    {
+        Vector2 direction = end - start;
+        float distance = direction.magnitude;
+        
+        if (distance < 0.01f) return; // 거리가 너무 짧으면 스킵
+        
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        
+        Matrix4x4 matrixBackup = GUI.matrix;
+        GUI.color = color;
+        
+        // 회전 및 이동 변환
+        GUIUtility.RotateAroundPivot(angle, start);
+        GUI.DrawTexture(new Rect(start.x, start.y - thickness / 2f, distance, thickness), Texture2D.whiteTexture);
+        
+        GUI.matrix = matrixBackup;
+        GUI.color = Color.white;
     }
     
     // 시야 기즈모 그리기 메서드
@@ -316,14 +424,8 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
     public void SetRandomPatrolDestination()
     {
         Vector3 targetPoint = GenerateRandomPatrolPoint();
-        NavMeshHit hit;
-        float randomPatrolRadius = UnityEngine.Random.Range(PatrolRadius * patrolRangeMin, PatrolRadius * patrolRangeMax);
-        
-        if (NavMesh.SamplePosition(targetPoint, out hit, randomPatrolRadius, 1))
-        {
-            agent.SetDestination(hit.position);
-            Debug.Log($"순찰 위치 설정: {hit.position}");
-        }
+        agent.SetDestination(targetPoint);
+        Debug.Log($"순찰 위치 설정: {targetPoint}");
     }
     
     /// <summary>
@@ -332,11 +434,9 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
     /// <returns>NavMesh 위의 유효한 위치를 반환합니다. 적절한 위치를 찾지 못한 경우 현재 위치를 반환합니다.</returns>
     public Vector3 GenerateRandomPatrolPoint()
     {
-        // 안전한 거리 범위를 설정 (전체 반경의 30% ~ 70% 사이)
-        float minDistanceRatio = 0.3f; // 중심에서 최소 거리 비율
-        float maxDistanceRatio = 0.7f; // 중심에서 최대 거리 비율
-        float minDistance = PatrolRadius * minDistanceRatio;
-        float maxDistance = PatrolRadius * maxDistanceRatio;
+        // 새로운 Range 설정 사용 (퍼센트 기반)
+        float minDistance = PatrolDistanceMin;
+        float maxDistance = PatrolDistanceMax;
         
         // 최대 시도 횟수 설정
         int maxAttempts = 5;

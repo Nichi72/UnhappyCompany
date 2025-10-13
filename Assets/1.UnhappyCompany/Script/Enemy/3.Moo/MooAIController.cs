@@ -11,42 +11,51 @@ public class MooAIController : EnemyAIController<MooAIData>
     [ReadOnly] [SerializeField] public string CurrentStateName = "";
     public new MooAIData EnemyData => enemyData;
     public bool isShowDebug = false;
-    // 점액 배출 간격
+    
+    [Header("Slime Settings")]
     public float slimeEmitInterval = 10f;
     private float lastSlimeEmitTime;
+    
+    [Header("Movement")]
+    [HideInInspector] public float moveSpeed = 2f;
+    
+    [Header("Detection System")]
+    [Tooltip("플레이어 달리기 소리 감지 범위")]
+    public float soundDetectionRange = 5f;
+    
+    [Header("Debug Visualization")]
+    [HideInInspector] public Vector3? currentTargetPosition = null; // 현재 목표 지점
+    [HideInInspector] public string currentTargetLabel = ""; // 목표 지점 라벨
+    
+    [Header("Stamina System")]
+    [Tooltip("최대 기력")]
+    public float maxStamina = 100f;
+    [Tooltip("현재 기력")]
+    [ReadOnly] [SerializeField] private float currentStamina = 100f;
+    [Tooltip("도망칠 때 초당 기력 소모량")]
+    public float staminaDrainRate = 20f;
+    [Tooltip("배회할 때 초당 기력 회복량")]
+    public float staminaRecoveryRate = 5f;
+    [Tooltip("피격 시 즉시 소모되는 기력")]
+    public float staminaLossOnHit = 30f;
+    [Tooltip("기력이 이 값 이하면 지침 상태")]
+    public float exhaustedThreshold = 10f;
+    
+    public bool IsExhausted => currentStamina <= exhaustedThreshold;
+    public float StaminaPercent => currentStamina / maxStamina;
+    
+    [Header("Animation")]
     public Animator animator;
-    [Header("Wall Check")]
-    public float wallCheckDistance = 10f;
-
-    // 애니메이션 이름 상수
+    [ReadOnly] [SerializeField] private float animatorSpeed = 2f;
     public readonly string idleAnimationName = "Moo_Idle";
     public readonly string walkAnimationName = "Moo_Walk";
     public readonly string hitReactionAnimationName = "Moo_HitReaction";
-    public readonly string bumpAnimationName = "Moo_Bump";
     public readonly string cryAnimationName = "Moo_Cry";
-    [ReadOnly] [SerializeField] private float animatorSpeed = 2f;
 
-    // 이동 및 스트레스 관련 변수
-    [HideInInspector] public float moveSpeed = 2f;
-    public float stressThreshold = 5f;
-    public float stress = 0f;
-    public float stressIncreaseAmount = 1f;
-    public float stressResetDistance = 10f;
-    private Vector3 moveDirection;
-    private bool isStressed = false;
-    private bool isBumping = false; // 부딪힘 상태 플래그
-
-    // 데미지 관련 변수
-    public int damageAmount = 10; // 플레이어에게 줄 데미지 양 
-    private float lastDamageTime = 0f; // 마지막으로 데미지를 준 시간
-    public float damageCooldown = 1f; // 데미지 간 쿨다운 시간 (1초)
-
-    [Header("Movement")]
-    public CharacterController characterController;
-    public float gravity = 9.8f;   // 중력 값
-    private float verticalSpeed = 0f;   // 수직 속도
-    public bool isGrounded = false;   // 지면에 있는지 여부
-    public float groundCheckDistance = 0.1f;   // 지면 체크 거리
+    [Header("Damage Settings")]
+    public int damageAmount = 10;
+    private float lastDamageTime = 0f;
+    public float damageCooldown = 1f;
 
     /// <summary>
     /// 초기화 메서드입니다.
@@ -54,19 +63,20 @@ public class MooAIController : EnemyAIController<MooAIData>
     protected override void Start()
     {
         base.Start();
-        ChangeState(new MooIdleState(this));
-        lastSlimeEmitTime = Time.time;
+        
         agent = GetComponent<NavMeshAgent>();
         moveSpeed = enemyData.moveSpeed;
-        agent.enabled = false; // 초기에는 NavMeshAgent를 사용하지 않음
         agent.speed = moveSpeed;
-        ChangeDirection();
-        if(characterController == null)
-        {
-            characterController = GetComponent<CharacterController>();
-        }
+        
+        // 기력 초기화
+        currentStamina = maxStamina;
+        
+        lastSlimeEmitTime = Time.time;
+        
+        ChangeState(new MooWanderState(this));
         StartCoroutine(SlimeEmitRoutine());
-        StartCoroutine(MovementRoutine());
+        StartCoroutine(StaminaUpdateRoutine());
+        
         DebugManager.Log("MooAIController Start", isShowDebug);
     }
 
@@ -77,6 +87,12 @@ public class MooAIController : EnemyAIController<MooAIData>
     {
         base.Update();
         UpdateAnimatorSpeed();
+        
+        // CurrentStateName 업데이트
+        if (currentState != null)
+        {
+            CurrentStateName = currentState.GetType().Name;
+        }
     }
     [ContextMenu("AttackCenter")]
     public override void AttackCenter()
@@ -92,9 +108,12 @@ public class MooAIController : EnemyAIController<MooAIData>
     /// </summary>
     private void UpdateAnimatorSpeed()
     {
-        DebugManager.Log($"characterController.velocity.magnitude : {characterController.velocity.magnitude}, moveSpeed : {moveSpeed}", isShowDebug);
-        animatorSpeed = characterController.velocity.magnitude / moveSpeed;
+        if (agent != null && agent.enabled)
+        {
+            animatorSpeed = agent.velocity.magnitude / moveSpeed;
         animator.SetFloat("Speed", animatorSpeed);
+            DebugManager.Log($"agent.velocity.magnitude : {agent.velocity.magnitude}, moveSpeed : {moveSpeed}, animatorSpeed: {animatorSpeed}", isShowDebug);
+        }
     }
 
     /// <summary>
@@ -104,7 +123,21 @@ public class MooAIController : EnemyAIController<MooAIData>
     {
         base.TakeDamage(damage, damageType);
         PlayAnimation(hitReactionAnimationName);
+        
+        // 기력 소모
+        ConsumeStamina(staminaLossOnHit);
+        
+        // 지쳐있지 않으면 도망
+        if (!IsExhausted)
+        {
         ChangeState(new MooFleeState(this));
+        }
+        else
+        {
+            DebugManager.Log("Moo가 너무 지쳐서 도망치지 못합니다!", isShowDebug);
+            // 지침 상태 애니메이션 재생 (옵션)
+            PlayAnimation(cryAnimationName);
+        }
     }
 
     /// <summary>
@@ -119,64 +152,75 @@ public class MooAIController : EnemyAIController<MooAIData>
     public GameObject SlimePrefab => enemyData.slimePrefab;
 
     /// <summary>
-    /// 스트레스 상태로 전환합니다.
+    /// 플레이어가 위협적인지 감지 (시야 + 청각)
     /// </summary>
-    private void EnterStressState()
+    /// <param name="detectionType">감지 타입 (Visual, Sound, Both)</param>
+    /// <returns>위협 감지 여부</returns>
+    public bool DetectPlayerThreat(out string detectionType)
     {
-        isStressed = true;
-        agent.enabled = true;
-        Vector3 randomDirection = Random.insideUnitSphere * stressResetDistance;
-        randomDirection += transform.position;
-        NavMeshHit hit;
-        if (NavMesh.SamplePosition(randomDirection, out hit, stressResetDistance, 1))
+        detectionType = "None";
+        
+        if (playerTr == null)
+            return false;
+
+        float distanceToPlayer = Vector3.Distance(transform.position, playerTr.position);
+        
+        // 1. 시야 감지 (Base 클래스 메서드 사용)
+        bool visualDetection = CheckPlayerInSight();
+        if (visualDetection)
         {
-            agent.SetDestination(hit.position);
+            // 시야 내에서 가까이 다가옴
+            if (distanceToPlayer <= vision.sightRange)
+            {
+                detectionType = "Visual";
+                DebugManager.Log($"Moo: 시야로 플레이어 감지! 거리: {distanceToPlayer:F1}m", isShowDebug);
+                return true;
+            }
         }
-        PlayAnimation(cryAnimationName);
-        // 울음 사운드 재생
-    }
 
-    /// <summary>
-    /// 스트레스 상태를 종료합니다.
-    /// </summary>
-    private void ExitStressState()
-    {
-        isStressed = false;
-        agent.enabled = false;
-        stress = 0f;
-        ChangeDirection();
-        // 울음 애니메이션 및 사운드 중지
-    }
-
-    /// <summary>
-    /// 무작위 방향으로 이동 방향을 변경합니다.
-    /// </summary>
-    private void ChangeDirection()
-    {
-        moveDirection = new Vector3(Random.Range(-1f, 1f), 0, Random.Range(-1f, 1f)).normalized;
-    }
-
-    /// <summary>
-    /// 벽에 부딪혔을 때 처리하는 코루틴입니다.
-    /// </summary>
-    private IEnumerator HandleBump()
-    {
-        isBumping = true;
-        PlayAnimation(bumpAnimationName);
-        yield return new WaitForSeconds(animator.GetCurrentAnimatorStateInfo(0).length);
-        isBumping = false;
-    }
-
-    /// <summary>
-    /// 이동 방향으로 회전합니다.
-    /// </summary>
-    private void RotateTowardsMoveDirection()
-    {
-        if (moveDirection != Vector3.zero)
+        // 2. 청각 감지 (달리기 소리)
+        if (distanceToPlayer <= soundDetectionRange)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * moveSpeed);
+            PlayerStatus playerStatus = playerTr.GetComponent<PlayerStatus>();
+            if (playerStatus != null && playerStatus.IsCurrentRun)
+            {
+                detectionType = "Sound";
+                DebugManager.Log($"Moo: 달리기 소리 감지! 거리: {distanceToPlayer:F1}m", isShowDebug);
+                return true;
+            }
         }
+
+        return false;
+    }
+
+    /// <summary>
+    /// 시야 내 플레이어 감지 (기존 Base 메서드 사용)
+    /// </summary>
+    public bool IsPlayerInVisionRange()
+    {
+        return CheckPlayerInSight();
+    }
+
+    /// <summary>
+    /// 청각 범위 내 플레이어 감지 (달리기 소리)
+    /// </summary>
+    public bool IsPlayerRunningSoundDetected(out float distance)
+    {
+        distance = 0f;
+        
+        if (playerTr == null)
+            return false;
+
+        distance = Vector3.Distance(transform.position, playerTr.position);
+        
+        if (distance > soundDetectionRange)
+            return false;
+
+        PlayerStatus playerStatus = playerTr.GetComponent<PlayerStatus>();
+        if (playerStatus == null)
+            return false;
+
+        return playerStatus.IsCurrentRun;
     }
 
     /// <summary>
@@ -211,7 +255,9 @@ public class MooAIController : EnemyAIController<MooAIData>
         target.TakeDamage(damage, DamageType.Nomal);
     }
 
-    // 새로운 코루틴: 점액 배출 처리
+    /// <summary>
+    /// 점액 배출 코루틴
+    /// </summary>
     private IEnumerator SlimeEmitRoutine()
     {
         while (true)
@@ -221,99 +267,347 @@ public class MooAIController : EnemyAIController<MooAIData>
         }
     }
 
-    // 새로운 코루틴: 이동 및 스트레스 처리
-    private IEnumerator MovementRoutine()
+    /// <summary>
+    /// 기력 소모
+    /// </summary>
+    public void ConsumeStamina(float amount)
+    {
+        currentStamina = Mathf.Max(0, currentStamina - amount);
+        DebugManager.Log($"Moo 기력 소모: {amount}, 남은 기력: {currentStamina}/{maxStamina} ({StaminaPercent:P0})", isShowDebug);
+    }
+
+    /// <summary>
+    /// 기력 회복
+    /// </summary>
+    public void RecoverStamina(float amount)
+    {
+        currentStamina = Mathf.Min(maxStamina, currentStamina + amount);
+    }
+
+    /// <summary>
+    /// 기력 업데이트 코루틴
+    /// </summary>
+    private IEnumerator StaminaUpdateRoutine()
     {
         while (true)
         {
-            if(currentState.GetType().Name != typeof(MooIdleState).Name) // 도망치거나 다른거 하는 중이라서 움직임 함수 제한해야함.
-            {
-                yield return null;
-                continue;
-            }
-            // 지면 체크
-            isGrounded = IsGrounded();
+            yield return new WaitForSeconds(0.1f); // 0.1초마다 체크
             
-            // 중력 적용
-            if (isGrounded && verticalSpeed < 0)
+            // 상태에 따라 기력 변화
+            if (currentState is MooFleeState)
             {
-                verticalSpeed = -0.5f; // 지면에 닿았을 때 약간의 음수 값 설정
+                // 도망 중: 기력 소모
+                ConsumeStamina(staminaDrainRate * 0.1f);
             }
-            else
+            else if (currentState is MooWanderState)
             {
-                verticalSpeed -= gravity * Time.deltaTime; // 중력 적용
+                // 배회 중: 기력 회복 (일반 속도)
+                RecoverStamina(staminaRecoveryRate * 0.1f);
+            }
+            else if (currentState is MooExhaustedState)
+            {
+                // 지침 중: 기력 회복 (느린 속도)
+                RecoverStamina(staminaRecoveryRate * 0.5f * 0.1f); // 절반 속도로 회복
+            }
+            // MooSlimeEmitState, MooCenterAttackState는 기력 변화 없음
+        }
+    }
+
+
+    /// <summary>
+    /// Game 뷰에서 디버그 UI 표시 (OnGUI 사용)
+    /// TODO: 나중에 EnemyAIController로 이동하여 모든 Enemy가 사용할 수 있게 함
+    /// </summary>
+    protected override void OnGUI()
+    {
+        // Base 클래스의 범위 시각화 (Patrol/Flee 범위)
+        base.OnGUI();
+        
+        if (!isShowDebug) return;
+        if (Camera.main == null) return;
+
+        // 1. 감지 범위 시각화 (월드 공간에 그리기)
+        DrawDetectionRanges();
+
+        // 2. 목표 지점 시각화
+        DrawTargetPoint();
+
+        // 3. HP/Stamina 바 및 상태 텍스트
+        DrawDebugBars();
+    }
+
+    /// <summary>
+    /// 감지 범위 시각화 (시야각 + 청각 범위)
+    /// </summary>
+    private void DrawDetectionRanges()
+    {
+        // 청각 감지 범위 (원형 - 청록색) - Base 메서드 사용
+        DrawWorldCircleGUI(transform.position, soundDetectionRange, new Color(0, 1, 1, 0.3f), 32);
+        
+        // 시야 감지 범위 (부채꼴 - 노란색)
+        DrawWorldVisionCone(transform.position, transform.forward, vision.sightRange, vision.sightAngle, new Color(1, 1, 0, 0.3f), 32);
+    }
+
+    /// <summary>
+    /// 목표 지점 시각화 (도망 목적지 등)
+    /// </summary>
+    private void DrawTargetPoint()
+    {
+        if (currentTargetPosition == null) return;
+
+        Vector3 targetPos = currentTargetPosition.Value;
+        Vector2 targetScreen = WorldToGUIPoint(targetPos);
+        
+        if (targetScreen == Vector2.zero) return;
+
+        // 현재 위치에서 목표 지점까지 선 그리기
+        Vector2 currentScreen = WorldToGUIPoint(transform.position);
+        if (currentScreen != Vector2.zero)
+        {
+            DrawGUILine(currentScreen, targetScreen, new Color(1, 0.5f, 0, 0.6f), 3f); // 주황색 선
+        }
+
+        // 목표 지점에 원 마커 그리기
+        float markerSize = 20f;
+        GUI.color = new Color(1, 0.5f, 0, 0.8f); // 주황색
+        GUI.DrawTexture(new Rect(targetScreen.x - markerSize / 2f, targetScreen.y - markerSize / 2f, markerSize, markerSize), Texture2D.whiteTexture);
+        
+        // 안쪽에 작은 원 (중심점)
+        float innerSize = 8f;
+        GUI.color = Color.white;
+        GUI.DrawTexture(new Rect(targetScreen.x - innerSize / 2f, targetScreen.y - innerSize / 2f, innerSize, innerSize), Texture2D.whiteTexture);
+
+        // 텍스트 라벨 표시
+        GUIStyle labelStyle = new GUIStyle();
+        labelStyle.alignment = TextAnchor.MiddleCenter;
+        labelStyle.fontSize = (int)(11 * 1.4f);
+        labelStyle.normal.textColor = Color.white;
+        labelStyle.fontStyle = FontStyle.Bold;
+
+        float labelWidth = 150f;
+        float labelHeight = 40f;
+        float labelY = targetScreen.y + markerSize / 2f + 5f;
+
+        // 배경 박스
+        GUI.color = new Color(0, 0, 0, 0.7f);
+        GUI.DrawTexture(new Rect(targetScreen.x - labelWidth / 2f, labelY, labelWidth, labelHeight), Texture2D.whiteTexture);
+
+        // 텍스트 (Enemy 이름 + 포인트 타입)
+        string labelText = $"Moo\n{currentTargetLabel}";
+        DrawTextWithOutline(targetScreen.x - labelWidth / 2f, labelY, labelWidth, labelHeight, labelText, labelStyle);
+        
+        GUI.color = Color.white;
+    }
+
+
+    /// <summary>
+    /// 월드 공간에 시야각 부채꼴 그리기 (OnGUI용)
+    /// </summary>
+    private void DrawWorldVisionCone(Vector3 center, Vector3 forward, float range, float angle, Color color, int segments)
+    {
+        Vector2 centerScreen = WorldToGUIPoint(center);
+        if (centerScreen == Vector2.zero) return;
+
+        // 부채꼴의 왼쪽과 오른쪽 경계
+        Vector3 leftBoundary = Quaternion.Euler(0, -angle / 2f, 0) * forward;
+        Vector3 rightBoundary = Quaternion.Euler(0, angle / 2f, 0) * forward;
+
+        // 중심에서 왼쪽 경계로 선
+        Vector2 leftEdgeScreen = WorldToGUIPoint(center + leftBoundary * range);
+        if (leftEdgeScreen != Vector2.zero)
+        {
+            DrawGUILine(centerScreen, leftEdgeScreen, color, 2f);
+        }
+
+        // 중심에서 오른쪽 경계로 선
+        Vector2 rightEdgeScreen = WorldToGUIPoint(center + rightBoundary * range);
+        if (rightEdgeScreen != Vector2.zero)
+        {
+            DrawGUILine(centerScreen, rightEdgeScreen, color, 2f);
+        }
+
+        // 호 그리기
+        Vector3 prevPoint = center + leftBoundary * range;
+        Vector2 prevScreenPoint = WorldToGUIPoint(prevPoint);
+        
+        for (int i = 1; i <= segments; i++)
+        {
+            float currentAngle = -angle / 2f + (angle * i / segments);
+            Vector3 direction = Quaternion.Euler(0, currentAngle, 0) * forward;
+            Vector3 newPoint = center + direction * range;
+            Vector2 newScreenPoint = WorldToGUIPoint(newPoint);
+            
+            if (prevScreenPoint != Vector2.zero && newScreenPoint != Vector2.zero)
+            {
+                DrawGUILine(prevScreenPoint, newScreenPoint, color, 2f);
             }
             
-            // 이동 벡터에 중력 적용
-            Vector3 movement = new Vector3(moveDirection.x, verticalSpeed, moveDirection.z);
-            
-            if (!isStressed && !isBumping)
-            {
-                // 수평 이동만 처리
-                Vector3 horizontalMovement = moveDirection * moveSpeed;
-                // 최종 이동 벡터 (수평 이동 + 중력)
-                movement = new Vector3(horizontalMovement.x, verticalSpeed, horizontalMovement.z);
-                
-                characterController.Move(movement * Time.deltaTime);
-
-                // 이동 방향으로 회전
-                RotateTowardsMoveDirection();
-
-                // 벽에 부딪혔을 때 스트레스 증가
-                RaycastHit hit;
-                if (Physics.Raycast(transform.position, moveDirection, out hit, wallCheckDistance))
-                {
-                    if(hit.collider.gameObject.layer == LayerMask.NameToLayer("Wall"))
-                    {
-                        stress += stressIncreaseAmount;
-                        moveDirection = Vector3.Reflect(moveDirection, hit.normal);
-                        StartCoroutine(HandleBump());
-                    }
-                }
-
-                // 레이캐스트를 시각적으로 표현
-                Debug.DrawRay(transform.position, moveDirection * wallCheckDistance, Color.red, 0.1f);
-
-                // 스트레스 임계치 도달 시 스트레스 상태로 전환
-                if (stress >= stressThreshold)
-                {
-                    EnterStressState();
-                }
-            }
-            else if (isStressed)
-            {
-                // 스트레스 상태에서는 중력만 적용
-                characterController.Move(new Vector3(0, verticalSpeed, 0) * Time.deltaTime);
-                
-                // 스트레스 상태에서 목적지에 도달하면 스트레스 상태 종료
-                if (!agent.pathPending && agent.remainingDistance < 0.5f)
-                {
-                    ExitStressState();
-                }
-            }
-            yield return null;
+            prevPoint = newPoint;
+            prevScreenPoint = newScreenPoint;
         }
     }
     
+
     /// <summary>
-    /// 캐릭터가 지면에 닿아있는지 확인합니다.
+    /// HP/Stamina 바 및 상태 텍스트 그리기
     /// </summary>
-    private bool IsGrounded()
+    private void DrawDebugBars()
     {
-        // 캐릭터의 발 위치에서 아래로 레이캐스트
-        Ray ray = new Ray(transform.position, Vector3.down);
-        RaycastHit hit;
+        // 월드 좌표를 스크린 좌표로 변환
+        Vector3 worldPosition = transform.position + Vector3.up * 2.5f;
+        Vector3 screenPosition = Camera.main.WorldToScreenPoint(worldPosition);
+
+        // 카메라 뒤에 있으면 표시 안 함
+        if (screenPosition.z < 0) return;
+
+        // 스크린 좌표는 좌하단이 (0,0)인데 GUI는 좌상단이 (0,0)이므로 Y좌표 반전
+        screenPosition.y = Screen.height - screenPosition.y;
+
+        // UI 크기 (1.4배 증가)
+        float scaleFactor = 1.4f;
+        float baseBarWidth = 100f * scaleFactor;
+        float baseBarHeight = 15f * scaleFactor;
+        float barSpacing = 5f * scaleFactor;
         
-        // 지면 체크 시각화
-        Debug.DrawRay(transform.position, Vector3.down * groundCheckDistance, Color.green, 0.1f);
+        float startX = screenPosition.x - baseBarWidth / 2f;
+        float startY = screenPosition.y - 60f * scaleFactor;
+
+        // HP 바 그리기
+        float hpPercent = (float)hp / enemyData.hpMax;
+        DrawDebugBar(startX, startY, baseBarWidth, baseBarHeight, 
+                     "HP", hp, enemyData.hpMax, hpPercent, GetHPColor(hpPercent));
+
+        // Stamina 바 그리기
+        DrawDebugBar(startX, startY + baseBarHeight + barSpacing, baseBarWidth, baseBarHeight,
+                     "Stamina", (int)currentStamina, (int)maxStamina, StaminaPercent, GetStaminaColor(StaminaPercent));
+
+        // 상태 텍스트 (두 바 아래에 표시)
+        DrawStateText(startX, startY + (baseBarHeight + barSpacing) * 2 + 5f, baseBarWidth);
+    }
+
+    /// <summary>
+    /// 디버그 바 그리기 헬퍼 메서드
+    /// TODO: 나중에 EnemyAIController로 이동
+    /// </summary>
+    private void DrawDebugBar(float x, float y, float width, float height, 
+                             string label, int current, int max, float percent, Color barColor)
+    {
+        // 라벨 크기 (1.4배 스케일에 맞춰 증가)
+        float labelWidth = 70f;
+        float barStartX = x + labelWidth;
+        float barWidth = width - labelWidth;
+
+        // 라벨 텍스트
+        GUIStyle labelStyle = new GUIStyle();
+        labelStyle.alignment = TextAnchor.MiddleLeft;
+        labelStyle.fontSize = (int)(11 * 1.4f);
+        labelStyle.normal.textColor = Color.white;
+        labelStyle.fontStyle = FontStyle.Bold;
+
+        DrawTextWithOutline(x, y, labelWidth, height, label, labelStyle);
+
+        // 배경 (검은색 외곽선)
+        GUI.color = Color.black;
+        GUI.DrawTexture(new Rect(barStartX - 1, y - 1, barWidth + 2, height + 2), Texture2D.whiteTexture);
+
+        // 바 배경 (어두운 회색)
+        GUI.color = new Color(0.3f, 0.3f, 0.3f);
+        GUI.DrawTexture(new Rect(barStartX, y, barWidth, height), Texture2D.whiteTexture);
+
+        // 현재 값 바
+        GUI.color = barColor;
+        GUI.DrawTexture(new Rect(barStartX, y, barWidth * percent, height), Texture2D.whiteTexture);
+
+        // 텍스트 표시
+        GUIStyle valueStyle = new GUIStyle();
+        valueStyle.alignment = TextAnchor.MiddleCenter;
+        valueStyle.fontSize = (int)(11 * 1.4f);
+        valueStyle.normal.textColor = Color.white;
+        valueStyle.fontStyle = FontStyle.Bold;
+
+        string valueText = $"{current}/{max}";
+        DrawTextWithOutline(barStartX, y, barWidth, height, valueText, valueStyle);
+    }
+
+    /// <summary>
+    /// 외곽선이 있는 텍스트 그리기 헬퍼 메서드
+    /// TODO: 나중에 EnemyAIController로 이동
+    /// </summary>
+    private void DrawTextWithOutline(float x, float y, float width, float height, string text, GUIStyle style)
+    {
+        // 외곽선 (검은색)
+        GUI.color = Color.black;
+        GUI.Label(new Rect(x - 1, y - 1, width, height), text, style);
+        GUI.Label(new Rect(x + 1, y - 1, width, height), text, style);
+        GUI.Label(new Rect(x - 1, y + 1, width, height), text, style);
+        GUI.Label(new Rect(x + 1, y + 1, width, height), text, style);
+
+        // 텍스트 (흰색)
+        GUI.color = Color.white;
+        GUI.Label(new Rect(x, y, width, height), text, style);
+    }
+
+    /// <summary>
+    /// 상태 텍스트 그리기
+    /// TODO: 나중에 EnemyAIController로 이동
+    /// </summary>
+    private void DrawStateText(float x, float y, float width)
+    {
+        GUIStyle stateStyle = new GUIStyle();
+        stateStyle.alignment = TextAnchor.MiddleCenter;
+        stateStyle.fontSize = (int)(12 * 1.4f);
+        stateStyle.normal.textColor = Color.white;
+        stateStyle.fontStyle = FontStyle.Bold;
+
+        string stateText = $"State: {CurrentStateName}";
         
-        // 레이캐스트가 지면에 닿으면 true 반환
-        if (Physics.Raycast(ray, out hit, groundCheckDistance))
+        // 특수 상태 표시
+        if (IsExhausted)
         {
-            return true;
+            stateText += " [EXHAUSTED]";
         }
-        
-        // 캐릭터 컨트롤러의 isGrounded 속성도 함께 확인
-        return characterController.isGrounded;
+
+        DrawTextWithOutline(x, y, width, 20, stateText, stateStyle);
+
+        // 감지 정보 표시
+        string detectionType;
+        bool detected = DetectPlayerThreat(out detectionType);
+        if (detected)
+        {
+            string detectionText = $"Detection: {detectionType}";
+            GUIStyle detectionStyle = new GUIStyle();
+            detectionStyle.alignment = TextAnchor.MiddleCenter;
+            detectionStyle.fontSize = (int)(11 * 1.4f);
+            detectionStyle.normal.textColor = detectionType == "Visual" ? Color.yellow : Color.cyan;
+            detectionStyle.fontStyle = FontStyle.Bold;
+            
+            DrawTextWithOutline(x, y + 20, width, 20, detectionText, detectionStyle);
+        }
+    }
+
+    /// <summary>
+    /// HP 퍼센트에 따른 색상 반환
+    /// TODO: 나중에 EnemyAIController로 이동
+    /// </summary>
+    private Color GetHPColor(float hpPercent)
+    {
+        if (hpPercent > 0.6f)
+            return Color.green;
+        else if (hpPercent > 0.3f)
+            return Color.yellow;
+        else
+            return Color.red;
+    }
+
+    /// <summary>
+    /// 기력 퍼센트에 따른 색상 반환
+    /// TODO: 나중에 EnemyAIController로 이동
+    /// </summary>
+    private Color GetStaminaColor(float staminaRatio)
+    {
+        if (staminaRatio > 0.5f)
+            return Color.Lerp(Color.yellow, Color.green, (staminaRatio - 0.5f) * 2f);
+        else
+            return Color.Lerp(Color.red, Color.yellow, staminaRatio * 2f);
     }
 } 

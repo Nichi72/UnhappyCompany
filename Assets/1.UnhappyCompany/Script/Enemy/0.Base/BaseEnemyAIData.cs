@@ -19,12 +19,29 @@ public abstract class BaseEnemyAIData : ScriptableObject
 
 
     [Header("Base Range Settings")]
-    [Tooltip("순찰 반경")]
+    [Tooltip("순찰 기준 반경")]
     public float patrolRadius = 10f;
-    public float patrolRangeMin = 0.7f;
-    public float patrolRangeMax = 1.3f;
-    public Color patrolGizmoRangeColor = Color.green;
-    public Color patrolGizmoRangeMinMaxColor = Color.yellow;
+    
+    [Header("Patrol Distance Settings (Percentage)")]
+    [Tooltip("순찰 최소 거리 비율 (0~1)")]
+    [Range(0f, 1f)]
+    public float patrolDistanceMinRatio = 0.3f;
+    [Tooltip("순찰 최대 거리 비율 (0~1)")]
+    [Range(0f, 1f)]
+    public float patrolDistanceMaxRatio = 0.7f;
+    
+    [Header("Flee Distance Settings (Percentage)")]
+    [Tooltip("도망 최소 거리 비율 (0~2)")]
+    [Range(0f, 2f)]
+    public float fleeDistanceMinRatio = 0.8f;
+    [Tooltip("도망 최대 거리 비율 (0~2)")]
+    [Range(0f, 2f)]
+    public float fleeDistanceMaxRatio = 1.5f;
+    
+    [Header("Range Visualization")]
+    public Color patrolRangeColor = Color.green;
+    public Color fleeRangeColor = Color.red;
+    public bool showRangesInGame = false; // 게임뷰에서 범위 표시 여부
 
     [Tooltip("공격 반경")]
     public float attackRadius = 2f;

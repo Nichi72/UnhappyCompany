@@ -420,4 +420,16 @@ public class Egg : MonoBehaviour, IDamageable
         isScanningOver = true;
     }
 
+    /// <summary>
+    /// 시간을 무시하고 즉시 부화시킵니다 (에디터 전용)
+    /// </summary>
+    public void ForceHatch()
+    {
+        Debug.Log($"[Egg {id}] 강제 부화 실행!");
+        
+        // Stage를 3으로 변경하고 즉시 부화
+        currentStage = EggStage.Stage3;
+        HatchIntoEnemy();
+    }
+
 }

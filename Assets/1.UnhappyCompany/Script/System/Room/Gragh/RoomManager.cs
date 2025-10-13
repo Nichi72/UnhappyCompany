@@ -28,15 +28,17 @@ public class RoomManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+
+        
     }
     private void Start()
     {
-        TimeManager.instance.OnMorningStarted += () => {
-            centerNavMeshSurface.enabled = false;
-        };
-        TimeManager.instance.OnNightStarted += () => {
-            centerNavMeshSurface.enabled = true;
-        };
+        // TimeManager.instance.OnMorningStarted += () => {
+        //     centerNavMeshSurface.enabled = false;
+        // };
+        // TimeManager.instance.OnNightStarted += () => {
+        //     centerNavMeshSurface.enabled = true;
+        // };
     }
 
     private void Update()

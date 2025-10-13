@@ -19,7 +19,7 @@ public class MooSlimeEmitState : IState
 
     public void ExecuteMorning()
     {
-        controller.ChangeState(new MooIdleState(controller));
+        controller.ChangeState(new MooWanderState(controller));
     }
 
     public void ExecuteAfternoon()
