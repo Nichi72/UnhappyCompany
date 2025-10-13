@@ -13,6 +13,15 @@ namespace StarterAssets
 		public bool jump;
 		public bool sprint;
 
+		[Header("Runtime State")]
+		[SerializeField] private bool isFrozen;
+		public bool IsFrozen => isFrozen;
+
+		[Header("Buffered Inputs (applied on unfreeze)")]
+		[SerializeField] private Vector2 bufferedMove;
+		[SerializeField] private Vector2 bufferedLook;
+		[SerializeField] private bool bufferedSprint;
+
 		[Header("Movement Settings")]
 		public bool analogMovement;
 
@@ -23,46 +32,59 @@ namespace StarterAssets
 #if ENABLE_INPUT_SYSTEM
 		public void OnMove(InputValue value)
 		{
-			MoveInput(value.Get<Vector2>());
+			Vector2 v = value.Get<Vector2>();
+			bufferedMove = v;
+			if (isFrozen) return;
+			MoveInput(v);
 		}
 
 		public void OnLook(InputValue value)
 		{
-			if(cursorInputForLook)
+			Vector2 v = value.Get<Vector2>();
+			bufferedLook = v;
+			if(!isFrozen && cursorInputForLook)
 			{
-				LookInput(value.Get<Vector2>());
+				LookInput(v);
 			}
 		}
 
 		public void OnJump(InputValue value)
 		{
+			if (isFrozen) return;
 			JumpInput(value.isPressed);
 		}
 
 		public void OnSprint(InputValue value)
 		{
-			SprintInput(value.isPressed);
+			bool pressed = value.isPressed;
+			bufferedSprint = pressed;
+			if (isFrozen) return;
+			SprintInput(pressed);
 		}
 #endif
 
 
 		public void MoveInput(Vector2 newMoveDirection)
 		{
+			if (isFrozen) return;
 			move = newMoveDirection;
 		} 
 
 		public void LookInput(Vector2 newLookDirection)
 		{
+			if (isFrozen) return;
 			look = newLookDirection;
 		}
 
 		public void JumpInput(bool newJumpState)
 		{
+			if (isFrozen) return;
 			jump = newJumpState;
 		}
 
 		public void SprintInput(bool newSprintState)
 		{
+			if (isFrozen) return;
 			sprint = newSprintState;
 		}
 		
@@ -91,6 +113,7 @@ namespace StarterAssets
 
 		public void FreezePlayerInput(bool freeze)
 		{
+			isFrozen = freeze;
 			if(freeze)
 			{
 				move = Vector2.zero;
@@ -107,6 +130,10 @@ namespace StarterAssets
 				cursorInputForLook = true;
 				// SetCursorState(true);
 				Cursor.visible = false;
+				// Apply buffered inputs so held keys take effect immediately
+				move = bufferedMove;
+				look = bufferedLook;
+				sprint = bufferedSprint;
 			}
 		}
 	}

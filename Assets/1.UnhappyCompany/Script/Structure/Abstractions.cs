@@ -1,5 +1,14 @@
 using UnityEngine;
 
+// Shared result type used by rechargeable items
+public enum ChargeResult
+{
+    Success,
+    AlreadyFull,
+    CentralBatteryEmpty,
+    SystemUnavailable
+}
+
 /// <summary>
 /// 플레이어와 상호 작용할 때 호출되는 메서드를 정의하는 인터페이스입니다.
 /// </summary>
@@ -49,7 +58,7 @@ public interface ICentralBatteryRechargeable
     float RechargeRatePerSecond { get; set; }   // 충전 속도
     bool IsFullyCharged { get; }                // 완전 충전 상태  
     
-    void RechargeFromCentralBattery();          // 중앙 배터리로부터 충전
+    ChargeResult TryChargeFromCentralBattery();  // 중앙 배터리로부터 충전 시도
     void DrainBattery(float amount);          // 배터리 소모 (아이템 사용 시)
     string GetItemName();                       // 아이템 이름
 }
