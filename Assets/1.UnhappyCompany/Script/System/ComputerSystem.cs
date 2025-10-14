@@ -41,7 +41,7 @@ public class ComputerSystem : MonoBehaviour
         computer.currentUsePlayer = null;
         
         // 컴퓨터 화면 닫는 소리 재생
-        AudioManager.instance.PlayOneShot(FMODEvents.instance.computerScreenClosed, transform, "Computer Screen Closed");
+        AudioManager.instance.PlayOneShot(FMODEvents.instance.computerScreenClose, transform, "Computer Screen Closed");
     }
     
     public void BtnEvtCloseComputer()
@@ -83,7 +83,7 @@ public class ComputerSystem : MonoBehaviour
         // 창을 닫을 때 (현재 활성화 상태 -> 비활성화) 창 닫는 소리 재생
         if (view != null && view.activeSelf)
         {
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.computerScreenClosed, transform, "Computer Screen Closed");
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.computerScreenClose, transform, "Computer Screen Closed");
         }
         
         UIManager.instance.ToggleObject(view);
