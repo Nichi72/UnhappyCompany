@@ -10,6 +10,7 @@ public class DoorBtn : MonoBehaviour , IInteractableF
     public void HitEventInteractionF(Player rayOrigin)
     {
         Debug.Log("Hit");
+        AudioManager.instance.PlayOneShot(FMODEvents.instance.doorButtonPress, transform, "DoorBtn HitEventInteractionF");
         door.OpenCloseDoor();
     }
 }

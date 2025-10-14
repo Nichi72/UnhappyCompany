@@ -12,12 +12,19 @@ public class FMODEvents : MonoBehaviour
     [field: SerializeField] public EventReference damage { get; private set; }
     
     [field: Header("UI Sounds")]
-    [field: SerializeField] public EventReference uiButtonClick { get; private set; }
-    [field: SerializeField] public EventReference uiButtonHover { get; private set; }
-    [field: SerializeField] public EventReference uiPopupOpen { get; private set; }
     [field: SerializeField] public EventReference shopItemBuy { get; private set; }
     [field: SerializeField] public EventReference shopItemDrop { get; private set; }
     [field: SerializeField] public EventReference startButtonPress { get; private set; }
+    [field: SerializeField] public EventReference doorButtonPress { get; private set; }
+
+	[field: Header("Computer")]
+	[field: SerializeField] public EventReference computerCursorClick { get; private set; }
+	[field: SerializeField] public EventReference computerCursorHover { get; private set; }
+	[field: SerializeField] public EventReference ComputerPopupOpen { get; private set; }
+	[field: SerializeField] public EventReference computerScreenClose { get; private set; }
+	
+	[field: Header("Ambience")]
+	[field: SerializeField] public EventReference computerAmb { get; private set; }
     
     [field: Header("Computer")]
     [field: SerializeField] public EventReference computerCursorClick { get; private set; }
