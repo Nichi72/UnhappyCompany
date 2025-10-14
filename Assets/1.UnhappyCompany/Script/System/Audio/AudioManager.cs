@@ -211,7 +211,7 @@ public class AudioManager : MonoBehaviour
     // 설정 UI 테스트용 사운드 재생
     public void PlaySettingsTestSound()
     {
-        PlayOneShot(FMODEvents.instance.uiButtonClick, GameManager.instance.currentPlayer.transform, "UI Click Test");
+        PlayOneShot(FMODEvents.instance.computerCursorClick, GameManager.instance.currentPlayer.transform, "UI Click Test");
     }
 
 

@@ -102,7 +102,14 @@ public abstract class BasePopup : MonoBehaviour
         // 버튼 이벤트 연결
         if (closeButton != null)
         {
-            closeButton.onClick.AddListener(ClosePopup);
+            closeButton.onClick.AddListener(() => {
+                // 클릭 사운드 재생
+                if (AudioManager.instance != null && FMODEvents.instance != null && GameManager.instance?.currentPlayer != null)
+                {
+                    AudioManager.instance.PlayOneShot(FMODEvents.instance.computerCursorClick, GameManager.instance.currentPlayer.transform, "컴퓨터 커서 클릭");
+                }
+                ClosePopup();
+            });
         }
         
         OnInitialize();
@@ -150,7 +157,7 @@ public abstract class BasePopup : MonoBehaviour
         }
         
         // 사운드 재생
-        PlaySound(openSound);
+        PlayOpenSound();
         
         // 애니메이션 재생
         PlayOpenAnimation();
@@ -199,7 +206,7 @@ public abstract class BasePopup : MonoBehaviour
         }
         
         // 사운드 재생
-        PlaySound(closeSound);
+        PlayCloseSound();
         
         // PopupManager에서 제거
         if (PopupManager.Instance != null)
@@ -446,14 +453,34 @@ public abstract class BasePopup : MonoBehaviour
     #region 유틸리티
     
     /// <summary>
-    /// 사운드 재생
+    /// 팝업 열림 사운드 재생
+    /// </summary>
+    protected virtual void PlayOpenSound()
+    {
+        if (AudioManager.instance != null && FMODEvents.instance != null && GameManager.instance?.currentPlayer != null)
+        {
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.ComputerPopupOpen, GameManager.instance.currentPlayer.transform, "팝업 열림");
+        }
+    }
+    
+    /// <summary>
+    /// 팝업 닫힘 사운드 재생
+    /// </summary>
+    protected virtual void PlayCloseSound()
+    {
+        if (AudioManager.instance != null && FMODEvents.instance != null && GameManager.instance?.currentPlayer != null)
+        {
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.computerScreenClose, GameManager.instance.currentPlayer.transform, "팝업 닫힘");
+        }
+    }
+    
+    /// <summary>
+    /// 사운드 재생 (레거시 - 하위 호환성 유지)
     /// </summary>
     protected void PlaySound(AudioClip clip)
     {
-        if (clip != null && AudioManager.instance != null)
-        {
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.uiPopupOpen, GameManager.instance.currentPlayer.transform, "팝업 열림");
-        }
+        // AudioClip 파라미터는 더 이상 사용하지 않음
+        // 기존 코드 호환성을 위해 메서드는 유지
     }
     
     #endregion

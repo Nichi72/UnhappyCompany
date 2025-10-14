@@ -26,6 +26,6 @@ public class ShopItemBuyItem : MonoBehaviour, IPointerEnterHandler
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        AudioManager.instance.PlayOneShot(FMODEvents.instance.uiButtonHover, transform, "BuyItem OnPointerEnter");
+        AudioManager.instance.PlayOneShot(FMODEvents.instance.computerCursorHover, transform, "BuyItem OnPointerEnter");
     }
 }
