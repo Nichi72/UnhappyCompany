@@ -294,4 +294,108 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
         Gizmos.DrawLine(rayOrigin, rayOrigin + Vector3.down * groundCheckDistance);
         Gizmos.DrawWireSphere(rayOrigin + Vector3.down * groundCheckDistance, 0.1f);
     }
+
+    #region Debug UI Override
+
+    /// <summary>
+    /// HP/스택 바 그리기 (RSP용 오버라이드)
+    /// </summary>
+    protected override void DrawDebugBars()
+    {
+        // 월드 좌표를 스크린 좌표로 변환
+        Vector3 worldPosition = transform.position + Vector3.up * 2.5f;
+        Vector3 screenPosition = Camera.main.WorldToScreenPoint(worldPosition);
+
+        // 카메라 뒤에 있으면 표시하지 않음
+        if (screenPosition.z <= 0) return;
+
+        // GUI 좌표계로 변환
+        float scaleFactor = debugUIScale;
+        float baseBarWidth = 120f * scaleFactor;
+        float baseBarHeight = 20f * scaleFactor;
+        float barSpacing = 5f * scaleFactor;
+
+        float startX = screenPosition.x - baseBarWidth / 2f;
+        float startY = Screen.height - screenPosition.y - 40f * scaleFactor;
+
+        // HP 바 그리기
+        float hpPercent = (float)hp / enemyData.hpMax;
+        DrawDebugBar(startX, startY, baseBarWidth, baseBarHeight, 
+                     "HP", hp, enemyData.hpMax, hpPercent, GetHPColor(hpPercent));
+
+        // 스택 바 그리기 (최대 4)
+        int currentStack = GetCompulsoryPlayStack();
+        int maxStack = 4;
+        float stackPercent = (float)currentStack / maxStack;
+        Color stackColor = GetStackColor(stackPercent);
+        DrawDebugBar(startX, startY + baseBarHeight + barSpacing, baseBarWidth, baseBarHeight,
+                     "Stack", currentStack, maxStack, stackPercent, stackColor);
+
+        // 상태 텍스트 (두 바 아래에 표시)
+        DrawStateText(startX, startY + (baseBarHeight + barSpacing) * 2 + 5f, baseBarWidth);
+    }
+
+    /// <summary>
+    /// 스택 퍼센트에 따른 색상 반환
+    /// </summary>
+    private Color GetStackColor(float stackPercent)
+    {
+        if (stackPercent >= 1f)
+            return Color.red; // 스택 최대 (위험)
+        else if (stackPercent > 0.5f)
+            return Color.yellow; // 스택 절반 이상
+        else if (stackPercent > 0f)
+            return Color.cyan; // 스택 있음
+        else
+            return Color.green; // 스택 0 (안전)
+    }
+
+    /// <summary>
+    /// 상태 텍스트 표시 (RSP용 오버라이드 - 쿨다운 정보 포함)
+    /// </summary>
+    protected override void DrawStateText(float x, float y, float width)
+    {
+        // 현재 상태 표시
+        string stateText = currentState != null ? $"State: {currentState.GetType().Name}" : "State: None";
+        if (isCoolDown)
+        {
+            stateText += " [COOLDOWN]";
+        }
+        if (!isGround)
+        {
+            stateText += " [AIRBORNE]";
+        }
+        
+        GUIStyle stateStyle = new GUIStyle();
+        stateStyle.alignment = TextAnchor.MiddleCenter;
+        stateStyle.fontSize = (int)(10 * debugUIScale);
+        stateStyle.normal.textColor = isCoolDown ? Color.cyan : Color.yellow;
+        stateStyle.fontStyle = FontStyle.Bold;
+
+        DrawTextWithOutline(x, y, width, 20, stateText, stateStyle);
+
+        // 스택 0일 때 추가 정보
+        if (IsStackZero && !isCoolDown)
+        {
+            string interactText = "Interaction Available";
+            
+            GUIStyle interactStyle = new GUIStyle();
+            interactStyle.alignment = TextAnchor.MiddleCenter;
+            interactStyle.fontSize = (int)(9 * debugUIScale);
+            interactStyle.normal.textColor = Color.green;
+            interactStyle.fontStyle = FontStyle.Bold;
+            
+            DrawTextWithOutline(x, y + 20, width, 20, interactText, interactStyle);
+        }
+    }
+
+    /// <summary>
+    /// Enemy 표시 이름 반환 (RSP 오버라이드)
+    /// </summary>
+    protected override string GetEnemyDisplayName()
+    {
+        return "RSP";
+    }
+
+    #endregion
 }

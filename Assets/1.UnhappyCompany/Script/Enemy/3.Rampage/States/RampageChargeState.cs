@@ -54,6 +54,13 @@ public class RampageChargeState : IState
     {
         DebugManager.Log("Rampage: Charge 상태 종료", isShowDebug);
         controller.baseCollider.enabled = false; // 돌진 할 때 충돌 처리 안하려고 끔. 데미지 처리는 RampageTrigger에서 함.
+        
+        // 디버그용 돌진 정보 리셋
+        controller.hasChargeTarget = false;
+        
+        // 플레이어 피드백 리셋 (색상 복구 등)
+        controller.ResetChargeWarningFeedback();
+        
         // 실행 중인 코루틴이 있다면 중지
         if (chargeCoroutine != null)
         {
@@ -151,6 +158,16 @@ public class RampageChargeState : IState
                 {
                     // 전환 직전 속도와 방향 저장
                     playerDirection = lastAgentVelocity.normalized;
+                    
+                    // 디버그용 돌진 정보 설정
+                    controller.chargeStartPosition = controller.transform.position;
+                    controller.chargeDirection = playerDirection;
+                    controller.chargeTargetPoint = controller.chargeStartPosition + playerDirection * 20f; // 20m 앞
+                    controller.hasChargeTarget = true;
+                    
+                    // 🎯 플레이어 피드백 발동 (사운드/VFX/색상)
+                    controller.TriggerChargeWarningFeedback();
+                    
                     yield return null;
                     break;
                 }

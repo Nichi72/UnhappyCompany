@@ -14,18 +14,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyName: Rampage
   prefab: {fileID: 8405395881932533920, guid: 9aaeae3fa2b7ddd48a05c2afe093720b, type: 3}
+  dangerLevel: 0
   category: 0
   enemyType: 0
   enemyCost: 40
   patrolRadius: 33
-  chaseRadius: 15
-  attackRadius: 4
+  patrolDistanceMinRatio: 0.3
+  patrolDistanceMaxRatio: 0.7
+  fleeDistanceMinRatio: 0.8
+  fleeDistanceMaxRatio: 1.5
+  patrolRangeColor: {r: 0, g: 1, b: 0, a: 1}
+  fleeRangeColor: {r: 1, g: 0, b: 0, a: 1}
+  showRangesInGame: 1
   moveSpeed: 3
   Cost: 10
+  hpMax: 100
   maxHP: 100
   chargeSpeed: 10
   detectRange: 50
   detectAngle: 60
+  attackRadius: 3
   maxPanelHealth: 6
   panelOpenTime: 5
   cushionPanelCount: 3
@@ -37,3 +45,4 @@ MonoBehaviour:
   explodeRadius: 5
   explodeDamage: 30
   rushSpeed: 15
+  rushDamage: 50

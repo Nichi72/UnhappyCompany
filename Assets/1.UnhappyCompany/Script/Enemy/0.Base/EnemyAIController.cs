@@ -52,6 +52,14 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
     private bool playerDetected = false;
     private Vector3 lastKnownPlayerPosition;
 
+    [Header("Debug UI Settings")]
+    [Tooltip("게임뷰에서 디버그 정보 표시 여부")]
+    public bool isShowDebug = false;
+    [Tooltip("디버그 UI 크기 배율")]
+    public float debugUIScale = 1.4f;
+    [HideInInspector] public Vector3? currentTargetPosition = null; // 현재 목표 지점
+    [HideInInspector] public string currentTargetLabel = ""; // 목표 지점 라벨
+
     protected virtual void Start()
     {
         InitializeAI();
@@ -159,13 +167,30 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
     }
 
     /// <summary>
-    /// 게임뷰에서 범위 시각화 (OnGUI)
+    /// 게임뷰에서 범위 시각화 및 디버그 정보 표시 (OnGUI)
     /// </summary>
     protected virtual void OnGUI()
     {
-        if (!ShowRangesInGame) return;
         if (Camera.main == null) return;
 
+        // 1. 범위 시각화
+        if (ShowRangesInGame)
+        {
+            DrawRangeVisualization();
+        }
+        
+        // 2. 디버그 정보 표시
+        if (isShowDebug)
+        {
+            DrawEnemyDebugInfo();
+        }
+    }
+
+    /// <summary>
+    /// 범위 시각화 그리기 (Patrol/Flee 범위)
+    /// </summary>
+    protected virtual void DrawRangeVisualization()
+    {
         // Patrol 범위 시각화
         Color patrolMinColor = new Color(PatrolRangeColor.r, PatrolRangeColor.g, PatrolRangeColor.b, 0.2f);
         Color patrolMaxColor = new Color(PatrolRangeColor.r, PatrolRangeColor.g, PatrolRangeColor.b, 0.5f);
@@ -182,6 +207,32 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
             DrawWorldCircleGUI(transform.position, FleeDistanceMin, fleeMinColor, 32);
             DrawWorldCircleGUI(transform.position, FleeDistanceMax, fleeMaxColor, 32);
         }
+    }
+
+    /// <summary>
+    /// Enemy 디버그 정보 표시 (HP바, 상태 등)
+    /// 상속받는 클래스에서 override하여 추가 정보 표시 가능
+    /// </summary>
+    protected virtual void DrawEnemyDebugInfo()
+    {
+        // 1. HP/Status 바 그리기
+        DrawDebugBars();
+        
+        // 2. 목표 지점 시각화
+        DrawTargetPoint();
+        
+        // 3. 상속받는 클래스별 커스텀 정보 (virtual 메서드)
+        DrawCustomDebugInfo();
+    }
+
+    /// <summary>
+    /// 상속받는 클래스에서 override하여 추가 디버그 정보 표시
+    /// (감지 범위, 특수 상태 등)
+    /// </summary>
+    protected virtual void DrawCustomDebugInfo()
+    {
+        // 기본적으로는 아무것도 그리지 않음
+        // 각 Enemy에서 override하여 구현
     }
 
     /// <summary>
@@ -247,6 +298,251 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
         GUI.matrix = matrixBackup;
         GUI.color = Color.white;
     }
+
+    /// <summary>
+    /// 월드 공간에 시야각 부채꼴 그리기 (OnGUI용)
+    /// </summary>
+    protected void DrawWorldVisionCone(Vector3 center, Vector3 forward, float range, float angle, Color color, int segments)
+    {
+        Vector2 centerScreen = WorldToGUIPoint(center);
+        if (centerScreen == Vector2.zero) return;
+
+        // 부채꼴의 왼쪽과 오른쪽 경계
+        Vector3 leftBoundary = Quaternion.Euler(0, -angle / 2f, 0) * forward;
+        Vector3 rightBoundary = Quaternion.Euler(0, angle / 2f, 0) * forward;
+
+        // 중심에서 왼쪽 경계로 선
+        Vector2 leftEdgeScreen = WorldToGUIPoint(center + leftBoundary * range);
+        if (leftEdgeScreen != Vector2.zero)
+        {
+            DrawGUILine(centerScreen, leftEdgeScreen, color, 2f);
+        }
+
+        // 중심에서 오른쪽 경계로 선
+        Vector2 rightEdgeScreen = WorldToGUIPoint(center + rightBoundary * range);
+        if (rightEdgeScreen != Vector2.zero)
+        {
+            DrawGUILine(centerScreen, rightEdgeScreen, color, 2f);
+        }
+
+        // 호 그리기
+        Vector3 prevPoint = center + leftBoundary * range;
+        Vector2 prevScreenPoint = WorldToGUIPoint(prevPoint);
+        
+        for (int i = 1; i <= segments; i++)
+        {
+            float currentAngle = -angle / 2f + (angle * i / segments);
+            Vector3 direction = Quaternion.Euler(0, currentAngle, 0) * forward;
+            Vector3 newPoint = center + direction * range;
+            Vector2 newScreenPoint = WorldToGUIPoint(newPoint);
+            
+            if (prevScreenPoint != Vector2.zero && newScreenPoint != Vector2.zero)
+            {
+                DrawGUILine(prevScreenPoint, newScreenPoint, color, 2f);
+            }
+            
+            prevPoint = newPoint;
+            prevScreenPoint = newScreenPoint;
+        }
+    }
+
+    #region Debug UI Methods
+    
+    /// <summary>
+    /// HP 바 및 상태 텍스트 그리기
+    /// 상속받는 클래스에서 override하여 커스터마이즈 가능
+    /// </summary>
+    protected virtual void DrawDebugBars()
+    {
+        // 월드 좌표를 스크린 좌표로 변환
+        Vector3 worldPosition = transform.position + Vector3.up * 2.5f;
+        Vector3 screenPosition = Camera.main.WorldToScreenPoint(worldPosition);
+
+        // 카메라 뒤에 있으면 표시하지 않음
+        if (screenPosition.z <= 0) return;
+
+        // GUI 좌표계로 변환
+        float scaleFactor = debugUIScale;
+        float baseBarWidth = 120f * scaleFactor;
+        float baseBarHeight = 20f * scaleFactor;
+        float barSpacing = 5f * scaleFactor;
+
+        float startX = screenPosition.x - baseBarWidth / 2f;
+        float startY = Screen.height - screenPosition.y - 40f * scaleFactor;
+
+        // HP 바 그리기
+        int hp = Mathf.RoundToInt(EnemyData.hpMax); // 기본적으로 최대 HP로 표시 (각 Enemy에서 override)
+        float hpPercent = 1f; // 기본적으로 100%
+        DrawDebugBar(startX, startY, baseBarWidth, baseBarHeight, 
+                     "HP", hp, hp, hpPercent, GetHPColor(hpPercent));
+
+        // 상태 텍스트 (HP 바 아래에 표시)
+        DrawStateText(startX, startY + baseBarHeight + barSpacing, baseBarWidth);
+    }
+
+    /// <summary>
+    /// 개별 디버그 바 그리기 (HP, Stamina 등)
+    /// </summary>
+    protected virtual void DrawDebugBar(float x, float y, float width, float height, string label, int current, int max, float percent, Color barColor)
+    {
+        float labelWidth = width * 0.3f;
+        float barWidth = width * 0.7f;
+        float barStartX = x + labelWidth + 5f;
+
+        // 라벨 텍스트
+        GUIStyle labelStyle = new GUIStyle();
+        labelStyle.alignment = TextAnchor.MiddleLeft;
+        labelStyle.fontSize = (int)(10 * debugUIScale);
+        labelStyle.normal.textColor = Color.white;
+        labelStyle.fontStyle = FontStyle.Bold;
+
+        DrawTextWithOutline(x, y, labelWidth, height, label, labelStyle);
+
+        // 배경 (검은색 외곽선)
+        GUI.color = Color.black;
+        GUI.DrawTexture(new Rect(barStartX - 1, y - 1, barWidth + 2, height + 2), Texture2D.whiteTexture);
+
+        // 배경 (회색)
+        GUI.color = new Color(0.3f, 0.3f, 0.3f, 0.8f);
+        GUI.DrawTexture(new Rect(barStartX, y, barWidth, height), Texture2D.whiteTexture);
+
+        // 바 (색상)
+        GUI.color = barColor;
+        GUI.DrawTexture(new Rect(barStartX, y, barWidth * percent, height), Texture2D.whiteTexture);
+
+        // 값 텍스트
+        GUIStyle valueStyle = new GUIStyle();
+        valueStyle.alignment = TextAnchor.MiddleCenter;
+        valueStyle.fontSize = (int)(9 * debugUIScale);
+        valueStyle.normal.textColor = Color.white;
+        valueStyle.fontStyle = FontStyle.Normal;
+
+        string valueText = $"{current}/{max}";
+        DrawTextWithOutline(barStartX, y, barWidth, height, valueText, valueStyle);
+        
+        GUI.color = Color.white;
+    }
+
+    /// <summary>
+    /// 상태 텍스트 표시 (현재 상태, 감지 정보 등)
+    /// 상속받는 클래스에서 override하여 커스터마이즈 가능
+    /// </summary>
+    protected virtual void DrawStateText(float x, float y, float width)
+    {
+        // 현재 상태 표시
+        string stateText = currentState != null ? $"State: {currentState.GetType().Name}" : "State: None";
+        
+        GUIStyle stateStyle = new GUIStyle();
+        stateStyle.alignment = TextAnchor.MiddleCenter;
+        stateStyle.fontSize = (int)(10 * debugUIScale);
+        stateStyle.normal.textColor = Color.yellow;
+        stateStyle.fontStyle = FontStyle.Bold;
+
+        DrawTextWithOutline(x, y, width, 20, stateText, stateStyle);
+    }
+
+    /// <summary>
+    /// 목표 지점 시각화 (이동 목적지 등)
+    /// </summary>
+    protected virtual void DrawTargetPoint()
+    {
+        if (currentTargetPosition == null) return;
+
+        Vector3 targetPos = currentTargetPosition.Value;
+        Vector2 targetScreen = WorldToGUIPoint(targetPos);
+        
+        if (targetScreen == Vector2.zero) return;
+
+        // 현재 위치에서 목표 지점까지 선 그리기
+        Vector2 currentScreen = WorldToGUIPoint(transform.position);
+        if (currentScreen != Vector2.zero)
+        {
+            DrawGUILine(currentScreen, targetScreen, new Color(1, 0.5f, 0, 0.6f), 3f); // 주황색 선
+        }
+
+        // 목표 지점에 원 마커 그리기
+        float markerSize = 20f * debugUIScale;
+        GUI.color = new Color(1, 0.5f, 0, 0.8f); // 주황색
+        GUI.DrawTexture(new Rect(targetScreen.x - markerSize / 2f, targetScreen.y - markerSize / 2f, markerSize, markerSize), Texture2D.whiteTexture);
+        
+        // 안쪽에 작은 원 (중심점)
+        float innerSize = 8f * debugUIScale;
+        GUI.color = Color.white;
+        GUI.DrawTexture(new Rect(targetScreen.x - innerSize / 2f, targetScreen.y - innerSize / 2f, innerSize, innerSize), Texture2D.whiteTexture);
+
+        // 텍스트 라벨 표시
+        GUIStyle labelStyle = new GUIStyle();
+        labelStyle.alignment = TextAnchor.MiddleCenter;
+        labelStyle.fontSize = (int)(11 * debugUIScale);
+        labelStyle.normal.textColor = Color.white;
+        labelStyle.fontStyle = FontStyle.Bold;
+
+        float labelWidth = 150f * debugUIScale;
+        float labelHeight = 40f * debugUIScale;
+        float labelY = targetScreen.y + markerSize / 2f + 5f;
+
+        // 배경 박스
+        GUI.color = new Color(0, 0, 0, 0.7f);
+        GUI.DrawTexture(new Rect(targetScreen.x - labelWidth / 2f, labelY, labelWidth, labelHeight), Texture2D.whiteTexture);
+
+        // 텍스트 (Enemy 이름 + 포인트 타입)
+        string enemyName = GetEnemyDisplayName();
+        string labelText = $"{enemyName}\n{currentTargetLabel}";
+        DrawTextWithOutline(targetScreen.x - labelWidth / 2f, labelY, labelWidth, labelHeight, labelText, labelStyle);
+        
+        GUI.color = Color.white;
+    }
+
+    /// <summary>
+    /// Enemy 표시 이름 반환 (상속받는 클래스에서 override)
+    /// </summary>
+    protected virtual string GetEnemyDisplayName()
+    {
+        return this.GetType().Name.Replace("AIController", "");
+    }
+
+    /// <summary>
+    /// 외곽선이 있는 텍스트 그리기 헬퍼 메서드
+    /// </summary>
+    protected void DrawTextWithOutline(float x, float y, float width, float height, string text, GUIStyle style)
+    {
+        // 외곽선 (검은색)
+        GUI.color = Color.black;
+        GUI.Label(new Rect(x - 1, y - 1, width, height), text, style);
+        GUI.Label(new Rect(x + 1, y - 1, width, height), text, style);
+        GUI.Label(new Rect(x - 1, y + 1, width, height), text, style);
+        GUI.Label(new Rect(x + 1, y + 1, width, height), text, style);
+
+        // 본문 텍스트 (흰색)
+        GUI.color = Color.white;
+        GUI.Label(new Rect(x, y, width, height), text, style);
+    }
+
+    /// <summary>
+    /// HP 퍼센트에 따른 색상 반환
+    /// </summary>
+    protected Color GetHPColor(float hpPercent)
+    {
+        if (hpPercent > 0.6f)
+            return Color.green;
+        else if (hpPercent > 0.3f)
+            return Color.yellow;
+        else
+            return Color.red;
+    }
+
+    /// <summary>
+    /// Stamina 퍼센트에 따른 색상 반환 (Enemy별로 override 가능)
+    /// </summary>
+    protected virtual Color GetStaminaColor(float staminaRatio)
+    {
+        if (staminaRatio > 0.5f)
+            return Color.Lerp(Color.yellow, Color.green, (staminaRatio - 0.5f) * 2f);
+        else
+            return Color.Lerp(Color.red, Color.yellow, staminaRatio * 2f);
+    }
+
+    #endregion
     
     // 시야 기즈모 그리기 메서드
     protected void DrawVisionGizmos()

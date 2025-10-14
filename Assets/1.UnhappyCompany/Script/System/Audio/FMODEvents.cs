@@ -19,6 +19,10 @@ public class FMODEvents : MonoBehaviour
     [field: SerializeField] public EventReference shopItemDrop { get; private set; }
     [field: SerializeField] public EventReference startButtonPress { get; private set; }
     
+    [field: Header("Computer")]
+    [field: SerializeField] public EventReference computerCursorClick { get; private set; }
+    [field: SerializeField] public EventReference computerScreenClosed { get; private set; }
+    
     [field: Header("Enemy - Rampage")]
     [field: SerializeField] public EventReference rampageHitBlock { get; private set; }
     [field: SerializeField] public EventReference rampageCollisionWall { get; private set; }

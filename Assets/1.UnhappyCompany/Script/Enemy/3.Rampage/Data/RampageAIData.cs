@@ -10,6 +10,10 @@ public class RampageAIData : BaseEnemyAIData
     [Header("Detection")]
     public float detectRange = 10f;   // 플레이어 감지 범위
     public float detectAngle = 60f;   // 플레이어 감지 각도 (전방 위주)
+    
+    [Header("Attack Settings")]
+    [Tooltip("플레이어 추격 → 물리 돌진 전환 거리 (m)\n이 거리 안에 들어오면 NavMesh 추격을 중단하고 물리 기반 돌진으로 전환")]
+    public float attackRadius = 2f;
 
     [Header("Panel Settings")]
     public int maxPanelHealth = 6;       // 패널 공격 요구량

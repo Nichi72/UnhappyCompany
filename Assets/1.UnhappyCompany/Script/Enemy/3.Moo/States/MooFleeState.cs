@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 /// <summary>
 /// MooFleeState 클래스는 MooAIController가 도망 상태에 있을 때의 행동을 정의합니다.
@@ -8,6 +9,12 @@ public class MooFleeState : IState
     private MooAIController controller;
     private float fleeDuration = 15f; // 도망 상태 최대 지속 시간
     private float fleeStartTime; // 도망 상태 시작 시간
+    private Coroutine fleeSlimeCoroutine; // 도망 중 슬라임 배출 코루틴
+    
+    // 도망 중 슬라임 배출 설정
+    private const float FLEE_SLIME_CHANCE = 0.3f; // 30% 확률
+    private const float FLEE_SLIME_MIN_DELAY = 2f; // 최소 2초 후
+    private const float FLEE_SLIME_MAX_DELAY = 5f; // 최대 5초 후
 
     public MooFleeState(MooAIController controller)
     {
@@ -21,6 +28,14 @@ public class MooFleeState : IState
         controller.PlayAnimation("Flee"); // 도망 애니메이션 재생
         fleeStartTime = Time.time;
         SetFleeDestination();
+        
+        // 30% 확률로 도망 중 슬라임 배출 예약
+        if (Random.value <= FLEE_SLIME_CHANCE)
+        {
+            float delay = Random.Range(FLEE_SLIME_MIN_DELAY, FLEE_SLIME_MAX_DELAY);
+            fleeSlimeCoroutine = controller.StartCoroutine(FleeSlimeEmitRoutine(delay));
+            DebugManager.Log($"Moo: 도망 중 {delay:F1}초 후 슬라임 배출 예약됨!", controller.isShowDebug);
+        }
     }
 
     public void ExecuteMorning()
@@ -67,6 +82,13 @@ public class MooFleeState : IState
     {
         DebugManager.Log("Moo: Flee 상태 종료", controller.isShowDebug);
         controller.agent.speed = controller.EnemyData.moveSpeed;
+        
+        // 도망 중 슬라임 배출 코루틴 정리
+        if (fleeSlimeCoroutine != null)
+        {
+            controller.StopCoroutine(fleeSlimeCoroutine);
+            fleeSlimeCoroutine = null;
+        }
         
         // 목표 지점 시각화 제거
         controller.currentTargetPosition = null;
@@ -222,5 +244,24 @@ public class MooFleeState : IState
     public void ExecuteFixedAfternoon()
     {
         // 필요에 따라 구현
+    }
+    
+    /// <summary>
+    /// 도망 중 일정 시간 후 슬라임을 배출하는 코루틴입니다.
+    /// </summary>
+    private IEnumerator FleeSlimeEmitRoutine(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        
+        // 여전히 Flee 상태인 경우에만 슬라임 배출
+        if (controller.currentState is MooFleeState)
+        {
+            controller.EmitSlimeDirectly();
+            DebugManager.Log("Moo: 도망 중 슬라임 배출 완료!", controller.isShowDebug);
+        }
+        else
+        {
+            DebugManager.Log("Moo: 도망 상태가 아니므로 슬라임 배출 취소", controller.isShowDebug);
+        }
     }
 } 

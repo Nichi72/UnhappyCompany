@@ -47,7 +47,7 @@ public class RampageTrigger : MonoBehaviour
             {
                 rampageAIController.SetCollided(true);
                 Debug.Log("충돌 발생");
-                AudioManager.instance.PlayOneShot(FMODEvents.instance.rampageCollisionWall, transform, "Rampage 벽에 처박히는 소리");
+                // 벽 충돌 소리 제거됨 (사용자 요청)
 
                 if (hasCushion == false && rampageAIController.onceReduceHP) 
                 {

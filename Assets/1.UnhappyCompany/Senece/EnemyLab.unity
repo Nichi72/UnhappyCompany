@@ -11601,17 +11601,49 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1874152015462924092, guid: 9aaeae3fa2b7ddd48a05c2afe093720b, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5107399055157498797, guid: 9aaeae3fa2b7ddd48a05c2afe093720b, type: 3}
+      propertyPath: isCollided
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5107399055157498797, guid: 9aaeae3fa2b7ddd48a05c2afe093720b, type: 3}
+      propertyPath: isShowDebug
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5107399055157498797, guid: 9aaeae3fa2b7ddd48a05c2afe093720b, type: 3}
+      propertyPath: chargeStartSound.Path
+      value: event:/MON/RSP/MON_RSP_Off
+      objectReference: {fileID: 0}
+    - target: {fileID: 5107399055157498797, guid: 9aaeae3fa2b7ddd48a05c2afe093720b, type: 3}
+      propertyPath: chargeStartSound.Guid.Data1
+      value: 68047459
+      objectReference: {fileID: 0}
+    - target: {fileID: 5107399055157498797, guid: 9aaeae3fa2b7ddd48a05c2afe093720b, type: 3}
+      propertyPath: chargeStartSound.Guid.Data2
+      value: 1221838029
+      objectReference: {fileID: 0}
+    - target: {fileID: 5107399055157498797, guid: 9aaeae3fa2b7ddd48a05c2afe093720b, type: 3}
+      propertyPath: chargeStartSound.Guid.Data3
+      value: -469985904
+      objectReference: {fileID: 0}
+    - target: {fileID: 5107399055157498797, guid: 9aaeae3fa2b7ddd48a05c2afe093720b, type: 3}
+      propertyPath: chargeStartSound.Guid.Data4
+      value: 1365096336
+      objectReference: {fileID: 0}
     - target: {fileID: 8287760293634240783, guid: 9aaeae3fa2b7ddd48a05c2afe093720b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 10.83
+      value: 0.19
       objectReference: {fileID: 0}
     - target: {fileID: 8287760293634240783, guid: 9aaeae3fa2b7ddd48a05c2afe093720b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -50.260002
+      value: -50.59
       objectReference: {fileID: 0}
     - target: {fileID: 8287760293634240783, guid: 9aaeae3fa2b7ddd48a05c2afe093720b, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -3.99
+      value: -20.39
       objectReference: {fileID: 0}
     - target: {fileID: 8287760293634240783, guid: 9aaeae3fa2b7ddd48a05c2afe093720b, type: 3}
       propertyPath: m_LocalRotation.w
@@ -11892,6 +11924,63 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8403868508882075250, guid: 9a6744082fae8274b9d38d88dc0b3a53, type: 3}
   m_PrefabInstance: {fileID: 995795967}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &1003760636
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2782852512529950738, guid: ae33b717f75bf2643a4fb5f6a822e11a, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.618495
+      objectReference: {fileID: 0}
+    - target: {fileID: 2782852512529950738, guid: ae33b717f75bf2643a4fb5f6a822e11a, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -51.656
+      objectReference: {fileID: 0}
+    - target: {fileID: 2782852512529950738, guid: ae33b717f75bf2643a4fb5f6a822e11a, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -16.644238
+      objectReference: {fileID: 0}
+    - target: {fileID: 2782852512529950738, guid: ae33b717f75bf2643a4fb5f6a822e11a, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071067
+      objectReference: {fileID: 0}
+    - target: {fileID: 2782852512529950738, guid: ae33b717f75bf2643a4fb5f6a822e11a, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 2782852512529950738, guid: ae33b717f75bf2643a4fb5f6a822e11a, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2782852512529950738, guid: ae33b717f75bf2643a4fb5f6a822e11a, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2782852512529950738, guid: ae33b717f75bf2643a4fb5f6a822e11a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2782852512529950738, guid: ae33b717f75bf2643a4fb5f6a822e11a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2782852512529950738, guid: ae33b717f75bf2643a4fb5f6a822e11a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3302683552043692712, guid: ae33b717f75bf2643a4fb5f6a822e11a, type: 3}
+      propertyPath: m_Name
+      value: Battery Pack (1)
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: ae33b717f75bf2643a4fb5f6a822e11a, type: 3}
 --- !u!1001 &1004564444
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -14873,6 +14962,14 @@ PrefabInstance:
     - target: {fileID: 2060752047448260306, guid: 87d7496d0ba6b4d409c2d2788511a44e, type: 3}
       propertyPath: m_Name
       value: Mujisang (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 2060752047448260306, guid: 87d7496d0ba6b4d409c2d2788511a44e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2391168657973177905, guid: 87d7496d0ba6b4d409c2d2788511a44e, type: 3}
+      propertyPath: isShowDebug
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2391168657973177905, guid: 87d7496d0ba6b4d409c2d2788511a44e, type: 3}
       propertyPath: staminaDrainRate
@@ -53306,3 +53403,4 @@ SceneRoots:
   - {fileID: 70739397}
   - {fileID: 6642169693593009121}
   - {fileID: 1874095937}
+  - {fileID: 1003760636}

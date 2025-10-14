@@ -43,9 +43,6 @@ public abstract class BaseEnemyAIData : ScriptableObject
     public Color fleeRangeColor = Color.red;
     public bool showRangesInGame = false; // 게임뷰에서 범위 표시 여부
 
-    [Tooltip("공격 반경")]
-    public float attackRadius = 2f;
-
     [Header("Base Movement Settings")]
     [Tooltip("기본 이동 속도")]
     public float moveSpeed = 5f;
