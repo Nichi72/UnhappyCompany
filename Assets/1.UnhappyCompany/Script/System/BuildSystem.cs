@@ -81,7 +81,6 @@ public class BuildSystem : MonoBehaviour
         if (objectToPlace != null)
         {
             currentObject = Instantiate(objectToPlace); // 배치할 객체 인스턴스화
-            currentObject.name = objectToPlace.name + " (임시)";
             
             // 콜라이더 일시적으로 비활성화
             Collider[] colliders = currentObject.GetComponentsInChildren<Collider>();

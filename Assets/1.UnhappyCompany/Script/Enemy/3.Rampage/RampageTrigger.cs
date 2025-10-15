@@ -31,11 +31,17 @@ public class RampageTrigger : MonoBehaviour
     {
         if (rampageAIController.IsInChargeState())
         {
-            // 쿠션 체크 되면 다른 충돌 무시        
-            bool hasCushion = IsCushionAtCollision(other);
-            if (hasCushion)
+            // 쿠션 체크 및 충격 이벤트 전달
+            ItemCushion cushion = GetCushionFromCollision(other);
+            if (cushion != null)
             {
-                Debug.Log("쿠션에 맞아서 처리 안됨");
+                Debug.Log("쿠션에 맞아서 HP 감소 안됨 - 충격 흡수 연출 시작");
+                
+                // Phase 3: 쿠션에게 충격 이벤트 전달
+                cushion.OnImpact(rampageAIController.transform.position);
+                
+                // Rampage는 충돌 처리
+                rampageAIController.SetCollided(true);
                 return;
             }
 
@@ -49,7 +55,7 @@ public class RampageTrigger : MonoBehaviour
                 Debug.Log("충돌 발생");
                 // 벽 충돌 소리 제거됨 (사용자 요청)
 
-                if (hasCushion == false && rampageAIController.onceReduceHP) 
+                if (cushion == null && rampageAIController.onceReduceHP) 
                 {
                     rampageAIController.ReduceHP(rampageAIController.EnemyData.hpLossOnNoCushion);
                     rampageAIController.onceReduceHP = false;
@@ -80,7 +86,10 @@ public class RampageTrigger : MonoBehaviour
         canDamagePlayer = true;
     }
 
-    private bool IsCushionAtCollision(Collider other)
+    /// <summary>
+    /// 충돌한 Collider에서 ItemCushion 컴포넌트 가져오기
+    /// </summary>
+    private ItemCushion GetCushionFromCollision(Collider other)
     {
         if (other.CompareTag(ETag.Item.ToString()))
         {
@@ -88,11 +97,18 @@ public class RampageTrigger : MonoBehaviour
             ItemCushion itemCushion = other.GetComponentInParent<ItemCushion>();
             if (itemCushion != null)
             {
-                Debug.Log($"[RampageTrigger] 쿠션 감지 성공! {other.gameObject.name}");
-                return true;
+                return itemCushion;
             }
         }
-        return false;
+        return null;
+    }
+    
+    /// <summary>
+    /// (Deprecated) 쿠션 체크 - GetCushionFromCollision 사용 권장
+    /// </summary>
+    private bool IsCushionAtCollision(Collider other)
+    {
+        return GetCushionFromCollision(other) != null;
     }
 
     private void Push(Collider other)
@@ -119,3 +135,4 @@ public class RampageTrigger : MonoBehaviour
         }
     }
 }
+

@@ -25,9 +25,16 @@ public class ItemCushion : Item
     [SerializeField] private float deployDuration = 0.5f;    // 설치 애니메이션 시간 (쿠션이 펴지는 시간)
     [SerializeField] private AnimationCurve deployCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);  // 설치 애니메이션 커브
     
+    [Header("Impact Settings (Phase 3)")]
+    [SerializeField] private float impactSquashAmount = 0.7f;  // 찌그러짐 정도 (0.7 = 30% 찌그러짐)
+    [SerializeField] private float impactDuration = 0.3f;      // 찌그러짐 애니메이션 시간
+    [SerializeField] private AnimationCurve impactCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);  // 찌그러짐 커브
+    [SerializeField] private ParticleSystem impactParticle;    // 충격 파티클 (선택)
+    
     [Header("State")]
     private bool isDeployed = false;    // 설치 완료 상태
     private Vector3 originalCushionScale;  // 쿠션 원본 크기
+    private bool isImpacting = false;   // 충격 애니메이션 중 (Phase 3)
     
     void Start()
     {
@@ -136,10 +143,29 @@ public class ItemCushion : Item
     {
         if (isDeployed) return;
         
+        // 쿠션 모델 초기화 (BuildSystem으로 생성된 경우 Start()가 안 불릴 수 있음)
+        EnsureInitialized();
+        
         // Rigidbody만 먼저 설정 (Collider는 애니메이션 중에 전환)
         SetupRigidbody();
         
         StartCoroutine(DeployAnimation());
+    }
+    
+    /// <summary>
+    /// 초기화 보장 (Start()가 호출되지 않았을 경우 대비)
+    /// </summary>
+    private void EnsureInitialized()
+    {
+        // originalCushionScale이 초기화되지 않았다면 초기화
+        if (originalCushionScale == Vector3.zero)
+        {
+            if (cushionModel != null)
+            {
+                originalCushionScale = cushionModel.transform.localScale;
+                Debug.Log($"[ItemCushion] EnsureInitialized - originalCushionScale: {originalCushionScale}");
+            }
+        }
     }
     
     /// <summary>
@@ -409,6 +435,132 @@ public class ItemCushion : Item
         }
     }
 
+    // ========================
+    // Phase 3: 충격 흡수 연출
+    // ========================
+    
+    /// <summary>
+    /// Rampage 충돌 시 호출되는 충격 이벤트
+    /// </summary>
+    /// <param name="impactPosition">충돌 위치</param>
+    public void OnImpact(Vector3 impactPosition)
+    {
+        if (!isDeployed)
+        {
+            Debug.LogWarning("[ItemCushion] 펴지지 않은 상태에서 충격 받음");
+            return;
+        }
+        
+        if (isImpacting)
+        {
+            Debug.Log("[ItemCushion] 이미 충격 애니메이션 중");
+            return;
+        }
+        
+        // 초기화 보장 (안전장치)
+        EnsureInitialized();
+        
+        Debug.Log($"[ItemCushion] 충격 받음! 위치: {impactPosition}");
+        
+        // 충격 흡수 연출 시작
+        StartCoroutine(ImpactAnimation());
+        
+        // 충격 사운드 재생
+        PlayImpactSound();
+        
+        // 파티클 재생 (있다면)
+        PlayImpactParticle(impactPosition);
+    }
+    
+    /// <summary>
+    /// 충격 흡수 애니메이션 (찌그러짐)
+    /// </summary>
+    private IEnumerator ImpactAnimation()
+    {
+        isImpacting = true;
+        float elapsed = 0f;
+        
+        // 1단계: 찌그러짐 (0 → 1)
+        while (elapsed < impactDuration / 2f)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / (impactDuration / 2f));
+            float curveValue = impactCurve.Evaluate(t);
+            
+            // Z축 방향으로 찌그러짐 (충격 방향)
+            float squash = Mathf.Lerp(1f, impactSquashAmount, curveValue);
+            Vector3 squashedScale = new Vector3(
+                originalCushionScale.x,
+                originalCushionScale.y,
+                originalCushionScale.z * squash
+            );
+            
+            if (cushionModel != null)
+                cushionModel.transform.localScale = squashedScale;
+            
+            yield return null;
+        }
+        
+        elapsed = 0f;
+        
+        // 2단계: 복원 (1 → 0)
+        while (elapsed < impactDuration / 2f)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / (impactDuration / 2f));
+            float curveValue = impactCurve.Evaluate(t);
+            
+            // 원래 크기로 복원
+            float squash = Mathf.Lerp(impactSquashAmount, 1f, curveValue);
+            Vector3 squashedScale = new Vector3(
+                originalCushionScale.x,
+                originalCushionScale.y,
+                originalCushionScale.z * squash
+            );
+            
+            if (cushionModel != null)
+                cushionModel.transform.localScale = squashedScale;
+            
+            yield return null;
+        }
+        
+        // 최종 크기 보정
+        if (cushionModel != null)
+            cushionModel.transform.localScale = originalCushionScale;
+        
+        isImpacting = false;
+        Debug.Log("[ItemCushion] 충격 흡수 완료!");
+    }
+    
+    /// <summary>
+    /// 충격 사운드 재생
+    /// </summary>
+    private void PlayImpactSound()
+    {
+        if (FMODEvents.instance != null && AudioManager.instance != null)
+        {
+            AudioManager.instance.PlayOneShot(
+                FMODEvents.instance.cushionImpact, 
+                transform, 
+                "쿠션 충격 흡수 사운드 - 둔탁한 소리"
+            );
+        }
+    }
+    
+    /// <summary>
+    /// 충격 파티클 재생 (Phase 3 - 나중에 Unity에서 설정)
+    /// </summary>
+    private void PlayImpactParticle(Vector3 impactPosition)
+    {
+        // if (impactParticle != null)
+        // {
+        //     // 파티클 위치를 충격 위치로 설정
+        //     impactParticle.transform.position = impactPosition;
+        //     impactParticle.Play();
+        //     Debug.Log($"[ItemCushion] 충격 파티클 재생: {impactPosition}");
+        // }
+    }
+
 #if UNITY_EDITOR
     /// <summary>
     /// 디버그: 강제 설치 테스트
@@ -419,6 +571,59 @@ public class ItemCushion : Item
         if (Application.isPlaying)
         {
             OnPlaced();
+        }
+    }
+    
+    /// <summary>
+    /// 디버그: 충격 흡수 테스트
+    /// </summary>
+    [ContextMenu("Test Impact Animation")]
+    private void TestImpact()
+    {
+        if (Application.isPlaying)
+        {
+            // 테스트를 위해 강제로 설치된 상태로 설정
+            if (!isDeployed)
+            {
+                Debug.Log("[ItemCushion] 테스트를 위해 강제로 설치 상태로 전환");
+                isDeployed = true;
+                
+                // 쿠션 모델 활성화
+                if (cushionModel != null)
+                {
+                    cushionModel.SetActive(true);
+                    cushionModel.transform.localScale = originalCushionScale;
+                }
+                if (boxModel != null)
+                {
+                    boxModel.SetActive(false);
+                }
+            }
+            
+            // 충격 테스트
+            OnImpact(transform.position);
+        }
+        else
+        {
+            Debug.LogWarning("[ItemCushion] Play Mode에서만 테스트 가능합니다.");
+        }
+    }
+    
+    /// <summary>
+    /// 디버그: 즉시 찌그러짐만 테스트 (상태 체크 무시)
+    /// </summary>
+    [ContextMenu("Test Impact (Force)")]
+    private void TestImpactForce()
+    {
+        if (Application.isPlaying)
+        {
+            Debug.Log("[ItemCushion] 강제 충격 테스트 - 상태 체크 무시");
+            StartCoroutine(ImpactAnimation());
+            PlayImpactSound();
+        }
+        else
+        {
+            Debug.LogWarning("[ItemCushion] Play Mode에서만 테스트 가능합니다.");
         }
     }
 #endif
