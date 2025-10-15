@@ -72,7 +72,7 @@ public class BuildSystem : MonoBehaviour
     }
 
     // 배치 모드 시작 - 객체를 생성하고 미리보기 재질 적용
-    public void StartPlacing(GameObject objectToPlace, GameObject currentItem, bool wallMountable = false)
+    public void StartPlacing(GameObject objectToPlace, GameObject currentItem, bool wallMountable = false, System.Action<GameObject> onPlacingStarted = null)
     {
         InteractionSystem.instance.isInteraction = false;
         this.currentItem = currentItem;
@@ -81,6 +81,7 @@ public class BuildSystem : MonoBehaviour
         if (objectToPlace != null)
         {
             currentObject = Instantiate(objectToPlace); // 배치할 객체 인스턴스화
+            currentObject.name = objectToPlace.name + " (임시)";
             
             // 콜라이더 일시적으로 비활성화
             Collider[] colliders = currentObject.GetComponentsInChildren<Collider>();
@@ -99,13 +100,10 @@ public class BuildSystem : MonoBehaviour
                 rb.useGravity = false;
             }
             
-            // 현재 아이템이 쿠션이면 쿠션의 isPreview를 true로 설정 이후에 추상화 필요함.
-            var item = currentItem.GetComponent<ItemCushion>();
-            if(item != null)
-            {
-                item.isPreview = true;
-            }
             isPlacing = true; // 배치 모드 활성화
+            
+            // 콜백 함수 실행 (null이 아닐 경우)
+            onPlacingStarted?.Invoke(currentObject);
         }
     }
 
@@ -115,10 +113,11 @@ public class BuildSystem : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition); // 마우스 위치에서 Ray 생성
         RaycastHit hit;
 
-        // 플레이어 레이어를 제외한 레이어 마스크 생성
-        int layerMaskWithoutPlayer = groundLayer & ~playerLayer;
+        // 플레이어와 Item 레이어를 제외한 레이어 마스크 생성
+        int itemLayer = LayerMask.GetMask("Item");
+        int layerMask = groundLayer & ~playerLayer & ~itemLayer;
 
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMaskWithoutPlayer))
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask))
         {
             currentObject.transform.position = hit.point; // 객체 위치를 Ray 충돌 지점으로 설정
         }
@@ -130,10 +129,11 @@ public class BuildSystem : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition); // 마우스 위치에서 Ray 생성
         RaycastHit hit;
 
-        // 플레이어 레이어를 제외한 레이어 마스크 생성
-        int layerMaskWithoutPlayer = Physics.DefaultRaycastLayers & ~playerLayer;
+        // 플레이어와 Item 레이어를 제외한 레이어 마스크 생성
+        int itemLayer = LayerMask.GetMask("Item");
+        int layerMask = Physics.DefaultRaycastLayers & ~playerLayer & ~itemLayer;
         
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMaskWithoutPlayer))
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask))
         {
             // 벽 레이어에 충돌했는지 확인
             canPlaceOnWall = (wallLayer == (wallLayer | (1 << hit.collider.gameObject.layer)));
@@ -202,6 +202,14 @@ public class BuildSystem : MonoBehaviour
         
         currentObject.layer = LayerMask.NameToLayer(ETag.Item.ToString());
         RemovePreviewMaterial(currentObject); // 미리보기 재질 제거
+        
+        // ItemCushion 설치 콜백 호출 (Phase 1)
+        var cushion = currentObject.GetComponent<ItemCushion>();
+        if (cushion != null)
+        {
+            cushion.OnPlaced();
+        }
+        
         Destroy(currentItem);
         currentObject = null;
         isPlacing = false; // 배치 모드 비활성화

@@ -84,8 +84,13 @@ public class RampageTrigger : MonoBehaviour
     {
         if (other.CompareTag(ETag.Item.ToString()))
         {
-            ItemCushion itemCushion = other.GetComponent<ItemCushion>();
-            return itemCushion != null;
+            // GetComponentInParent로 부모 오브젝트까지 검색
+            ItemCushion itemCushion = other.GetComponentInParent<ItemCushion>();
+            if (itemCushion != null)
+            {
+                Debug.Log($"[RampageTrigger] 쿠션 감지 성공! {other.gameObject.name}");
+                return true;
+            }
         }
         return false;
     }
