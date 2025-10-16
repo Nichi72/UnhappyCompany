@@ -15,7 +15,21 @@ public class FMODEvents : MonoBehaviour
     [field: SerializeField] public EventReference shopItemBuy { get; private set; }
     [field: SerializeField] public EventReference shopItemDrop { get; private set; }
     [field: SerializeField] public EventReference startButtonPress { get; private set; }
+
+    [field: Header("Door")]
     [field: SerializeField] public EventReference doorButtonPress { get; private set; }
+    [field: SerializeField] public EventReference CenterDoorOpen { get; private set; }
+    [field: SerializeField] public EventReference CenterDoorClose { get; private set; }
+    [field: SerializeField] public EventReference CenterDoorButton { get; private set; }
+
+    [field: Header("Item Sell")]
+    [field: SerializeField] public EventReference SellLeverDown { get; private set; }
+    [field: SerializeField] public EventReference SellItemLight { get; private set; }
+    [field: SerializeField] public EventReference SellItemHeavy { get; private set; }
+    [field: SerializeField] public EventReference SellDoorOpen { get; private set; }
+    [field: SerializeField] public EventReference SellDoorClose { get; private set; }
+    [field: SerializeField] public EventReference SellItemSubtract { get; private set; }
+    [field: SerializeField] public EventReference SellItemComplete { get; private set; }
 
 	[field: Header("Computer")]
 	[field: SerializeField] public EventReference computerCursorClick { get; private set; }
