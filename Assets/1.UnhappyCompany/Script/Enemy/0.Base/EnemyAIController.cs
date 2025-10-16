@@ -595,7 +595,7 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
     {
         if (playerTr == null)
         {
-            Debug.Log("플레이어가 없습니다.");
+            // Debug.Log("플레이어가 없습니다.");
             return false;
         }
         
