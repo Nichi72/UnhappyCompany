@@ -15,6 +15,11 @@ public abstract class Item : MonoBehaviour , IInteractableF , IToolTip
     public virtual string ToolTipText3 { get => ""; set => ToolTipText3 = value; }
 
     [SerializeField]protected string uniqueInstanceID;
+    
+    /// <summary>
+    /// 원래 레이어 상태 저장 (Drop 시 복구용)
+    /// </summary>
+    private int originalLayer = -1;
 
     public bool useItemDataPosition = false;
     public bool useItemDataRotation = false;
@@ -53,6 +58,9 @@ public abstract class Item : MonoBehaviour , IInteractableF , IToolTip
 
     public virtual void OnDrop()
     {
+        // 레이어 복구
+        RestoreOriginalLayer();
+        
         var rigidbody = GetComponent<Rigidbody>();
         if(rigidbody != null)
         {
@@ -93,6 +101,10 @@ public abstract class Item : MonoBehaviour , IInteractableF , IToolTip
             DeserializeState(state);
         }
         ExceptionItem();
+        
+        // 손에 들 때 레이어 저장 및 변경 (Raycast 무시용)
+        SaveAndChangeLayer();
+        
         player.SetModelHandTransform(isModelHandAnimation);
         player.firstPersonController.SetPivotHandTransform(isModelHandAnimation);
         transform.SetParent(player.rightHandPos);
@@ -148,6 +160,51 @@ public abstract class Item : MonoBehaviour , IInteractableF , IToolTip
         }
 
 
+    }
+    
+    /// <summary>
+    /// 현재 레이어를 저장하고 "Ignore Raycast" 레이어로 변경합니다.
+    /// 이를 통해 손에 들고 있는 아이템이 레이캐스트에 감지되지 않도록 합니다.
+    /// </summary>
+    private void SaveAndChangeLayer()
+    {
+        // 원래 레이어 저장
+        originalLayer = gameObject.layer;
+        
+        // Ignore Raycast 레이어로 변경 (레이어 인덱스 2)
+        int ignoreRaycastLayer = LayerMask.NameToLayer("Ignore Raycast");
+        SetLayerRecursively(gameObject, ignoreRaycastLayer);
+        
+        Debug.Log($"[Item] {itemData?.itemName ?? gameObject.name}: 레이어 저장 (원래: {LayerMask.LayerToName(originalLayer)}) 및 변경 (새로운: Ignore Raycast)");
+    }
+    
+    /// <summary>
+    /// 저장된 원래 레이어로 복구합니다.
+    /// </summary>
+    private void RestoreOriginalLayer()
+    {
+        if (originalLayer != -1)
+        {
+            SetLayerRecursively(gameObject, originalLayer);
+            Debug.Log($"[Item] {itemData?.itemName ?? gameObject.name}: 레이어 복구 (복구된 레이어: {LayerMask.LayerToName(originalLayer)})");
+            originalLayer = -1; // 복구 후 초기화
+        }
+    }
+    
+    /// <summary>
+    /// GameObject와 모든 자식 오브젝트의 레이어를 재귀적으로 변경합니다.
+    /// </summary>
+    private void SetLayerRecursively(GameObject obj, int layer)
+    {
+        if (obj == null) return;
+        
+        obj.layer = layer;
+        
+        // 모든 자식 오브젝트도 동일하게 변경
+        foreach (Transform child in obj.transform)
+        {
+            SetLayerRecursively(child.gameObject, layer);
+        }
     }
     
     private int GenerateItemID()
