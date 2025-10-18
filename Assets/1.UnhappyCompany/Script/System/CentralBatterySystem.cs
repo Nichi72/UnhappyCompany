@@ -119,7 +119,8 @@ public class CentralBatterySystem : MonoBehaviour
     {
         Debug.Log($"[CenterBattry, 충전 요구] 현재 남은 배터리 양: {currentBatteryLevel}");
 
-        if (isStop || currentBatteryLevel <= 0 || requestedAmount <= 0)
+        // isStop 상태에서도 충전은 가능해야 함 (소비만 막음)
+        if (currentBatteryLevel <= 0 || requestedAmount <= 0)
         {
             return 0f;
         }
