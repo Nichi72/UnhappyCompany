@@ -149,28 +149,27 @@ public class Flashlight : Item, ICentralBatteryRechargeable
     // 상태 저장/로드 기능 (배터리 상태도 포함)
     public override object SerializeState()
     {
-        return this.isOn;
-
-        // return new FlashlightState 
-        // { 
-        //     isOn = this.isOn, 
-        //     currentBatteryAmount = this.currentBatteryAmount 
-        // };
+        return new FlashlightState 
+        { 
+            isOn = this.isOn, 
+            currentBatteryAmount = this.currentBatteryAmount 
+        };
     }
 
     public override void DeserializeState(object state)
     {
-        // if (state is FlashlightState savedState)
-        // {
-        //     isOn = savedState.isOn;
-        //     currentBatteryAmount = savedState.currentBatteryAmount;
-        //     SetFlashlightState(isOn);
-        // }
-        // else if (state is bool savedIsOn) // 기존 호환성을 위해
-        // {
-        //     isOn = savedIsOn;
-        //     SetFlashlightState(isOn);
-        // }
+        if (state is FlashlightState savedState)
+        {
+            isOn = savedState.isOn;
+            currentBatteryAmount = savedState.currentBatteryAmount;
+            Debug.Log($"[FlashLight]: 현재 배터리 잔량: {currentBatteryAmount}");
+            SetFlashlightState(isOn);
+        }
+        else if (state is bool savedIsOn) // 기존 호환성을 위해
+        {
+            isOn = savedIsOn;
+            SetFlashlightState(isOn);
+        }
     }
 
     // 배터리 상태를 위한 구조체
