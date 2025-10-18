@@ -1,24 +1,13 @@
 using UnityEngine;
 
-public class Flashlight : Item, ICentralBatteryRechargeable
+public class Flashlight : RechargeableItem
 {
     [Header("Flashlight Settings")]
     public Light flashlightLight;
     public bool isOn = false;
 
-    [Header("Battery Settings")]
-    [SerializeField] private float maxBatteryCapacity = 100f;
-    [SerializeField] private float currentBatteryAmount = 100f;
-    [SerializeField] private float rechargeRatePerSecond = 10f;
+    [Header("Flashlight Battery Drain")]
     [SerializeField] private float batteryDrainPerSecond = 5f; // 플래시라이트 사용 시 배터리 소모량
-
-
-    // ICentralBatteryRechargeable 구현
-    public string ID => GetUniqueInstanceID();
-    public float MaxBatteryCapacity { get => maxBatteryCapacity; set => maxBatteryCapacity = value; }
-    public float CurrentBatteryAmount { get => currentBatteryAmount; set => currentBatteryAmount = Mathf.Clamp(value, 0f, maxBatteryCapacity); }
-    public float RechargeRatePerSecond { get => rechargeRatePerSecond; set => rechargeRatePerSecond = value; }
-    public bool IsFullyCharged => currentBatteryAmount >= maxBatteryCapacity;
 
     void Start()
     {
@@ -78,35 +67,10 @@ public class Flashlight : Item, ICentralBatteryRechargeable
         }
     }
 
-    // ICentralBatteryRechargeable 메서드 구현
-    public ChargeResult TryChargeFromCentralBattery()
+    // DrainBattery override - 플래시라이트 특화 로직 (배터리 없으면 자동 꺼짐)
+    public override void DrainBattery(float amount)
     {
-        if (CentralBatterySystem.Instance == null)
-        {
-            return ChargeResult.SystemUnavailable;
-        }
-
-        // 내가 필요한 만큼 계산 (완전 충전까지)
-        float neededAmount = maxBatteryCapacity - currentBatteryAmount;
-        if (neededAmount <= 0f)
-        {
-            return ChargeResult.AlreadyFull;
-        }
-
-        // 중앙 배터리에서 전력 요청
-        float receivedPower = CentralBatterySystem.Instance.RequestPower(neededAmount);
-        if (receivedPower <= 0)
-        {
-            return ChargeResult.CentralBatteryEmpty;
-        }
-
-        CurrentBatteryAmount += receivedPower;
-        return ChargeResult.Success;
-    }
-
-    public void DrainBattery(float amount)
-    {
-        CurrentBatteryAmount -= amount;
+        base.DrainBattery(amount);
 
         // 배터리가 0이 되면 자동으로 끄기
         if (currentBatteryAmount <= 0 && isOn)
@@ -115,35 +79,6 @@ public class Flashlight : Item, ICentralBatteryRechargeable
             SetFlashlightState(false);
             Debug.Log("[FlahLight] 배터리 없어서 손전등꺼짐");
         }
-    }
-
-    public string GetItemName()
-    {
-        return itemData != null ? itemData.itemName : "Flashlight";
-    }
-
-    public override void Mount(Player player, object state = null)
-    {
-        // 부모 클래스의 Mount 메서드 호출
-        base.Mount(player, state);
-
-        // 중앙 배터리 시스템에 충전 가능한 아이템으로 등록
-        if (CentralBatterySystem.Instance != null)
-        {
-            CentralBatterySystem.Instance.RegisterRechargeable(this);
-        }
-    }
-
-    public override void UnMount()
-    {
-        // 중앙 배터리 시스템에서 등록 해제
-        if (CentralBatterySystem.Instance != null)
-        {
-            CentralBatterySystem.Instance.UnregisterRechargeable(this);
-        }
-
-        // 부모 클래스의 UnMount 메서드 호출
-        base.UnMount();
     }
 
     // 상태 저장/로드 기능 (배터리 상태도 포함)
