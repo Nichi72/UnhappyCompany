@@ -7,11 +7,11 @@ using MyUtility;
 public class BatteryChargeSlot : MonoBehaviour, IInteractableF, IToolTip
 {
     [Header("Interaction Settings")]
-    public string InteractionTextF { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "BatteryChargeSlot_ITR"); set => InteractionTextF = value; }
+    public string InteractionTextF { get => "IF_센터 배터리 충전하기"; set => InteractionTextF = value; }
     public bool IgnoreInteractionF { get; set; } = false;
     
     [Header("ToolTip Settings")]
-    public string ToolTipText { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "BatteryChargeSlot_TT"); set => ToolTipText = value; }
+    public string ToolTipText { get => "BatteryChargeSlot_TT"; set => ToolTipText = value; }
     public string ToolTipText2 { get => ""; set => ToolTipText2 = value; }
     public string ToolTipText3 { get => ""; set => ToolTipText3 = value; }
 

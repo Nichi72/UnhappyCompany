@@ -25,7 +25,7 @@ public class ItemCharger : MonoBehaviour, IInteractableF, IToolTip
     [SerializeField] private float groundCheckDown = 5f;
 
     // public string InteractionTextF { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "ItemCharger_ITR"); set => InteractionTextF = value; }
-    public string InteractionTextF { get => "IF_충전하기"; set => InteractionTextF = value; }
+    public string InteractionTextF { get => "IF_손에 든 아이템 충전하기"; set => InteractionTextF = value; }
     public bool IgnoreInteractionF { get; set; } = false;
     public string ToolTipText { get => "충전기 사용 중..."; set => ToolTipText = value; }
     public string ToolTipText2 { get => ""; set => ToolTipText2 = value; }
