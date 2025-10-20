@@ -19,6 +19,7 @@ public class RampageAIController : EnemyAIController<RampageAIData>
 
     [Header("Charge State")]
     public bool isCollided = false;       // 돌진 중 충돌 발생 여부
+    public bool isCushionCollision = false; // 쿠션과 충돌했는지 여부 (패널 개수 결정용)
     public int chargeCount = 0;           // 돌진 횟수
     private int consecutiveCollisions = 0;// 연속 충돌 카운트
     private const int MAX_CONSECUTIVE_COLLISIONS = 10; // 최대 연속 충돌 횟수
@@ -28,6 +29,9 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     [HideInInspector] public Vector3 chargeDirection;     // 고정된 돌진 방향
     [HideInInspector] public Vector3 chargeTargetPoint;   // 계산된 돌진 목표 지점
     [HideInInspector] public bool hasChargeTarget = false; // 돌진 목표 설정됨 여부
+    [HideInInspector] public float currentChargeSpeed = 0f; // 현재 돌진 속도 (디버그용)
+    [HideInInspector] public float targetChargeSpeed = 0f; // 목표 돌진 속도 (디버그용)
+    [HideInInspector] public float chargeStuckThreshold = 0f; // 돌진 멈춤 임계값 (디버그용)
     
     [Header("Gameplay Feedback (플레이어 피드백)")]
     [Tooltip("추적 → 돌진 전환 시 재생할 사운드 (FMOD)")]
@@ -42,11 +46,37 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     private int hpLossOnNoCushion => enemyData.hpLossOnNoCushion;
 
     // 사양서에서 요구한 폭발 범위와 대미지
-    public float ExplodeRadius => enemyData.explodeRadius;
-    public int ExplodeDamage => enemyData.explodeDamage;
+    public float ExplosionDamageRadius => enemyData.explosionDamageRadius;
+    public int ExplosionDamage => enemyData.explosionMaxDamage;
 
    
     public List<RampagePanel> panels;
+    
+    [Header("Disabled Visual")]
+    [Tooltip("패널이 모두 파괴되었을 때 활성화할 부서진 Rampage GameObject")]
+    [SerializeField] private GameObject disabledRampageVisual;
+    [Tooltip("패널이 모두 파괴되었을 때 비활성화할 정상 Rampage 비주얼 GameObject")]
+    [SerializeField] private GameObject normalRampageVisual;
+    
+    [Header("Reward Drop")]
+    [Tooltip("부서질 때 드랍할 선물상자 프리팹")]
+    [SerializeField] private GameObject giftBoxPrefab;
+    [Tooltip("선물상자 드랍 위치 오프셋 (Rampage 위치 기준)")]
+    [SerializeField] private Vector3 giftBoxDropOffset = new Vector3(0f, 1f, 0f);
+    
+    [Header("Explode Effect")]
+    [Tooltip("자폭 시 재생할 폭발 파티클")]
+    [SerializeField] private ParticleSystem explodeParticle;
+    [Tooltip("폭발 이펙트 위치 오프셋 (Rampage 중심 기준)")]
+    [SerializeField] private Vector3 explodeEffectOffset = new Vector3(0f, 1f, 0f);
+    
+    [Header("Debug Visualization")]
+    [Tooltip("씬 뷰에서 폭발 범위 시각화 표시")]
+    [SerializeField] private bool showExplosionGizmos = true;
+    
+    // 폭발 파티클 접근자
+    public ParticleSystem ExplodeParticle => explodeParticle;
+    public Vector3 ExplodeEffectOffset => explodeEffectOffset;
 
     private float stuckTime = 0f;
     private Vector3 lastPosition;
@@ -89,6 +119,12 @@ public class RampageAIController : EnemyAIController<RampageAIData>
         lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
         lineRenderer.startColor = Color.green;
         lineRenderer.endColor = Color.green;
+        
+        // 부서진 비주얼은 처음에 비활성화
+        if (disabledRampageVisual != null)
+        {
+            disabledRampageVisual.SetActive(false);
+        }
     }
 
     protected override void Update()
@@ -239,6 +275,39 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     {
         base.OnDrawGizmos();
         // UpdateLineRenderer();
+
+        if (vision == null) return;
+
+        // 시야 범위 시각화 (와이어 구)
+        Gizmos.color = CheckPlayerInSight() ? Color.red : new Color(0, 1, 0, 0.5f);
+        Gizmos.DrawWireSphere(transform.position, vision.sightRange);
+
+        // 돌진 감지 범위 (주황색 와이어 구)
+        if (enemyData != null)
+        {
+            float chargeDetectionRange = vision.sightRange * 0.7f;
+            Gizmos.color = new Color(1, 0.5f, 0, 0.5f);
+            Gizmos.DrawWireSphere(transform.position, chargeDetectionRange);
+        }
+
+        // 플레이어를 향한 선 그리기
+        if (playerTr != null)
+        {
+            Gizmos.color = CheckPlayerInSight() ? Color.red : Color.yellow;
+            Gizmos.DrawLine(transform.position + Vector3.up, playerTr.position + Vector3.up);
+        }
+
+        // 시야각 방향 표시
+        if (vision != null)
+        {
+            Vector3 forward = transform.forward;
+            Vector3 leftBoundary = Quaternion.Euler(0, -vision.sightAngle / 2, 0) * forward * vision.sightRange;
+            Vector3 rightBoundary = Quaternion.Euler(0, vision.sightAngle / 2, 0) * forward * vision.sightRange;
+
+            Gizmos.color = new Color(0, 1, 0, 0.5f);
+            Gizmos.DrawLine(transform.position, transform.position + leftBoundary);
+            Gizmos.DrawLine(transform.position, transform.position + rightBoundary);
+        }
     }
     #endregion
 
@@ -311,6 +380,61 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     public void SetCollided(bool value)
     {
         isCollided = value;
+    }
+
+    /// <summary>
+    /// 부서진 Rampage 비주얼로 교체
+    /// </summary>
+    public void SwitchToDisabledVisual()
+    {
+        // 정상 비주얼 비활성화
+        if (normalRampageVisual != null)
+        {
+            normalRampageVisual.SetActive(false);
+            Debug.Log("정상 Rampage 비주얼 비활성화");
+        }
+        else
+        {
+            Debug.LogWarning("normalRampageVisual이 할당되지 않았습니다. 인스펙터에서 할당해주세요.");
+        }
+
+        // 부서진 비주얼 활성화
+        if (disabledRampageVisual != null)
+        {
+            disabledRampageVisual.SetActive(true);
+            Debug.Log("부서진 Rampage 비주얼 활성화");
+        }
+        else
+        {
+            Debug.LogWarning("disabledRampageVisual이 할당되지 않았습니다. 인스펙터에서 할당해주세요.");
+        }
+    }
+
+    /// <summary>
+    /// 선물상자 드랍
+    /// </summary>
+    public void DropGiftBox()
+    {
+        if (giftBoxPrefab == null)
+        {
+            Debug.LogWarning("[RampageAIController] 선물상자 프리팹이 설정되지 않았습니다.");
+            return;
+        }
+
+        // 드랍 위치 계산
+        Vector3 dropPosition = transform.position + giftBoxDropOffset;
+
+        // 선물상자 스폰
+        GameObject giftBox = Instantiate(giftBoxPrefab, dropPosition, Quaternion.identity);
+
+        // 약간의 위로 튀는 힘 추가
+        Rigidbody rb = giftBox.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.AddForce(Vector3.up * 3f, ForceMode.Impulse);
+        }
+
+        Debug.Log($"[RampageAIController] 선물상자 드랍: {dropPosition}");
     }
 
     #region Gameplay Feedback Methods
@@ -454,11 +578,56 @@ public class RampageAIController : EnemyAIController<RampageAIData>
         
         GUIStyle stateStyle = new GUIStyle();
         stateStyle.alignment = TextAnchor.MiddleCenter;
-        stateStyle.fontSize = (int)(10 * debugUIScale);
+        stateStyle.fontSize = (int)(20 * debugUIScale);  // 2배 증가 (10 → 20)
         stateStyle.normal.textColor = isCollided ? Color.red : Color.yellow;
         stateStyle.fontStyle = FontStyle.Bold;
 
-        DrawTextWithOutline(x, y, width, 20, stateText, stateStyle);
+        DrawTextWithOutline(x, y, width, 40, stateText, stateStyle);  // 2배 증가 (20 → 40)
+        
+        // 속도 정보 표시 (ChargeState일 때만)
+        if (currentState is RampageChargeState && currentChargeSpeed > 0)
+        {
+            float speedPercent = targetChargeSpeed > 0 ? (currentChargeSpeed / targetChargeSpeed) : 0f;
+            float stopThreshold = enemyData.chargeStopSpeedThreshold;
+            string speedText = $"Speed: {currentChargeSpeed:F2} / {targetChargeSpeed:F2} m/s ({speedPercent:P0})";
+            
+            // 속도에 따라 색상 변경
+            Color speedColor = Color.white;
+            if (currentChargeSpeed <= stopThreshold)
+            {
+                speedColor = Color.red; // 임계값 이하 - 멈춤!
+            }
+            else if (speedPercent > 0.8f)
+            {
+                speedColor = Color.green; // 정상 속도
+            }
+            else if (speedPercent > 0.5f)
+            {
+                speedColor = Color.yellow; // 감속 중
+            }
+            else
+            {
+                speedColor = Color.red; // 느림
+            }
+            
+            GUIStyle speedStyle = new GUIStyle();
+            speedStyle.alignment = TextAnchor.MiddleCenter;
+            speedStyle.fontSize = (int)(18 * debugUIScale);  // 2배 증가 (9 → 18)
+            speedStyle.normal.textColor = speedColor;
+            speedStyle.fontStyle = FontStyle.Normal;
+            
+            DrawTextWithOutline(x, y + 44, width, 36, speedText, speedStyle);  // 2배 증가 (22 → 44, 18 → 36)
+            
+            // 임계값 표시
+            string thresholdText = $"Stop Threshold: {stopThreshold:F2} m/s";
+            GUIStyle thresholdStyle = new GUIStyle();
+            thresholdStyle.alignment = TextAnchor.MiddleCenter;
+            thresholdStyle.fontSize = (int)(14 * debugUIScale);
+            thresholdStyle.normal.textColor = Color.cyan;
+            thresholdStyle.fontStyle = FontStyle.Italic;
+            
+            DrawTextWithOutline(x, y + 84, width, 28, thresholdText, thresholdStyle);
+        }
     }
 
     /// <summary>
@@ -476,14 +645,20 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     {
         if (Camera.main == null) return;
 
-        // 1. 이동 방향 시각화 (현재 속도 방향)
+        // 1. 감지 범위 시각화
+        DrawDetectionRange();
+
+        // 2. 이동 방향 시각화 (현재 속도 방향)
         DrawMovementDirection();
 
-        // 2. 돌진 타겟 시각화 (플레이어 방향)
+        // 3. 돌진 타겟 시각화 (플레이어 방향)
         if (currentState is RampageChargeState)
         {
             DrawChargeTarget();
         }
+
+        // 4. 플레이어와의 거리 표시
+        DrawPlayerDistance();
     }
 
     /// <summary>
@@ -612,6 +787,202 @@ public class RampageAIController : EnemyAIController<RampageAIData>
         DrawTextWithOutline(targetScreen.x - labelWidth / 2f, labelY, labelWidth, labelHeight, labelText, labelStyle);
 
         GUI.color = Color.white;
+    }
+
+    /// <summary>
+    /// 감지 범위 시각화 (시야각)
+    /// </summary>
+    private void DrawDetectionRange()
+    {
+        if (vision == null) return;
+
+        // 시야 감지 범위 (부채꼴 - 녹색/빨간색)
+        Color rangeColor = CheckPlayerInSight() ? new Color(1, 0, 0, 0.3f) : new Color(0, 1, 0, 0.3f);
+        DrawWorldVisionCone(transform.position, transform.forward, vision.sightRange, vision.sightAngle, rangeColor, 32);
+
+        // 돌진 감지 범위 (원형 - 주황색)
+        if (enemyData != null)
+        {
+            // 추적에서 돌진으로 전환되는 거리 범위 (예시로 시야의 70% 거리)
+            float chargeDetectionRange = vision.sightRange * 0.7f;
+            DrawWorldCircleGUI(transform.position, chargeDetectionRange, new Color(1, 0.5f, 0, 0.2f), 24);
+        }
+
+        // 폭발 범위 시각화 (빨간색 - 위험 범위)
+        if (enemyData != null && enemyData.explosionDamageRadius > 0)
+        {
+            DrawWorldCircleGUI(transform.position, enemyData.explosionDamageRadius, new Color(1, 0, 0, 0.15f), 32);
+        }
+    }
+
+    /// <summary>
+    /// 플레이어와의 거리 표시
+    /// </summary>
+    private void DrawPlayerDistance()
+    {
+        if (playerTr == null) return;
+
+        float distance = Vector3.Distance(transform.position, playerTr.position);
+        Vector3 midPoint = (transform.position + playerTr.position) / 2f + Vector3.up * 1.5f;
+        Vector2 midScreen = WorldToGUIPoint(midPoint);
+
+        if (midScreen == Vector2.zero) return;
+
+        // 거리 텍스트 스타일
+        GUIStyle distanceStyle = new GUIStyle();
+        distanceStyle.alignment = TextAnchor.MiddleCenter;
+        distanceStyle.fontSize = (int)(11 * debugUIScale);
+        distanceStyle.normal.textColor = Color.white;
+        distanceStyle.fontStyle = FontStyle.Bold;
+
+        // 거리에 따른 배경 색상 (가까우면 빨강, 멀면 초록)
+        float dangerRatio = vision != null ? Mathf.Clamp01(1f - (distance / vision.sightRange)) : 0;
+        Color bgColor = Color.Lerp(new Color(0, 0.5f, 0, 0.7f), new Color(0.8f, 0, 0, 0.8f), dangerRatio);
+
+        float labelWidth = 120f * debugUIScale;
+        float labelHeight = 30f * debugUIScale;
+
+        // 배경
+        GUI.color = bgColor;
+        GUI.DrawTexture(new Rect(midScreen.x - labelWidth / 2f, midScreen.y - labelHeight / 2f, labelWidth, labelHeight), Texture2D.whiteTexture);
+
+        // 거리 상태 텍스트
+        string statusText = "";
+        if (currentState is RampageChargeState)
+        {
+            statusText = " [CHARGING!]";
+        }
+        else if (CheckPlayerInSight())
+        {
+            statusText = " [DETECTED]";
+        }
+
+        // 텍스트
+        string distanceText = $"Player\n{distance:F1}m{statusText}";
+        DrawTextWithOutline(midScreen.x - labelWidth / 2f, midScreen.y - labelHeight / 2f, labelWidth, labelHeight, distanceText, distanceStyle);
+
+        GUI.color = Color.white;
+    }
+
+    #endregion
+
+    #region Debug Methods - State Testing
+
+    /// <summary>
+    /// 테스트용: 즉시 폭발 상태로 전이
+    /// </summary>
+    [ContextMenu("Test - Explode Now")]
+    private void TestExplodeNow()
+    {
+        if (!Application.isPlaying)
+        {
+            Debug.LogWarning("[RampageAIController] 플레이 모드에서만 실행 가능합니다!");
+            return;
+        }
+        
+        Debug.Log("[RampageAIController] 테스트: 폭발 상태로 강제 전이!");
+        ChangeState(new RampageExplodeState(this));
+    }
+    
+    /// <summary>
+    /// 테스트용: 무력화 상태로 전이
+    /// </summary>
+    [ContextMenu("Test - Disabled Now")]
+    private void TestDisabledNow()
+    {
+        if (!Application.isPlaying)
+        {
+            Debug.LogWarning("[RampageAIController] 플레이 모드에서만 실행 가능합니다!");
+            return;
+        }
+        
+        Debug.Log("[RampageAIController] 테스트: 무력화 상태로 강제 전이!");
+        ChangeState(new RampageDisabledState(this));
+    }
+    
+    /// <summary>
+    /// 테스트용: 돌진 상태로 전이
+    /// </summary>
+    [ContextMenu("Test - Charge Now")]
+    private void TestChargeNow()
+    {
+        if (!Application.isPlaying)
+        {
+            Debug.LogWarning("[RampageAIController] 플레이 모드에서만 실행 가능합니다!");
+            return;
+        }
+        
+        Debug.Log("[RampageAIController] 테스트: 돌진 상태로 강제 전이!");
+        ChangeState(new RampageChargeState(this, "TestButton"));
+    }
+
+    #endregion
+
+    #region Gizmos - Explosion Range Visualization
+
+    /// <summary>
+    /// 폭발 범위 시각화 (씬 뷰)
+    /// </summary>
+    protected override void OnDrawGizmosSelected()
+    {
+        base.OnDrawGizmosSelected();
+        
+        if (enemyData == null || !showExplosionGizmos)
+            return;
+
+        Vector3 explosionCenter = transform.position;
+
+        // 데미지 범위 시각화 (빨간색)
+        Gizmos.color = new Color(1f, 0f, 0f, 0.3f); // 투명한 빨강
+        Gizmos.DrawSphere(explosionCenter, enemyData.explosionDamageRadius);
+        
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(explosionCenter, enemyData.explosionDamageRadius);
+
+        // 물리 효과 범위 시각화 (노란색)
+        Gizmos.color = new Color(1f, 1f, 0f, 0.2f); // 투명한 노랑
+        Gizmos.DrawSphere(explosionCenter, enemyData.explosionForceRadius);
+        
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(explosionCenter, enemyData.explosionForceRadius);
+
+        // 중심점 표시 (주황색)
+        Gizmos.color = new Color(1f, 0.5f, 0f, 1f);
+        Gizmos.DrawSphere(explosionCenter, 0.3f);
+
+        // 범위 표시를 위한 수직선
+        Gizmos.color = Color.red;
+        Gizmos.DrawLine(explosionCenter, explosionCenter + Vector3.up * enemyData.explosionDamageRadius);
+        
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawLine(explosionCenter, explosionCenter + Vector3.right * enemyData.explosionForceRadius);
+
+#if UNITY_EDITOR
+        // 씬 뷰에 텍스트 라벨 표시
+        // 데미지 범위 라벨
+        Vector3 damageTextPos = explosionCenter + Vector3.up * enemyData.explosionDamageRadius + Vector3.up * 0.5f;
+        UnityEditor.Handles.Label(damageTextPos, 
+            $"Damage Range\n{enemyData.explosionDamageRadius:F1}m\n({enemyData.explosionMaxDamage}~{enemyData.explosionMinDamage} dmg)",
+            new GUIStyle()
+            {
+                normal = new GUIStyleState() { textColor = Color.red },
+                alignment = TextAnchor.MiddleCenter,
+                fontSize = 12,
+                fontStyle = FontStyle.Bold
+            });
+
+        // 물리 범위 라벨
+        Vector3 forceTextPos = explosionCenter + Vector3.right * enemyData.explosionForceRadius + Vector3.right * 0.5f;
+        UnityEditor.Handles.Label(forceTextPos, 
+            $"Force Range\n{enemyData.explosionForceRadius:F1}m\n(Force: {enemyData.explosionForce})",
+            new GUIStyle()
+            {
+                normal = new GUIStyleState() { textColor = Color.yellow },
+                alignment = TextAnchor.MiddleLeft,
+                fontSize = 12,
+                fontStyle = FontStyle.Bold
+            });
+#endif
     }
 
     #endregion

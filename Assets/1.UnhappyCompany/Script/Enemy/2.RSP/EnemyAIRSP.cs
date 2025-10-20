@@ -85,6 +85,13 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
 
         // 지면 체크 수행
         CheckGround();
+
+        // 테스트용: F2 키로 스택 증가
+        if (Input.GetKeyDown(KeyCode.F2))
+        {
+            IncrementStack();
+            Debug.Log($"RSP: 스택 증가 테스트 (현재 스택: {stack})");
+        }
     }
 
     /// <summary>
@@ -295,6 +302,41 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
         Gizmos.DrawWireSphere(rayOrigin + Vector3.down * groundCheckDistance, 0.1f);
     }
 
+    /// <summary>
+    /// Scene 뷰에서 RSP 정보 시각화
+    /// </summary>
+    protected override void OnDrawGizmos()
+    {
+        base.OnDrawGizmos();
+
+        if (vision == null) return;
+
+        // 시야 범위 시각화 (와이어 구)
+        Gizmos.color = CheckPlayerInSight() ? Color.red : Color.green;
+        Gizmos.DrawWireSphere(transform.position, vision.sightRange);
+
+        // 특수 공격 범위 시각화
+        if (SpecialAttackRange > 0)
+        {
+            Gizmos.color = new Color(0.5f, 0f, 1f, 0.5f);
+            Gizmos.DrawWireSphere(transform.position, SpecialAttackRange);
+        }
+
+        // 스택이 높을 때 위험 범위 표시
+        if (GetCompulsoryPlayStack() >= 3)
+        {
+            Gizmos.color = new Color(1f, 0f, 0f, 0.3f);
+            Gizmos.DrawWireSphere(transform.position, 5f);
+        }
+
+        // 플레이어를 향한 선 그리기
+        if (playerTr != null)
+        {
+            Gizmos.color = CheckPlayerInSight() ? Color.red : Color.yellow;
+            Gizmos.DrawLine(transform.position + Vector3.up, playerTr.position + Vector3.up);
+        }
+    }
+
     #region Debug UI Override
 
     /// <summary>
@@ -331,8 +373,17 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
         DrawDebugBar(startX, startY + baseBarHeight + barSpacing, baseBarWidth, baseBarHeight,
                      "Stack", currentStack, maxStack, stackPercent, stackColor);
 
-        // 상태 텍스트 (두 바 아래에 표시)
-        DrawStateText(startX, startY + (baseBarHeight + barSpacing) * 2 + 5f, baseBarWidth);
+        // 쿨다운 바 그리기 (쿨다운 중일 때만)
+        if (isCoolDown)
+        {
+            // 쿨다운 진행도를 표시 (정확한 진행도를 보여주려면 쿨다운 시작 시간 추적 필요)
+            DrawDebugBar(startX, startY + (baseBarHeight + barSpacing) * 2, baseBarWidth, baseBarHeight,
+                         "Cooldown", 0, 1, 0f, new Color(0.5f, 0.5f, 1f));
+        }
+
+        // 상태 텍스트 (바들 아래에 표시)
+        float textYOffset = isCoolDown ? (baseBarHeight + barSpacing) * 3 + 5f : (baseBarHeight + barSpacing) * 2 + 5f;
+        DrawStateText(startX, startY + textYOffset, baseBarWidth);
     }
 
     /// <summary>
@@ -395,6 +446,193 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
     protected override string GetEnemyDisplayName()
     {
         return "RSP";
+    }
+
+    /// <summary>
+    /// RSP만의 특수 디버그 정보 표시 (감지 범위, 이동 방향, 지면 체크 등)
+    /// </summary>
+    protected override void DrawCustomDebugInfo()
+    {
+        if (Camera.main == null) return;
+
+        // 1. 감지 범위 시각화 (시야각)
+        DrawDetectionRange();
+
+        // 2. 이동 방향 시각화
+        DrawMovementDirection();
+
+        // 3. 플레이어와의 거리 표시
+        DrawPlayerDistance();
+
+        // 4. 지면 체크 레이 시각화 (게임뷰)
+        DrawGroundCheck();
+
+        // 5. 스택 위험도 시각화
+        if (GetCompulsoryPlayStack() >= 3)
+        {
+            DrawStackWarning();
+        }
+    }
+
+    /// <summary>
+    /// 감지 범위 시각화 (시야각)
+    /// </summary>
+    private void DrawDetectionRange()
+    {
+        if (vision == null) return;
+
+        // 시야 감지 범위 (부채꼴 - 녹색/빨간색)
+        Color rangeColor = CheckPlayerInSight() ? new Color(1, 0, 0, 0.3f) : new Color(0, 1, 0, 0.3f);
+        DrawWorldVisionCone(transform.position, transform.forward, vision.sightRange, vision.sightAngle, rangeColor, 32);
+
+        // 특수 공격 범위 (원형 - 보라색)
+        if (SpecialAttackRange > 0)
+        {
+            DrawWorldCircleGUI(transform.position, SpecialAttackRange, new Color(0.5f, 0, 1, 0.2f), 24);
+        }
+    }
+
+    /// <summary>
+    /// 이동 방향 시각화 (속도 벡터)
+    /// </summary>
+    private void DrawMovementDirection()
+    {
+        if (agent == null || agent.velocity.magnitude < 0.1f) return;
+
+        Vector3 currentPos = transform.position + Vector3.up * 0.5f;
+        Vector3 targetPos = currentPos + agent.velocity.normalized * 2f;
+
+        Vector2 currentScreen = WorldToGUIPoint(currentPos);
+        Vector2 targetScreen = WorldToGUIPoint(targetPos);
+
+        if (currentScreen == Vector2.zero || targetScreen == Vector2.zero) return;
+
+        // 속도에 따라 색상 변경
+        float speedRatio = Mathf.Clamp01(agent.velocity.magnitude / agent.speed);
+        Color directionColor = Color.Lerp(Color.green, Color.yellow, speedRatio);
+
+        // 이동 방향 선 그리기
+        DrawGUILine(currentScreen, targetScreen, directionColor, 3f);
+
+        // 화살표 끝 마커
+        float markerSize = 10f * debugUIScale;
+        GUI.color = directionColor;
+        GUI.DrawTexture(new Rect(targetScreen.x - markerSize / 2f, targetScreen.y - markerSize / 2f, markerSize, markerSize), Texture2D.whiteTexture);
+        GUI.color = Color.white;
+    }
+
+    /// <summary>
+    /// 플레이어와의 거리 표시
+    /// </summary>
+    private void DrawPlayerDistance()
+    {
+        if (playerTr == null) return;
+
+        float distance = Vector3.Distance(transform.position, playerTr.position);
+        Vector3 midPoint = (transform.position + playerTr.position) / 2f + Vector3.up;
+        Vector2 midScreen = WorldToGUIPoint(midPoint);
+
+        if (midScreen == Vector2.zero) return;
+
+        // 거리 텍스트 스타일
+        GUIStyle distanceStyle = new GUIStyle();
+        distanceStyle.alignment = TextAnchor.MiddleCenter;
+        distanceStyle.fontSize = (int)(10 * debugUIScale);
+        distanceStyle.normal.textColor = Color.white;
+        distanceStyle.fontStyle = FontStyle.Bold;
+
+        // 거리에 따른 배경 색상 (가까우면 빨강, 멀면 초록)
+        float dangerRatio = Mathf.Clamp01(1f - (distance / vision.sightRange));
+        Color bgColor = Color.Lerp(new Color(0, 0.5f, 0, 0.7f), new Color(0.5f, 0, 0, 0.7f), dangerRatio);
+
+        float labelWidth = 100f * debugUIScale;
+        float labelHeight = 25f * debugUIScale;
+
+        // 배경
+        GUI.color = bgColor;
+        GUI.DrawTexture(new Rect(midScreen.x - labelWidth / 2f, midScreen.y - labelHeight / 2f, labelWidth, labelHeight), Texture2D.whiteTexture);
+
+        // 텍스트
+        string distanceText = $"Player\n{distance:F1}m";
+        DrawTextWithOutline(midScreen.x - labelWidth / 2f, midScreen.y - labelHeight / 2f, labelWidth, labelHeight, distanceText, distanceStyle);
+
+        GUI.color = Color.white;
+    }
+
+    /// <summary>
+    /// 지면 체크 레이 시각화 (게임뷰)
+    /// </summary>
+    private void DrawGroundCheck()
+    {
+        Vector3 rayOrigin = transform.position + rayOffset;
+        Vector3 rayEnd = rayOrigin + Vector3.down * groundCheckDistance;
+
+        Vector2 originScreen = WorldToGUIPoint(rayOrigin);
+        Vector2 endScreen = WorldToGUIPoint(rayEnd);
+
+        if (originScreen == Vector2.zero || endScreen == Vector2.zero) return;
+
+        Color rayColor = isGround ? new Color(0, 1, 0, 0.8f) : new Color(1, 0, 0, 0.8f);
+        DrawGUILine(originScreen, endScreen, rayColor, 2f);
+
+        // 지면 상태 표시
+        if (!isGround)
+        {
+            GUIStyle airborneStyle = new GUIStyle();
+            airborneStyle.alignment = TextAnchor.MiddleCenter;
+            airborneStyle.fontSize = (int)(9 * debugUIScale);
+            airborneStyle.normal.textColor = Color.yellow;
+            airborneStyle.fontStyle = FontStyle.Bold;
+
+            float labelWidth = 80f * debugUIScale;
+            float labelHeight = 20f * debugUIScale;
+
+            // 배경
+            GUI.color = new Color(0.5f, 0, 0, 0.7f);
+            GUI.DrawTexture(new Rect(endScreen.x - labelWidth / 2f, endScreen.y, labelWidth, labelHeight), Texture2D.whiteTexture);
+
+            // 텍스트
+            DrawTextWithOutline(endScreen.x - labelWidth / 2f, endScreen.y, labelWidth, labelHeight, "AIRBORNE!", airborneStyle);
+            GUI.color = Color.white;
+        }
+    }
+
+    /// <summary>
+    /// 스택 위험도 시각화 (스택이 3 이상일 때)
+    /// </summary>
+    private void DrawStackWarning()
+    {
+        // 위험 반경 표시 (빨간 원)
+        float warningRadius = 5f;
+        DrawWorldCircleGUI(transform.position, warningRadius, new Color(1, 0, 0, 0.2f), 32);
+
+        // 깜빡이는 효과
+        float pulseSpeed = 5f;
+        float pulse = Mathf.PingPong(Time.time * pulseSpeed, 1f);
+        
+        Vector3 warningPos = transform.position + Vector3.up * 3f;
+        Vector2 warningScreen = WorldToGUIPoint(warningPos);
+
+        if (warningScreen == Vector2.zero) return;
+
+        GUIStyle warningStyle = new GUIStyle();
+        warningStyle.alignment = TextAnchor.MiddleCenter;
+        warningStyle.fontSize = (int)(12 * debugUIScale);
+        warningStyle.normal.textColor = Color.Lerp(Color.red, Color.yellow, pulse);
+        warningStyle.fontStyle = FontStyle.Bold;
+
+        float labelWidth = 120f * debugUIScale;
+        float labelHeight = 30f * debugUIScale;
+
+        // 배경 (깜빡임)
+        GUI.color = new Color(1, 0, 0, 0.6f * pulse);
+        GUI.DrawTexture(new Rect(warningScreen.x - labelWidth / 2f, warningScreen.y - labelHeight / 2f, labelWidth, labelHeight), Texture2D.whiteTexture);
+
+        // 텍스트
+        string warningText = GetCompulsoryPlayStack() >= 4 ? "!! RAGE !!" : "! DANGER !";
+        DrawTextWithOutline(warningScreen.x - labelWidth / 2f, warningScreen.y - labelHeight / 2f, labelWidth, labelHeight, warningText, warningStyle);
+
+        GUI.color = Color.white;
     }
 
     #endregion

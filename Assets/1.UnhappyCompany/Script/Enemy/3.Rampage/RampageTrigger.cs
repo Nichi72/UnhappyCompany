@@ -37,10 +37,13 @@ public class RampageTrigger : MonoBehaviour
             {
                 Debug.Log("쿠션에 맞아서 HP 감소 안됨 - 충격 흡수 연출 시작");
                 
-                // Phase 3: 쿠션에게 충격 이벤트 전달
-                cushion.OnImpact(rampageAIController.transform.position);
+                // Phase 3: 쿠션에게 충격 이벤트 전달 (충돌 지점 사용)
+                // Rampage의 정면(forward) 방향으로 충돌했다고 가정
+                Vector3 contactPoint = other.ClosestPoint(rampageAIController.transform.position);
+                cushion.OnImpactWithContact(rampageAIController.transform.position, contactPoint);
                 
-                // Rampage는 충돌 처리
+                // Rampage는 충돌 처리 (쿠션 충돌 플래그 설정)
+                rampageAIController.isCushionCollision = true;
                 rampageAIController.SetCollided(true);
                 return;
             }
@@ -51,6 +54,8 @@ public class RampageTrigger : MonoBehaviour
            
             if (other.CompareTag(ETag.Wall.ToString()))
             {
+                // 벽 충돌 (쿠션이 아닌 일반 충돌)
+                rampageAIController.isCushionCollision = false;
                 rampageAIController.SetCollided(true);
                 Debug.Log("충돌 발생");
                 // 벽 충돌 소리 제거됨 (사용자 요청)
@@ -68,13 +73,15 @@ public class RampageTrigger : MonoBehaviour
     {
         if(other.CompareTag(ETag.Player.ToString()))
         {
-            if (canDamagePlayer)
+            if (canDamagePlayer && rampageAIController.IsInChargeState())
             {
-                Debug.Log("플레이어와 충돌 발생");
-                rampageAIController.SetCollided(true);
+                Debug.Log("플레이어와 충돌 발생 - 데미지만 주고 계속 돌진");
+                // 플레이어에게 데미지만 주고 계속 돌진 (벽에 부딪혀야 패널이 열림)
                 AudioManager.instance.PlayOneShot(FMODEvents.instance.rampageCollisionPlayer, transform, "Rampage 플레이어와 충돌 소리");
                 other.GetComponent<IDamageable>()?.TakeDamage(rampageAIController.EnemyData.rushDamage, DamageType.Nomal);
                 StartCoroutine(DamageCooldown());
+                
+                // SetCollided(true)를 호출하지 않아서 계속 돌진함
             }
         }
     }

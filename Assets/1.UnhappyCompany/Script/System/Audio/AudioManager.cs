@@ -16,12 +16,15 @@ public class AudioManager : MonoBehaviour
     private Bus sfxBus;
     private Bus voiceBus;
 
-    // 볼륨 값 저장 변수
-    private float masterVolume = 1.0f;
-    private float musicVolume = 1.0f;
-    private float sfxVolume = 1.0f;
-    private float voiceVolume = 1.0f;
-    private bool isMuted = false;
+    // 볼륨 값 저장 변수 (인스펙터에서 초기값 설정 가능)
+    [Header("볼륨 초기값 설정")]
+    [SerializeField, Range(0f, 1f)] private float masterVolume = 1.0f;
+    [SerializeField, Range(0f, 1f)] private float musicVolume = 1.0f;
+    [SerializeField, Range(0f, 1f)] private float sfxVolume = 1.0f;
+    [SerializeField, Range(0f, 1f)] private float voiceVolume = 1.0f;
+    
+    [Header("음소거 설정")]
+    [SerializeField] private bool isMuted = false;
 
     private void Awake()
     {
@@ -33,7 +36,7 @@ public class AudioManager : MonoBehaviour
             // 버스 초기화
             InitializeAudioBuses();
             
-            // 저장된 설정 불러오기
+            // 저장된 설정 불러오기 // 빌드 전 주석 비활성화 해야함
             LoadAudioSettings();
         }
         else

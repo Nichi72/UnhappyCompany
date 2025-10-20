@@ -22,6 +22,10 @@ public class RampageChargeState : IState
         this.controller = controller;
         this.rb = controller.GetComponent<Rigidbody>();
         chargeSpeed = controller.EnemyData.rushSpeed;
+        
+        // 디버그용 속도 정보 설정
+        controller.targetChargeSpeed = chargeSpeed;
+        controller.chargeStuckThreshold = 0f;
     }
 
     public void Enter()
@@ -58,6 +62,11 @@ public class RampageChargeState : IState
         // 디버그용 돌진 정보 리셋
         controller.hasChargeTarget = false;
         
+        // 속도 정보 리셋 (디버그용)
+        controller.currentChargeSpeed = 0f;
+        controller.targetChargeSpeed = 0f;
+        controller.chargeStuckThreshold = 0f;
+        
         // 플레이어 피드백 리셋 (색상 복구 등)
         controller.ResetChargeWarningFeedback();
         
@@ -75,20 +84,21 @@ public class RampageChargeState : IState
 
     IEnumerator ChargeCoroutine()
     {
+        DebugManager.Log("ChargeCoroutine 시작", isShowDebug);
         yield return RotateTowardsPlayerCoroutine();
         yield return MoveToPlayerCoroutine();
         yield return ChargePhysicsCoroutine();
         
-        // 상태 전환
-        if (controller.chargeCount > 0)
-        {
-            controller.ChangeState(new RampagePanelOpenState(controller, 1, "ChargeState"));
-        }
-        else
-        {
-            controller.chargeCount = controller.EnemyData.maxChargeCount;
-            controller.ChangeState(new RampageIdleState(controller, "ChargeState(연속 돌진)"));
-        }
+        // 충돌 후 무조건 패널 열기 (쿠션 충돌 여부에 따라 패널 개수 결정)
+        int panelCount = controller.isCushionCollision 
+            ? controller.EnemyData.cushionPanelCount 
+            : controller.EnemyData.noCushionPanelCount;
+        
+        string collisionType = controller.isCushionCollision ? "쿠션" : "벽";
+        Debug.Log($"충돌 타입: {collisionType}, 패널 개수: {panelCount}, 남은 돌진 횟수: {controller.chargeCount}");
+        
+        // PanelOpenState로 전환 (이 State에서 다음 상태 결정)
+        controller.ChangeState(new RampagePanelOpenState(controller, panelCount, "ChargeState"));
     }
 
     // 1단계: 플레이어 방향으로 회전
@@ -225,7 +235,22 @@ public class RampageChargeState : IState
                 break;
             }
             
-            // 충돌 감지
+            // 현재 속도 업데이트 (디버그용)
+            float currentSpeed = rb.linearVelocity.magnitude;
+            controller.currentChargeSpeed = currentSpeed;
+            
+            // 속도가 임계값 이하로 떨어지면 멈춘 것으로 간주
+            float speedThreshold = controller.EnemyData.chargeStopSpeedThreshold;
+            if (currentSpeed <= speedThreshold)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                
+                Debug.Log($"속도가 임계값({speedThreshold:F2}) 이하({currentSpeed:F2})로 떨어짐 - 충돌로 간주");
+                break;
+            }
+            
+            // 충돌 감지 (즉시 멈춤)
             if (controller.isCollided)
             {
                 rb.linearVelocity = Vector3.zero;

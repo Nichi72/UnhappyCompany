@@ -199,7 +199,9 @@ public class BuildSystem : MonoBehaviour
             collider.enabled = true;
         }
         
-        currentObject.layer = LayerMask.NameToLayer(ETag.Item.ToString());
+        // Layer를 DeployedItem으로 설정 (설치된 아이템 전용 레이어)
+        int deployedItemLayer = LayerMask.NameToLayer("DeployedItem");
+        currentObject.layer = deployedItemLayer;
         RemovePreviewMaterial(currentObject); // 미리보기 재질 제거
         
         // ItemCushion 설치 콜백 호출 (Phase 1)

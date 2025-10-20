@@ -13,6 +13,9 @@ public class RampagePanel : MonoBehaviour , IDamageable
         // Debug.Break();
         Debug.Log("Panel 데미지 입음");
         hp -= damage;
+        
+        // 데미지 사운드 재생
+        PlayDamageSound();
     }
     void Update()
     {
@@ -30,6 +33,7 @@ public class RampagePanel : MonoBehaviour , IDamageable
     public void OpenPanel()
     {
         hp = 1;
+        onceDamage = false;
     }
 
     private void ClosePanel()
@@ -37,7 +41,29 @@ public class RampagePanel : MonoBehaviour , IDamageable
         hp = 0;
         onceDamage = true;
         controller.CurrentPanelHealth--;
+        
+        // 패널 비활성화 (나중에 애니메이션으로 교체 예정)
+        DeactivatePanel();
     }
 
+    /// <summary>
+    /// 패널 비활성화 처리
+    /// TODO: 나중에 애니메이션이나 이펙트로 교체 예정
+    /// </summary>
+    private void DeactivatePanel()
+    {
+        gameObject.SetActive(false);
+    }
 
+    /// <summary>
+    /// 데미지 사운드 재생
+    /// </summary>
+    private void PlayDamageSound()
+    {
+        if (AudioManager.instance != null && FMODEvents.instance != null && 
+            !FMODEvents.instance.rampagePanelDamage.IsNull)
+        {
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.rampagePanelDamage, transform, "RampagePanel 데미지 사운드");
+        }
+    }
 }

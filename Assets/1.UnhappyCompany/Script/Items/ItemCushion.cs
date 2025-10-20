@@ -25,7 +25,7 @@ public class ItemCushion : Item
     [SerializeField] private float deployDuration = 0.5f;    // 설치 애니메이션 시간 (쿠션이 펴지는 시간)
     [SerializeField] private AnimationCurve deployCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);  // 설치 애니메이션 커브
     
-    [Header("Impact Settings (Phase 3)")]
+    [Header("Impact Settings")]
     [SerializeField] private float impactSquashAmount = 0.7f;  // 찌그러짐 정도 (0.7 = 30% 찌그러짐)
     [SerializeField] private float impactDuration = 0.3f;      // 찌그러짐 애니메이션 시간
     [SerializeField] private AnimationCurve impactCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);  // 찌그러짐 커브
@@ -34,7 +34,8 @@ public class ItemCushion : Item
     [Header("State")]
     private bool isDeployed = false;    // 설치 완료 상태
     private Vector3 originalCushionScale;  // 쿠션 원본 크기
-    private bool isImpacting = false;   // 충격 애니메이션 중 (Phase 3)
+    private bool isImpacting = false;   // 충격 애니메이션 중
+    private Vector3 lastImpactDirection; // 마지막 충격 방향 (로컬 공간)
     
     void Start()
     {
@@ -137,7 +138,7 @@ public class ItemCushion : Item
     }
 
     /// <summary>
-    /// BuildSystem에서 설치 확정 시 호출 (Phase 1)
+    /// BuildSystem에서 설치 확정 시 호출
     /// </summary>
     public void OnPlaced()
     {
@@ -169,7 +170,7 @@ public class ItemCushion : Item
     }
     
     /// <summary>
-    /// Rigidbody 설정 (Kinematic으로 고정)
+    /// Rigidbody 설정 (Kinematic으로 고정) 및 Layer 변경
     /// </summary>
     private void SetupRigidbody()
     {
@@ -192,6 +193,14 @@ public class ItemCushion : Item
         {
             Debug.LogError($"[ItemCushion] Rigidbody가 없습니다! Prefab에 추가해주세요.");
         }
+        
+        // Layer를 DeployedItem으로 변경 (설치된 아이템 전용 레이어)
+        // - 플레이어와 충돌 가능
+        // - InteractionSystem에서 감지 가능 (F키)
+        // - 모든 설치형 아이템이 사용
+        int deployedItemLayer = LayerMask.NameToLayer("DeployedItem");
+        gameObject.layer = deployedItemLayer;
+        Debug.Log($"[ItemCushion] Layer를 DeployedItem으로 변경 (플레이어 충돌 가능, F키 상호작용 가능)");
     }
 
     /// <summary>
@@ -347,7 +356,7 @@ public class ItemCushion : Item
     }
 
     // ========================
-    // Phase 2: 회수 시스템
+    // 회수 시스템
     // ========================
     
     /// <summary>
@@ -417,6 +426,11 @@ public class ItemCushion : Item
             rb.useGravity = true;
         }
         
+        // 7. Layer를 Item으로 복원 (일반 아이템 상태)
+        int itemLayer = LayerMask.NameToLayer(ETag.Item.ToString());
+        gameObject.layer = itemLayer;
+        Debug.Log($"[ItemCushion] Layer를 Item으로 복원");
+        
         Debug.Log("[ItemCushion] 접기 완료! 이제 바닥에 떨어지며 다시 F키로 습득 가능");
     }
     
@@ -436,14 +450,15 @@ public class ItemCushion : Item
     }
 
     // ========================
-    // Phase 3: 충격 흡수 연출
+    // 충격 흡수 연출
     // ========================
     
     /// <summary>
-    /// Rampage 충돌 시 호출되는 충격 이벤트
+    /// Rampage 충돌 시 호출되는 충격 이벤트 (충돌 지점 포함)
     /// </summary>
-    /// <param name="impactPosition">충돌 위치</param>
-    public void OnImpact(Vector3 impactPosition)
+    /// <param name="attackerPosition">공격자의 위치</param>
+    /// <param name="contactPoint">충돌 지점</param>
+    public void OnImpactWithContact(Vector3 attackerPosition, Vector3 contactPoint)
     {
         if (!isDeployed)
         {
@@ -460,7 +475,25 @@ public class ItemCushion : Item
         // 초기화 보장 (안전장치)
         EnsureInitialized();
         
-        Debug.Log($"[ItemCushion] 충격 받음! 위치: {impactPosition}");
+        // 충돌 지점에서 쿠션 중심으로의 방향 (쿠션 안쪽으로 들어가는 방향)
+        Vector3 impactDirectionWorld = (transform.position - contactPoint).normalized;
+        
+        // 월드 방향을 로컬 방향으로 변환
+        Vector3 localDirection = transform.InverseTransformDirection(impactDirectionWorld);
+        
+        // 각 축별 영향도 계산 (절댓값)
+        lastImpactDirection = new Vector3(
+            Mathf.Abs(localDirection.x),
+            Mathf.Abs(localDirection.y),
+            Mathf.Abs(localDirection.z)
+        );
+        
+        Debug.Log($"[ItemCushion] 충격 받음!\n" +
+                  $"  공격자: {attackerPosition}\n" +
+                  $"  충돌 지점: {contactPoint}\n" +
+                  $"  충격 방향(월드): {impactDirectionWorld}\n" +
+                  $"  충격 방향(로컬): {localDirection}\n" +
+                  $"  영향도(abs): {lastImpactDirection}");
         
         // 충격 흡수 연출 시작
         StartCoroutine(ImpactAnimation());
@@ -468,17 +501,33 @@ public class ItemCushion : Item
         // 충격 사운드 재생
         PlayImpactSound();
         
-        // 파티클 재생 (있다면)
-        PlayImpactParticle(impactPosition);
+        // 파티클 재생 (충돌 지점에)
+        PlayImpactParticle(contactPoint);
     }
     
     /// <summary>
-    /// 충격 흡수 애니메이션 (찌그러짐)
+    /// (Deprecated) 이전 버전 - OnImpactWithContact 사용 권장
+    /// </summary>
+    public void OnImpact(Vector3 attackerPosition)
+    {
+        // 충돌 지점을 알 수 없으면 중심으로 가정
+        OnImpactWithContact(attackerPosition, transform.position);
+    }
+    
+    /// <summary>
+    /// 충격 흡수 애니메이션 (찌그러짐 - 방향성 있음)
     /// </summary>
     private IEnumerator ImpactAnimation()
     {
         isImpacting = true;
         float elapsed = 0f;
+        
+        // 충돌 방향의 주 축 찾기 (X, Y, Z 중 가장 큰 값)
+        Vector3 absDirection = new Vector3(
+            Mathf.Abs(lastImpactDirection.x),
+            Mathf.Abs(lastImpactDirection.y),
+            Mathf.Abs(lastImpactDirection.z)
+        );
         
         // 1단계: 찌그러짐 (0 → 1)
         while (elapsed < impactDuration / 2f)
@@ -487,13 +536,11 @@ public class ItemCushion : Item
             float t = Mathf.Clamp01(elapsed / (impactDuration / 2f));
             float curveValue = impactCurve.Evaluate(t);
             
-            // Z축 방향으로 찌그러짐 (충격 방향)
-            float squash = Mathf.Lerp(1f, impactSquashAmount, curveValue);
-            Vector3 squashedScale = new Vector3(
-                originalCushionScale.x,
-                originalCushionScale.y,
-                originalCushionScale.z * squash
-            );
+            // 충돌 방향으로 찌그러짐, 다른 축은 약간 확대 (부피 보존)
+            float squashFactor = Mathf.Lerp(1f, impactSquashAmount, curveValue);
+            float stretchFactor = Mathf.Lerp(1f, 1f + (1f - impactSquashAmount) * 0.5f, curveValue);
+            
+            Vector3 squashedScale = CalculateDirectionalSquash(squashFactor, stretchFactor, absDirection);
             
             if (cushionModel != null)
                 cushionModel.transform.localScale = squashedScale;
@@ -511,12 +558,10 @@ public class ItemCushion : Item
             float curveValue = impactCurve.Evaluate(t);
             
             // 원래 크기로 복원
-            float squash = Mathf.Lerp(impactSquashAmount, 1f, curveValue);
-            Vector3 squashedScale = new Vector3(
-                originalCushionScale.x,
-                originalCushionScale.y,
-                originalCushionScale.z * squash
-            );
+            float squashFactor = Mathf.Lerp(impactSquashAmount, 1f, curveValue);
+            float stretchFactor = Mathf.Lerp(1f + (1f - impactSquashAmount) * 0.5f, 1f, curveValue);
+            
+            Vector3 squashedScale = CalculateDirectionalSquash(squashFactor, stretchFactor, absDirection);
             
             if (cushionModel != null)
                 cushionModel.transform.localScale = squashedScale;
@@ -530,6 +575,31 @@ public class ItemCushion : Item
         
         isImpacting = false;
         Debug.Log("[ItemCushion] 충격 흡수 완료!");
+    }
+    
+    /// <summary>
+    /// 충돌 방향에 따른 찌그러진 Scale 계산
+    /// </summary>
+    /// <param name="squashFactor">찌그러짐 비율 (0.7 = 30% 감소)</param>
+    /// <param name="stretchFactor">늘어남 비율 (부피 보존용)</param>
+    /// <param name="absDirection">충돌 방향 (절댓값)</param>
+    /// <returns>찌그러진 Scale</returns>
+    private Vector3 CalculateDirectionalSquash(float squashFactor, float stretchFactor, Vector3 absDirection)
+    {
+        // 각 축별 가중치 계산 (충돌 방향이 강할수록 더 찌그러짐)
+        float xWeight = absDirection.x;
+        float zWeight = absDirection.z;
+        // Y축은 항상 고정 (위아래 찌그러짐은 부자연스러움)
+        
+        // X, Z축만 찌그러짐 계산
+        float xScale = Mathf.Lerp(stretchFactor, squashFactor, xWeight);
+        float zScale = Mathf.Lerp(stretchFactor, squashFactor, zWeight);
+        
+        return new Vector3(
+            originalCushionScale.x * xScale,
+            originalCushionScale.y,  // Y축은 항상 원본 크기 유지
+            originalCushionScale.z * zScale
+        );
     }
     
     /// <summary>
@@ -548,17 +618,56 @@ public class ItemCushion : Item
     }
     
     /// <summary>
-    /// 충격 파티클 재생 (Phase 3 - 나중에 Unity에서 설정)
+    /// 충격 파티클 재생
     /// </summary>
     private void PlayImpactParticle(Vector3 impactPosition)
     {
-        // if (impactParticle != null)
-        // {
-        //     // 파티클 위치를 충격 위치로 설정
-        //     impactParticle.transform.position = impactPosition;
-        //     impactParticle.Play();
-        //     Debug.Log($"[ItemCushion] 충격 파티클 재생: {impactPosition}");
-        // }
+        if (impactParticle != null)
+        {
+            // 파티클 위치를 충격 위치로 설정
+            impactParticle.transform.position = impactPosition;
+            impactParticle.Play();
+            Debug.Log($"[ItemCushion] 충격 파티클 재생: {impactPosition}");
+        }
+    }
+    
+    // ========================
+    // 플레이어 충돌
+    // ========================
+    
+    /// <summary>
+    /// 플레이어와 충돌 감지 (달리기 상태에서만 충격 연출)
+    /// </summary>
+    private void OnTriggerStay(Collider other)
+    {
+        // 펴진 상태가 아니면 무시
+        if (!isDeployed) return;
+        
+        // 플레이어와 충돌했는지 확인
+        if (other.CompareTag(ETag.Player.ToString()))
+        {
+            Player player = other.GetComponent<Player>();
+            if (player != null && player.playerStatus != null)
+            {
+                // 달리기 중일 때만 충격 연출
+                if (player.playerStatus.IsCurrentRun)
+                {
+                    Debug.Log("[ItemCushion] 플레이어가 달려서 충돌 - 충격 연출 시작");
+                    
+                    // 플레이어와 쿠션의 가장 가까운 지점을 충돌 지점으로 사용
+                    Collider cushionCollider = GetComponent<Collider>();
+                    Vector3 contactPoint = cushionCollider != null 
+                        ? cushionCollider.ClosestPoint(other.transform.position)
+                        : transform.position;
+                    
+                    OnImpactWithContact(other.transform.position, contactPoint);
+                }
+                else
+                {
+                    Debug.Log("[ItemCushion] 플레이어가 걸어서 충돌 - 충격 연출 없음");
+                }
+            }
+        }
     }
 
 #if UNITY_EDITOR

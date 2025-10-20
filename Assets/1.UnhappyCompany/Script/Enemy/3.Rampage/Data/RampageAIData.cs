@@ -17,7 +17,8 @@ public class RampageAIData : BaseEnemyAIData
 
     [Header("Panel Settings")]
     public int maxPanelHealth = 6;       // 패널 공격 요구량
-    public float panelOpenTime = 10f; // 패널 열림 유지 시간
+    public float panelOpenTime = 5f; // 패널 열림 유지 시간 (일반)
+    public float cushionPanelOpenTime = 10f; // 패널 열림 유지 시간 (쿠션 충돌)
 
     [Header("Collision/Cushion Settings")]
     public int cushionPanelCount = 3; // 쿠션 충돌 시 노출 패널 수
@@ -29,10 +30,28 @@ public class RampageAIData : BaseEnemyAIData
     public float stunDuration = 5f;   // 스턴 상태 지속 시간
     [Header("Charge State")]
     public int maxChargeCount = 3; // 돌진 횟수
+    [Tooltip("이 속도 이하로 떨어지면 충돌로 간주하여 패널이 열림")]
+    public float chargeStopSpeedThreshold = 0.5f; // 돌진 중단 속도 임계값
 
-    [Header("Explode Settings")]
-    public float explodeRadius = 5f;  // 자폭 범위
-    public int explodeDamage = 30;    // 자폭 대미지
+    [Header("Disabled Settings")]
+    [Tooltip("무력화될 때 부서지기까지 대기 시간 (초)")]
+    public float breakDelay = 1f;     // 부서지기 전 대기 시간
+
+    [Header("Explode Settings - Damage")]
+    [Tooltip("데미지 범위 (중심에서 최대 거리)")]
+    public float explosionDamageRadius = 5f;
+    [Tooltip("최대 데미지 (중심)")]
+    public int explosionMaxDamage = 50;
+    [Tooltip("최소 데미지 (범위 끝)")]
+    public int explosionMinDamage = 10;
+    
+    [Header("Explode Settings - Physics")]
+    [Tooltip("물리 효과 범위")]
+    public float explosionForceRadius = 8f;
+    [Tooltip("폭발 힘")]
+    public float explosionForce = 1000f;
+    [Tooltip("상승 힘 (위로 튀어오르는 정도)")]
+    public float explosionUpwardModifier = 1.5f;
 
     [Header("RUSH")]
     public float rushSpeed = 10f;

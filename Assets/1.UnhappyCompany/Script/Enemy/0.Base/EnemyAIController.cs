@@ -631,6 +631,51 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
     }
 
     /// <summary>
+    /// 근접 감지: 시야각 무시하고 거리만으로 플레이어 감지
+    /// 플레이어가 적의 뒤에 있어도 일정 거리 안에 들어오면 감지
+    /// </summary>
+    public bool CheckPlayerInProximity()
+    {
+        if (playerTr == null)
+            return false;
+        
+        if (!vision.enableProximityDetection)
+            return false;
+        
+        // 1. 거리만 체크 (각도 무시)
+        Vector3 directionToPlayer = playerTr.position - transform.position;
+        float distanceToPlayer = directionToPlayer.magnitude;
+        
+        if (distanceToPlayer > vision.proximityDetectionRange)
+            return false;
+        
+        // 2. 장애물 체크 (레이캐스트)
+        if (Physics.Raycast(
+            transform.position + Vector3.up, // 눈 높이에서 시작
+            directionToPlayer.normalized, 
+            out RaycastHit hit, 
+            distanceToPlayer,
+            vision.obstacleLayer))
+        {
+            // 레이가 장애물에 먼저 닿았다면 플레이어 감지 실패
+            return false;
+        }
+        
+        // 거리 조건 + 장애물 없음 = 근접 감지 성공
+        playerDetected = true;
+        lastKnownPlayerPosition = playerTr.position;
+        return true;
+    }
+
+    /// <summary>
+    /// 시각 감지 또는 근접 감지로 플레이어 탐지
+    /// </summary>
+    public bool DetectPlayer()
+    {
+        return CheckPlayerInSight() || CheckPlayerInProximity();
+    }
+
+    /// <summary>
     /// 이 적이 피해를 받았을 때 호출되는 메서드
     /// HP를 감소시키고, HP가 0 이하가 되면 사망 처리를 수행합니다.
     /// </summary>
@@ -802,10 +847,22 @@ public abstract class EnemyAIController<T> : EnemyAIController where T : BaseEne
 [System.Serializable]
 public class EnemyVision
 {
+    [Header("시각 감지 (각도 체크)")]
     public float sightRange = 10f;       // 시야 거리
     public float sightAngle = 120f;      // 시야각 (전방 기준)
+    
+    [Header("근접 감지 (거리만 체크)")]
+    [Tooltip("활성화 시 시야각 무시하고 거리만으로 플레이어 감지")]
+    public bool enableProximityDetection = false;
+    [Tooltip("근접 감지 거리 (시야각 무시, 전방향 감지)")]
+    public float proximityDetectionRange = 3f;
+    
+    [Header("레이어 설정")]
     public LayerMask obstacleLayer;      // 장애물 레이어
     public LayerMask playerLayer;        // 플레이어 레이어
+    
+    [Header("시각화")]
     public bool drawGizmos = true;       // 시야 시각화
     public Color sightColor = new Color(1, 0, 0, 0.3f);
+    public Color proximityColor = new Color(1, 0.5f, 0, 0.2f); // 근접 범위 색상
 }

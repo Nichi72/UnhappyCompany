@@ -47,7 +47,8 @@ public class RampagePatrolState : IState
 
     private void PatrolUpdateLogic()
     {
-        if (controller.CheckPlayerInSight())
+        // 시각 감지 또는 근접 감지로 플레이어 발견 시 돌진 상태로 전환
+        if (controller.DetectPlayer())
         {
             controller.ChangeState(new RampageChargeState(controller,"PatrolState"));
             return;

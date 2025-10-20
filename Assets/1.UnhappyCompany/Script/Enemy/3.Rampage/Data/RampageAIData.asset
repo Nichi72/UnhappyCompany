@@ -19,9 +19,9 @@ MonoBehaviour:
   enemyType: 0
   enemyCost: 40
   patrolRadius: 33
-  patrolDistanceMinRatio: 0.3
-  patrolDistanceMaxRatio: 0.7
-  fleeDistanceMinRatio: 0.8
+  patrolDistanceMinRatio: 0.313
+  patrolDistanceMaxRatio: 0.753
+  fleeDistanceMinRatio: 0.88
   fleeDistanceMaxRatio: 1.5
   patrolRangeColor: {r: 0, g: 1, b: 0, a: 1}
   fleeRangeColor: {r: 1, g: 0, b: 0, a: 1}
@@ -36,13 +36,20 @@ MonoBehaviour:
   attackRadius: 3
   maxPanelHealth: 6
   panelOpenTime: 5
+  cushionPanelOpenTime: 10
   cushionPanelCount: 3
   noCushionPanelCount: 1
   hpLossOnNoCushion: 10
   chargeCooldown: 3
   stunDuration: 5
   maxChargeCount: 3
-  explodeRadius: 5
-  explodeDamage: 30
+  chargeStopSpeedThreshold: 1.5
+  breakDelay: 1
+  explosionDamageRadius: 9.9
+  explosionMaxDamage: 50
+  explosionMinDamage: 10
+  explosionForceRadius: 14.49
+  explosionForce: 75
+  explosionUpwardModifier: 1.5
   rushSpeed: 15
   rushDamage: 50

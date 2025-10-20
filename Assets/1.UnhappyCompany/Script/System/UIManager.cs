@@ -78,10 +78,10 @@ public class UIManager : MonoBehaviour
     private void Update()
     {
         UpdateCenterBatteryLevel();
-        // if(Input.GetKeyDown(KeyCode.Escape))
-        // {
-        //     ToggleObject(settingsUI);
-        // }
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            ToggleObject(settingsUI);
+        }
     }
 
     public void UpdateCenterBatteryLevel()

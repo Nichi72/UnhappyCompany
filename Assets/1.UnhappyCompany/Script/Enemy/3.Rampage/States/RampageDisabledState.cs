@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class RampageDisabledState : IState
 {
@@ -15,7 +16,50 @@ public class RampageDisabledState : IState
     {
         Debug.Log("Rampage: Disabled(무력화) 상태 시작");
         disableStartTime = Time.time;
-        // TODO: 무력화 애니메이션, 효과, 보상 로직(아이템 드롭 등)
+        
+        // 부서지는 시퀀스 시작 (코루틴)
+        controller.StartCoroutine(BreakSequence());
+    }
+
+    /// <summary>
+    /// 부서지는 연출 시퀀스
+    /// </summary>
+    private IEnumerator BreakSequence()
+    {
+        // 1단계: 부서지기 직전 소리 재생
+        if (AudioManager.instance != null && FMODEvents.instance != null && 
+            !FMODEvents.instance.rampageBreakWarning.IsNull)
+        {
+            AudioManager.instance.PlayOneShot(
+                FMODEvents.instance.rampageBreakWarning, 
+                controller.transform,
+                "Rampage 부서지기 직전 경고음"
+            );
+            Debug.Log("부서지기 직전 소리 재생");
+        }
+        
+        // 2단계: 설정된 시간만큼 대기
+        float breakDelay = controller.EnemyData.breakDelay;
+        Debug.Log($"{breakDelay}초 대기 중...");
+        yield return new WaitForSeconds(breakDelay);
+        
+        // 3단계: 부서지는 소리 재생
+        if (AudioManager.instance != null && FMODEvents.instance != null && 
+            !FMODEvents.instance.rampageBreak.IsNull)
+        {
+            AudioManager.instance.PlayOneShot(
+                FMODEvents.instance.rampageBreak,
+                controller.transform,
+                "Rampage 부서지는 소리"
+            );
+            Debug.Log("부서지는 소리 재생");
+        }
+        
+        // 4단계: 부서진 비주얼로 교체
+        controller.SwitchToDisabledVisual();
+        
+        // 5단계: 선물상자 드랍
+        controller.DropGiftBox();
     }
 
     public void ExecuteMorning()
