@@ -37,6 +37,11 @@ public class QuickSlot : MonoBehaviour
         return quickSlotState.itemSerializedState;
     }
 
+    public void UpdateItemState(object newState)
+    {
+        quickSlotState.itemSerializedState = newState;
+    }
+
     public void Select()
     {
         Debug.Log($"Slot {slotIndex} selected.");

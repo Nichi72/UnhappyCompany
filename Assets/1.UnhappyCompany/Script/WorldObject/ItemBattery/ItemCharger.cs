@@ -4,7 +4,6 @@ using Cinemachine;
 using MyUtility;
 
 
-// FIXME: 충전 완료될 때, 씨네마씬 카메라 애니메이션이 끝나지 않았을 때 움직이면 살짝 움직임이 한 번 이동하는 버그 수정 필요
 public class ItemCharger : MonoBehaviour, IInteractableF, IToolTip
 {
     enum ChargerState
@@ -26,7 +25,7 @@ public class ItemCharger : MonoBehaviour, IInteractableF, IToolTip
     [SerializeField] private float groundCheckDown = 5f;
 
     // public string InteractionTextF { get => LocalizationUtils.GetLocalizedString(tableEntryReference: "ItemCharger_ITR"); set => InteractionTextF = value; }
-    public string InteractionTextF { get => "IF_충전하기"; set => InteractionTextF = value; }
+    public string InteractionTextF { get => "IF_손에 든 아이템 충전하기"; set => InteractionTextF = value; }
     public bool IgnoreInteractionF { get; set; } = false;
     public string ToolTipText { get => "충전기 사용 중..."; set => ToolTipText = value; }
     public string ToolTipText2 { get => ""; set => ToolTipText2 = value; }
@@ -42,15 +41,25 @@ public class ItemCharger : MonoBehaviour, IInteractableF, IToolTip
         if (chargerState == ChargerState.Close)
         {
             // 손에 든 아이템이 충전 가능한 경우에만 작동하도록 게이트
-            if (!TryGetRechargeableHeldItem(player, out _)) return;
+            if (!TryGetRechargeableHeldItem(player, out var rechargeableItem))
+            {
+                return;
+            }
+
+            // 이미 완전 충전된 경우 충전기 사용 불가
+            if (rechargeableItem.IsFullyCharged)
+            {
+                Debug.Log($"{rechargeableItem.GetItemName()}: 이미 최대 충전된 상태입니다");
+                return;
+            }
+
+            // 플레이어가 손에 든 아이템이 충전 가능한지 확인하고 충전
+            CheckAndChargePlayerItem(player);
 
             currentUsePlayer = player;
             OpenCharger(currentUsePlayer);
             chargerState = ChargerState.Open; // 즉시 상태 변경
             ToolTipUI.instance.SetToolTip(this);
-
-            // 플레이어가 손에 든 아이템이 충전 가능한지 확인하고 충전
-            CheckAndChargePlayerItem(player);
 
             // 1초 후 자동으로 닫기
             StartCoroutine(AutoCloseAfterDelay());
@@ -206,13 +215,6 @@ public class ItemCharger : MonoBehaviour, IInteractableF, IToolTip
 
     private void ChargeItem(ICentralBatteryRechargeable rechargeableItem)
     {
-        // 이미 완전 충전완료 상태인지 확인
-        if (rechargeableItem.IsFullyCharged)
-        {
-            Debug.Log("이미 충전 완료되었습니다.");
-            return;
-        }
-
         var result = rechargeableItem.TryChargeFromCentralBattery();
 
         switch (result)

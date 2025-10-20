@@ -99,6 +99,14 @@ public class QuickSlotSystem : MonoBehaviour
             if (selectedSlotIndex != -1 && selectedSlotIndex < quickSlots.Count)
             {
                 quickSlots[selectedSlotIndex].Deselect();
+                
+                // 이전 슬롯의 아이템 상태를 저장
+                if(currentItemObject != null)
+                {
+                    Item currentItemComponent = currentItemObject.GetComponent<Item>();
+                    object currentState = currentItemComponent.SerializeState();
+                    quickSlots[selectedSlotIndex].UpdateItemState(currentState);
+                }
             }
 
             selectedSlotIndex = slotIndex;

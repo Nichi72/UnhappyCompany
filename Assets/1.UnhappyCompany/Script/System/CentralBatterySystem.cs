@@ -117,15 +117,20 @@ public class CentralBatterySystem : MonoBehaviour
     // 전력을 요청하는 메서드 (실제 공급 가능한 양을 반환)
     public float RequestPower(float requestedAmount)
     {
-        Debug.Log($"currentBatteryLevel: {currentBatteryLevel}");
+        Debug.Log($"[CenterBattry, 충전 요구] 현재 남은 배터리 양: {currentBatteryLevel}");
 
-        if (isStop || currentBatteryLevel <= 0 || requestedAmount <= 0)
+        // isStop 상태에서도 충전은 가능해야 함 (소비만 막음)
+        if (currentBatteryLevel <= 0 || requestedAmount <= 0)
         {
             return 0f;
         }
 
         float actualAmount = Mathf.Min(requestedAmount, currentBatteryLevel);
         currentBatteryLevel -= actualAmount;
+
+        Debug.Log($"[CenterBattry] 센터 배터리를 통해 아이템이 충전될 배터리 양: {actualAmount}");
+        Debug.Log($"[CenterBattry, 충전 후] 현재 남은 배터리 양: {currentBatteryLevel}");
+
 
         UIManager.instance.UpdateTotalBatteryLevel(currentBatteryLevel);
         return actualAmount;
