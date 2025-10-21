@@ -36,8 +36,8 @@ public class RampageChargeState : IState
         controller.agent.enabled = false;
         rb.isKinematic = true;
         
-        // 돌진 준비 애니메이션 재생
-        AudioManager.instance.PlayOneShot(FMODEvents.instance.rampageChargePrep, controller.transform, "돌진 준비 애니메이션 재생");
+        // 출발 사운드 재생 (RPM 상승)
+        controller.PlayStartSound();
         
         // 돌진 시작
         chargeCoroutine = controller.StartCoroutine(ChargeCoroutine());
@@ -59,6 +59,9 @@ public class RampageChargeState : IState
         DebugManager.Log("Rampage: Charge 상태 종료", isShowDebug);
         controller.baseCollider.enabled = false; // 돌진 할 때 충돌 처리 안하려고 끔. 데미지 처리는 RampageTrigger에서 함.
         
+        // 이동 루프 사운드 정지
+        controller.StopMoveLoopSound();
+        
         // 디버그용 돌진 정보 리셋
         controller.hasChargeTarget = false;
         
@@ -75,8 +78,6 @@ public class RampageChargeState : IState
         {
             controller.StopCoroutine(chargeCoroutine);
         }
-        
-        // TODO: 돌진 종료 시 애니메이션, 사운드 정리 등
     }
 
     public void ExecuteFixedMorning() { }
@@ -105,6 +106,7 @@ public class RampageChargeState : IState
     private IEnumerator RotateTowardsPlayerCoroutine()
     {
         float elapsedTime = 0f;
+        bool driftSoundPlayed = false;
         
         while (elapsedTime < waitBeforeCharge)
         {
@@ -119,6 +121,13 @@ public class RampageChargeState : IState
                 targetRotation, 
                 Time.deltaTime * 5f
             );
+            
+            // 드리프트 사운드 재생 (회전 시작 시 1회만)
+            if (!driftSoundPlayed && elapsedTime > 0.1f)
+            {
+                controller.PlayDriftSound();
+                driftSoundPlayed = true;
+            }
             
             DebugManager.Log("플레이어를 향해 회전중 direction " + initialDirection, isShowDebug);
             yield return null;
@@ -136,6 +145,9 @@ public class RampageChargeState : IState
         
         rb.isKinematic = true;
         controller.agent.enabled = true;
+        
+        // 이동 루프 사운드 재생
+        controller.PlayMoveLoopSound();
         
         // 동일한 속도값 사용 - rushSpeed
         controller.agent.speed = chargeSpeed;

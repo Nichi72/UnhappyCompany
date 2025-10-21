@@ -58,10 +58,12 @@ public class RampageTrigger : MonoBehaviour
                 rampageAIController.isCushionCollision = false;
                 rampageAIController.SetCollided(true);
                 Debug.Log("충돌 발생");
-                // 벽 충돌 소리 제거됨 (사용자 요청)
 
                 if (cushion == null && rampageAIController.onceReduceHP) 
                 {
+                    // HP 감소 전에 현재 HP 비율 확인하여 벽 충돌 사운드 재생
+                    PlayWallHitSound();
+                    
                     rampageAIController.ReduceHP(rampageAIController.EnemyData.hpLossOnNoCushion);
                     rampageAIController.onceReduceHP = false;
                 }
@@ -139,6 +141,47 @@ public class RampageTrigger : MonoBehaviour
             pushDir.Normalize();
 
             otherRb.AddForce(pushDir * pushStrength, ForceMode.Impulse);
+        }
+    }
+    
+    /// <summary>
+    /// 벽 충돌 시 HP에 따라 다른 사운드 재생
+    /// </summary>
+    private void PlayWallHitSound()
+    {
+        if (AudioManager.instance == null || FMODEvents.instance == null)
+            return;
+        
+        // 현재 HP 비율 계산
+        float hpPercent = (float)rampageAIController.hp / rampageAIController.EnemyData.maxHP;
+        
+        FMODUnity.EventReference soundToPlay;
+        string debugMessage;
+        
+        if (hpPercent > 0.66f)
+        {
+            // Level 1: HP 많음 (66% 이상)
+            soundToPlay = FMODEvents.instance.rampageWallHitLevel1;
+            debugMessage = "벽 충돌 Level 1 (HP 많음)";
+        }
+        else if (hpPercent > 0.33f)
+        {
+            // Level 2: HP 중간 (33% ~ 66%)
+            soundToPlay = FMODEvents.instance.rampageWallHitLevel2;
+            debugMessage = "벽 충돌 Level 2 (HP 중간)";
+        }
+        else
+        {
+            // Level 3: HP 적음 (33% 미만)
+            soundToPlay = FMODEvents.instance.rampageWallHitLevel3;
+            debugMessage = "벽 충돌 Level 3 (HP 위험!)";
+        }
+        
+        // 사운드 재생
+        if (!soundToPlay.IsNull)
+        {
+            AudioManager.instance.PlayOneShot(soundToPlay, transform, debugMessage);
+            Debug.Log($"[Rampage Wall Hit Sound] {debugMessage} - HP: {rampageAIController.hp}/{rampageAIController.EnemyData.maxHP} ({hpPercent:P0})");
         }
     }
 }

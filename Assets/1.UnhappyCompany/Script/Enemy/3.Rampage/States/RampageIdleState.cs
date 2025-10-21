@@ -16,6 +16,10 @@ public class RampageIdleState : IState
     {
         Debug.Log("Rampage: Idle 상태 시작");
         startTime = Time.time;
+        
+        // Idle 사운드 재생
+        controller.PlayIdleSound();
+        
         // TODO: 애니메이션 재생(Idle)
     }
 
@@ -32,6 +36,9 @@ public class RampageIdleState : IState
     public void Exit()
     {
         Debug.Log("Rampage: Idle 상태 종료");
+        
+        // Idle 사운드 정지
+        controller.StopIdleSound();
     }
 
     public void ExecuteFixedMorning() { }

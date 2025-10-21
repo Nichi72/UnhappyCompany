@@ -42,12 +42,26 @@ public class FMODEvents : MonoBehaviour
 
     
     [field: Header("Enemy - Rampage")]
+    [field: Header("Rampage - Engine/Movement Sounds")]
+    [field: SerializeField] public EventReference rampageIdle { get; private set; }          // 공회전 루프 사운드
+    [field: SerializeField] public EventReference rampageStart { get; private set; }         // 출발 시 RPM 상승 사운드
+    [field: SerializeField] public EventReference rampageMoveLoop { get; private set; }      // 바퀴/이동 루프 사운드
+    [field: SerializeField] public EventReference rampageDrift { get; private set; }         // 드리프트 사운드
+    
+    [field: Header("Rampage - Collision Sounds")]
     [field: SerializeField] public EventReference rampageHitBlock { get; private set; }
-    [field: SerializeField] public EventReference rampageCollisionWall { get; private set; }
     [field: SerializeField] public EventReference rampageCollisionPlayer { get; private set; }
     [field: SerializeField] public EventReference rampageCollisionObject { get; private set; }
-    [field: SerializeField] public EventReference rampageChargePrep { get; private set; }
-    [field: SerializeField] public EventReference rampagePanelDamage { get; private set; }
+    
+    [field: Header("Rampage - Panel Damage Sounds")]
+    [field: SerializeField] public EventReference rampagePanelDamage { get; private set; }        // 패널 공격받을 때 소리
+    
+    [field: Header("Rampage - Wall Collision HP Damage Sounds")]
+    [field: SerializeField] public EventReference rampageWallHitLevel1 { get; private set; }      // 벽 충돌 1단계 (HP 많음 66%+)
+    [field: SerializeField] public EventReference rampageWallHitLevel2 { get; private set; }      // 벽 충돌 2단계 (HP 중간 33-66%)
+    [field: SerializeField] public EventReference rampageWallHitLevel3 { get; private set; }      // 벽 충돌 3단계 (HP 적음 33%-)
+    
+    [field: Header("Rampage - Destruction Sounds")]
     [field: SerializeField] public EventReference rampageBreakWarning { get; private set; }  // 부서지기 직전 소리
     [field: SerializeField] public EventReference rampageBreak { get; private set; }         // 부서지는 소리
     [field: SerializeField] public EventReference rampageExplode { get; private set; }         // 폭발 소리

@@ -22,6 +22,9 @@ public class RampagePatrolState : IState
         agent.enabled = true;
         agent.speed = patrolSpeed;
         SetRandomPatrolDestination();
+        
+        // 이동 루프 사운드 재생
+        controller.PlayMoveLoopSound();
     }
 
     public void ExecuteMorning()
@@ -40,6 +43,9 @@ public class RampagePatrolState : IState
     {
         Debug.Log("Rampage: Patrol 상태 종료");
         controller.DisableLineRenderer();
+        
+        // 이동 루프 사운드 정지
+        controller.StopMoveLoopSound();
     }
 
     public void ExecuteFixedMorning() { }

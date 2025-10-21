@@ -2,6 +2,8 @@ using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
 using System.Collections.Generic;
+using FMOD.Studio;
+using FMODUnity;
 
 /// <summary>
 /// 렘페이지(Rampage) AI 컨트롤러.
@@ -12,6 +14,12 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     // 기본적인 컴포넌트
     private Rigidbody rb;
     public Collider baseCollider;
+    
+    [Header("Sound Management")]
+    private EventInstance idleSoundInstance;      // 공회전 루프 사운드 인스턴스
+    private EventInstance moveLoopInstance;       // 이동 루프 사운드 인스턴스
+    private bool isIdleSoundPlaying = false;
+    private bool isMoveLoopPlaying = false;
      // LineRenderer for visualizing detection
     [SerializeField] private LineRenderer lineRenderer;
 
@@ -33,9 +41,6 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     [HideInInspector] public float targetChargeSpeed = 0f; // 목표 돌진 속도 (디버그용)
     [HideInInspector] public float chargeStuckThreshold = 0f; // 돌진 멈춤 임계값 (디버그용)
     
-    [Header("Gameplay Feedback (플레이어 피드백)")]
-    [Tooltip("추적 → 돌진 전환 시 재생할 사운드 (FMOD)")]
-    public FMODUnity.EventReference chargeStartSound;
     [Header("Panel State")]
     [SerializeField] private int currentPanelHealth;
     public int CurrentPanelHealth { get => currentPanelHealth; set => currentPanelHealth = value; }
@@ -130,6 +135,9 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     protected override void Update()
     {
         base.Update();
+        
+        // 사운드 3D 위치 갱신
+        UpdateSoundPositions();
         
         // 현재 상태에 따라 리지드바디 Freeze 상태 설정
         if (currentState is RampageChargeState)
@@ -442,7 +450,6 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     /// <summary>
     /// 추적 → 돌진 전환 시 플레이어에게 경고 피드백 제공
     /// 이 메서드에서 원하는 피드백을 추가하세요:
-    /// - FMOD 사운드
     /// - VFX 파티클 생성
     /// - 색상 변경
     /// - 카메라 쉐이크
@@ -450,12 +457,6 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     /// </summary>
     public void TriggerChargeWarningFeedback()
     {
-        // 사운드 재생 (FMOD)
-        if (!string.IsNullOrEmpty(chargeStartSound.Path))
-        {
-            AudioManager.instance.PlayOneShot(chargeStartSound, transform, "Rampage: 추적 → 돌진 전환 경고음");
-        }
-
         // TODO: 여기에 추가 피드백 구현
         // 예시:
         // - Instantiate(파티클프리팹, transform.position, Quaternion.identity);
@@ -864,6 +865,128 @@ public class RampageAIController : EnemyAIController<RampageAIData>
         GUI.color = Color.white;
     }
 
+    #endregion
+    
+    #region Sound Management Methods
+    
+    /// <summary>
+    /// Idle 사운드 재생 (루프)
+    /// </summary>
+    public void PlayIdleSound()
+    {
+        if (isIdleSoundPlaying) return;
+        
+        if (!FMODEvents.instance.rampageIdle.IsNull)
+        {
+            idleSoundInstance = RuntimeManager.CreateInstance(FMODEvents.instance.rampageIdle);
+            idleSoundInstance.set3DAttributes(FMODUnity.RuntimeUtils.To3DAttributes(transform));
+            idleSoundInstance.start();
+            isIdleSoundPlaying = true;
+            Debug.Log("[Rampage Sound] Idle 사운드 시작");
+        }
+    }
+    
+    /// <summary>
+    /// Idle 사운드 정지
+    /// </summary>
+    public void StopIdleSound()
+    {
+        if (!isIdleSoundPlaying) return;
+        
+        idleSoundInstance.stop(FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
+        idleSoundInstance.release();
+        isIdleSoundPlaying = false;
+        Debug.Log("[Rampage Sound] Idle 사운드 정지");
+    }
+    
+    /// <summary>
+    /// 이동 루프 사운드 재생
+    /// </summary>
+    public void PlayMoveLoopSound()
+    {
+        if (isMoveLoopPlaying) return;
+        
+        if (!FMODEvents.instance.rampageMoveLoop.IsNull)
+        {
+            moveLoopInstance = RuntimeManager.CreateInstance(FMODEvents.instance.rampageMoveLoop);
+            moveLoopInstance.set3DAttributes(FMODUnity.RuntimeUtils.To3DAttributes(transform));
+            moveLoopInstance.start();
+            isMoveLoopPlaying = true;
+            Debug.Log("[Rampage Sound] MoveLoop 사운드 시작");
+        }
+    }
+    
+    /// <summary>
+    /// 이동 루프 사운드 정지
+    /// </summary>
+    public void StopMoveLoopSound()
+    {
+        if (!isMoveLoopPlaying) return;
+        
+        moveLoopInstance.stop(FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
+        moveLoopInstance.release();
+        isMoveLoopPlaying = false;
+        Debug.Log("[Rampage Sound] MoveLoop 사운드 정지");
+    }
+    
+    /// <summary>
+    /// 출발 사운드 재생 (One-Shot)
+    /// </summary>
+    public void PlayStartSound()
+    {
+        if (!FMODEvents.instance.rampageStart.IsNull)
+        {
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.rampageStart, transform, "Rampage 출발 (RPM 상승)");
+            Debug.Log("[Rampage Sound] Start 사운드 재생");
+        }
+    }
+    
+    /// <summary>
+    /// 드리프트 사운드 재생 (One-Shot)
+    /// </summary>
+    public void PlayDriftSound()
+    {
+        if (!FMODEvents.instance.rampageDrift.IsNull)
+        {
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.rampageDrift, transform, "Rampage 드리프트");
+            Debug.Log("[Rampage Sound] Drift 사운드 재생");
+        }
+    }
+    
+    /// <summary>
+    /// 모든 루프 사운드 정지
+    /// </summary>
+    public void StopAllLoopSounds()
+    {
+        StopIdleSound();
+        StopMoveLoopSound();
+    }
+    
+    /// <summary>
+    /// Update에서 3D 위치 갱신
+    /// </summary>
+    private void UpdateSoundPositions()
+    {
+        if (isIdleSoundPlaying)
+        {
+            idleSoundInstance.set3DAttributes(FMODUnity.RuntimeUtils.To3DAttributes(transform));
+        }
+        
+        if (isMoveLoopPlaying)
+        {
+            moveLoopInstance.set3DAttributes(FMODUnity.RuntimeUtils.To3DAttributes(transform));
+        }
+    }
+    
+    /// <summary>
+    /// 오브젝트 파괴 시 사운드 정리
+    /// </summary>
+    protected override void OnDestroy()
+    {
+        base.OnDestroy();
+        StopAllLoopSounds();
+    }
+    
     #endregion
 
     #region Debug Methods - State Testing
