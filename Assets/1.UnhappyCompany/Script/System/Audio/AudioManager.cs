@@ -160,7 +160,7 @@ public class AudioManager : MonoBehaviour
         }
         else
         {
-            Debug.Log($"PlayOneShot: {eventReference.Path}");
+            // Debug.Log($"PlayOneShot: {eventReference.Path}");
         }
         EventInstance eventInstance = RuntimeManager.CreateInstance(eventReference);
         StartCoroutine(PlayOneShotCoroutine(eventInstance, targetTransform));
