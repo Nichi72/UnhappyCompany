@@ -162,7 +162,10 @@ public class RSPUI : MonoBehaviour
                     numbers[currentNumber].SetActive(true);
                     // results[0].SetActive(true);
                     // results[1].SetActive(true);
-                    Debug.Log("만나서 탈출");
+                    Debug.Log("메달 게임 당첨!");
+                    
+                    // 메달 게임 당첨 승리 사운드 재생
+                    AudioManager.instance.PlayOneShot(FMODEvents.instance.rspWin, transform, "메달 게임 당첨 사운드");
                     
                     // 당첨 숫자를 잠깐 보여준 후 모든 숫자 비활성화
                     yield return new WaitForSeconds(1.5f);

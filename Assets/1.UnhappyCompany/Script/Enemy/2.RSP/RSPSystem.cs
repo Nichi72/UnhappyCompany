@@ -234,6 +234,18 @@ public class RSPSystem : MonoBehaviour
         rspResult = RSPCalculate(playerChoice, enemyChoice);
         Debug.Log($"RSP 결과: {rspResult}");
         
+        // 가위바위보 결과에 따른 사운드 재생
+        if (rspResult == RSPResult.Win)
+        {
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.rspWin, transform, "가위바위보 승리 사운드");
+        }
+        else if (rspResult == RSPResult.Lose)
+        {
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.rspLose, transform, "가위바위보 패배 사운드");
+        }
+        
+        yield return new WaitForSeconds(1.0f); // 사운드 재생 시간
+        
         // 2. 메달 게임은 승리한 경우에만 시작
         int medalResult = 0;
         
