@@ -25,8 +25,15 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
     [SerializeField] private float groundCheckDistance = 0.3f; // 지면 체크 거리
     [SerializeField] private LayerMask groundLayer; // 지면으로 간주할 레이어
     [SerializeField] private Vector3 rayOffset = new Vector3(0, 0.1f, 0); // 레이캐스트 시작점 오프셋
-
-    [SerializeField] private float coolDownTime = 30f;
+    
+    [Header("에미션 제어")]
+    [Tooltip("비활성화 시 에미션을 끌 렌더러와 복구 값 리스트")]
+    [SerializeField] private EmissionRendererData[] emissionRenderers;
+    
+    // 에미션 제어용
+    private bool isEmissionEnabled = true;
+    private const string EmissionKeyword = "_EMISSION";
+    private Dictionary<Renderer, Color[]> originalEmissiveColors = new Dictionary<Renderer, Color[]>(); // 렌더러별 원본 색상 배열
 
     private string interactionText = "가위바위보 하기";
     public string InteractionTextF { get => interactionText; set => interactionText = value; }
@@ -62,14 +69,89 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
         OnStackZero += () => 
         {
             isCoolDown = true;
-            Invoke(nameof(ResetCoolDown), coolDownTime);
+            Debug.Log("RSP: 스택 0 - 비활성화 상태로 전환 및 쿨다운 시작");
+            
+            // 비활성화 상태로 전환
+            ChangeState(new RSPDisableState(this));
+            
+            // enemyData의 비활성화 지속 시간 사용
+            Invoke(nameof(ResetCoolDown), enemyData.disabledDuration);
         };
+        
+        // 에미션 원본 색상 캐시
+        CacheOriginalEmissiveColors();
+    }
+    
+    /// <summary>
+    /// 렌더러에서 현재 에미션 색상을 캐시합니다.
+    /// </summary>
+    private void CacheOriginalEmissiveColors()
+    {
+        if (emissionRenderers == null || emissionRenderers.Length == 0)
+            return;
+            
+        foreach (EmissionRendererData data in emissionRenderers)
+        {
+            if (data.renderer == null)
+                continue;
+            
+            // 렌더러에서 메테리얼 가져오기 (인스턴스 자동 생성)
+            Material[] materials = data.renderer.materials;
+            Color[] colors = new Color[materials.Length];
+            
+            for (int i = 0; i < materials.Length; i++)
+            {
+                if (materials[i].HasProperty("_EmissiveColor"))
+                {
+                    // 현재 에미션 색상 저장 (설정된 intensity 적용)
+                    Color currentColor = materials[i].GetColor("_EmissiveColor");
+                    
+                    // 색상 방향 정규화
+                    float magnitude = Mathf.Sqrt(currentColor.r * currentColor.r + 
+                                                 currentColor.g * currentColor.g + 
+                                                 currentColor.b * currentColor.b);
+                    
+                    Color baseDirection;
+                    if (magnitude > 0.001f)
+                    {
+                        baseDirection = new Color(currentColor.r / magnitude, 
+                                                 currentColor.g / magnitude, 
+                                                 currentColor.b / magnitude, 
+                                                 currentColor.a);
+                    }
+                    else
+                    {
+                        baseDirection = Color.white;
+                    }
+                    
+                    // 설정된 인텐시티로 색상 계산
+                    colors[i] = baseDirection * data.emissionIntensity;
+                }
+                else
+                {
+                    colors[i] = Color.black;
+                }
+            }
+            
+            originalEmissiveColors[data.renderer] = colors;
+            Debug.Log($"RSP: 렌더러 '{data.renderer.name}' 에미션 캐시 완료 (메테리얼 {materials.Length}개, intensity: {data.emissionIntensity})");
+        }
     }
 
     private void ResetCoolDown()
     {
         isCoolDown = false;
         Debug.Log("RSP: 쿨타임 초기화");
+    }
+    
+    protected override void OnDestroy()
+    {
+        base.OnDestroy();
+        
+        // 메테리얼 인스턴스는 Renderer가 자동으로 관리하므로 Dictionary만 클리어
+        originalEmissiveColors.Clear();
+        
+        Debug.Log("RSP: 에미션 데이터 정리 완료");
     }
 
     protected override void Update()
@@ -127,7 +209,7 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
         else
         {
             isGround = false;
-            Debug.Log("RSP: 지면에 있지 않음");
+            // Debug.Log("RSP: 지면에 있지 않음");
         }
     }
 
@@ -267,6 +349,95 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
     }
     #endregion
 
+    #region Emission Control
+    
+    /// <summary>
+    /// 에미션을 활성화하고 저장된 인텐시티 값으로 복원합니다.
+    /// </summary>
+    public void EnableEmission()
+    {
+        if (isEmissionEnabled) return;
+        
+        if (emissionRenderers == null || emissionRenderers.Length == 0)
+        {
+            Debug.LogWarning("RSP: 에미션 렌더러가 설정되지 않았습니다.");
+            return;
+        }
+        
+        foreach (EmissionRendererData data in emissionRenderers)
+        {
+            if (data.renderer == null)
+                continue;
+            
+            // 캐시된 색상 배열 가져오기
+            if (originalEmissiveColors.TryGetValue(data.renderer, out Color[] cachedColors))
+            {
+                // 렌더러에서 메테리얼 가져오기
+                Material[] materials = data.renderer.materials;
+                
+                for (int i = 0; i < Mathf.Min(materials.Length, cachedColors.Length); i++)
+                {
+                    if (materials[i].HasProperty("_EmissiveColor"))
+                    {
+                        materials[i].SetColor("_EmissiveColor", cachedColors[i]);
+                    }
+                }
+                
+                Debug.Log($"RSP: '{data.renderer.name}' 에미션 활성화 (intensity: {data.emissionIntensity})");
+            }
+            else
+            {
+                Debug.LogWarning($"RSP: '{data.renderer.name}' 캐시된 색상을 찾을 수 없습니다.");
+            }
+        }
+        
+        isEmissionEnabled = true;
+        Debug.Log("RSP: 에미션 활성화 완료");
+    }
+    
+    /// <summary>
+    /// 에미션을 비활성화합니다 (인텐시티를 0으로).
+    /// </summary>
+    public void DisableEmission()
+    {
+        if (!isEmissionEnabled) return;
+        
+        if (emissionRenderers == null || emissionRenderers.Length == 0)
+        {
+            Debug.LogWarning("RSP: 에미션 렌더러가 설정되지 않았습니다.");
+            return;
+        }
+        
+        foreach (EmissionRendererData data in emissionRenderers)
+        {
+            if (data.renderer == null)
+                continue;
+            
+            // 렌더러에서 메테리얼 가져오기
+            Material[] materials = data.renderer.materials;
+            
+            for (int i = 0; i < materials.Length; i++)
+            {
+                if (materials[i].HasProperty("_EmissiveColor"))
+                {
+                    // 에미션 인텐시티를 0으로 (Color.black)
+                    materials[i].SetColor("_EmissiveColor", Color.black);
+                }
+                else
+                {
+                    Debug.LogWarning($"RSP: '{data.renderer.name}' 에미션 속성을 찾을 수 없습니다.");
+                }
+            }
+            
+            Debug.Log($"RSP: '{data.renderer.name}' 에미션 비활성화 (intensity: 0)");
+        }
+        
+        isEmissionEnabled = false;
+        Debug.Log("RSP: 에미션 비활성화 완료");
+    }
+    
+    #endregion
+
     #region Test
     [ContextMenu("TestForRage")]
     public void TestForRage()
@@ -285,6 +456,18 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
     {
         DecrementStack();
         Debug.Log("RSP: 추적 상태 (광란) 상태로 전환");
+    }
+    
+    [ContextMenu("Test - Disable Emission")]
+    public void TestDisableEmission()
+    {
+        DisableEmission();
+    }
+    
+    [ContextMenu("Test - Enable Emission")]
+    public void TestEnableEmission()
+    {
+        EnableEmission();
     }
     #endregion
 
@@ -311,26 +494,47 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
 
         if (vision == null) return;
 
-        // 시야 범위 시각화 (와이어 구)
-        Gizmos.color = CheckPlayerInSight() ? Color.red : Color.green;
+        // Disable 상태 확인
+        bool isDisabled = currentState is RSPDisableState;
+
+        // Disable 상태일 때 회색 반투명 구로 표시
+        if (isDisabled)
+        {
+            Gizmos.color = new Color(0.5f, 0.5f, 0.5f, 0.3f);
+            Gizmos.DrawSphere(transform.position + Vector3.up, 1.5f);
+            
+            // 비활성화 표시 링
+            Gizmos.color = Color.gray;
+            Gizmos.DrawWireSphere(transform.position, vision.sightRange * 0.5f);
+        }
+
+        // 시야 범위 시각화 (와이어 구) - Disable 상태면 흐리게
+        if (isDisabled)
+        {
+            Gizmos.color = new Color(0.5f, 0.5f, 0.5f, 0.3f);
+        }
+        else
+        {
+            Gizmos.color = CheckPlayerInSight() ? Color.red : Color.green;
+        }
         Gizmos.DrawWireSphere(transform.position, vision.sightRange);
 
-        // 특수 공격 범위 시각화
-        if (SpecialAttackRange > 0)
+        // 특수 공격 범위 시각화 (Disable 상태가 아닐 때만)
+        if (!isDisabled && SpecialAttackRange > 0)
         {
             Gizmos.color = new Color(0.5f, 0f, 1f, 0.5f);
             Gizmos.DrawWireSphere(transform.position, SpecialAttackRange);
         }
 
-        // 스택이 높을 때 위험 범위 표시
-        if (GetCompulsoryPlayStack() >= 3)
+        // 스택이 높을 때 위험 범위 표시 (Disable 상태가 아닐 때만)
+        if (!isDisabled && GetCompulsoryPlayStack() >= 3)
         {
             Gizmos.color = new Color(1f, 0f, 0f, 0.3f);
             Gizmos.DrawWireSphere(transform.position, 5f);
         }
 
-        // 플레이어를 향한 선 그리기
-        if (playerTr != null)
+        // 플레이어를 향한 선 그리기 (Disable 상태가 아닐 때만)
+        if (!isDisabled && playerTr != null)
         {
             Gizmos.color = CheckPlayerInSight() ? Color.red : Color.yellow;
             Gizmos.DrawLine(transform.position + Vector3.up, playerTr.position + Vector3.up);
@@ -408,6 +612,14 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
     {
         // 현재 상태 표시
         string stateText = currentState != null ? $"State: {currentState.GetType().Name}" : "State: None";
+        
+        // Disable 상태 확인
+        bool isDisabled = currentState is RSPDisableState;
+        
+        if (isDisabled)
+        {
+            stateText += " [DISABLED]";
+        }
         if (isCoolDown)
         {
             stateText += " [COOLDOWN]";
@@ -416,11 +628,28 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
         {
             stateText += " [AIRBORNE]";
         }
+        if (!isEmissionEnabled)
+        {
+            stateText += " [NO EMISSION]";
+        }
         
         GUIStyle stateStyle = new GUIStyle();
         stateStyle.alignment = TextAnchor.MiddleCenter;
         stateStyle.fontSize = (int)(10 * debugUIScale);
-        stateStyle.normal.textColor = isCoolDown ? Color.cyan : Color.yellow;
+        
+        // Disable 상태면 회색, 쿨다운이면 청록색, 아니면 노란색
+        if (isDisabled)
+        {
+            stateStyle.normal.textColor = Color.gray;
+        }
+        else if (isCoolDown)
+        {
+            stateStyle.normal.textColor = Color.cyan;
+        }
+        else
+        {
+            stateStyle.normal.textColor = Color.yellow;
+        }
         stateStyle.fontStyle = FontStyle.Bold;
 
         DrawTextWithOutline(x, y, width, 20, stateText, stateStyle);
@@ -437,6 +666,20 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
             interactStyle.fontStyle = FontStyle.Bold;
             
             DrawTextWithOutline(x, y + 20, width, 20, interactText, interactStyle);
+        }
+        
+        // Disable 상태일 때 쿨다운 타이머 표시
+        if (isDisabled && isCoolDown)
+        {
+            string disabledText = "⏸ DISABLED - Waiting for reactivation...";
+            
+            GUIStyle disabledStyle = new GUIStyle();
+            disabledStyle.alignment = TextAnchor.MiddleCenter;
+            disabledStyle.fontSize = (int)(9 * debugUIScale);
+            disabledStyle.normal.textColor = Color.red;
+            disabledStyle.fontStyle = FontStyle.Bold;
+            
+            DrawTextWithOutline(x, y + 20, width, 20, disabledText, disabledStyle);
         }
     }
 

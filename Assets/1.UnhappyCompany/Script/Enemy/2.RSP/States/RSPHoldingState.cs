@@ -206,8 +206,17 @@ public class RSPHoldingState : IState
             Debug.LogWarning("RSP: 지면 도착 대기 시간 초과. 강제로 상태 전환합니다.");
         }
         
-        // 7. 순찰 상태로 전환
-        controller.ChangeState(new RSPPatrolState(controller));
+        // 7. 스택 상태에 따라 적절한 상태로 전환
+        if (controller.GetCompulsoryPlayStack() == 0)
+        {
+            Debug.Log("RSP: 스택이 0이므로 비활성화 상태로 전환");
+            controller.ChangeState(new RSPDisableState(controller));
+        }
+        else
+        {
+            Debug.Log("RSP: 스택이 남아있으므로 순찰 상태로 전환");
+            controller.ChangeState(new RSPPatrolState(controller));
+        }
     }
     
     /// <summary>

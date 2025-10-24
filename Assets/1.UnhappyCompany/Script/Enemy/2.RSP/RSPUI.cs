@@ -18,7 +18,7 @@ public struct RSPResultImage
 public class RSPUI : MonoBehaviour
 {
     // public List<int> scores;
-  
+    public GameObject centerRSPFace; // 가위바위보 중앙 얼굴 이미지
     public List<RSPChoiceImage> cenerRSPs; // 가위바위보 중앙 이미지
     public List<RSPResultImage> results; // 결과 이미지
     public List<GameObject> numbers; // 숫자 이미지
@@ -36,6 +36,17 @@ public class RSPUI : MonoBehaviour
         
         // 게임 시작 전 모든 Number 비활성화
         HideAllNumbers();
+        
+        // 평소 상태: centerRSPFace 켜기, cenerRSPs 끄기
+        if (centerRSPFace != null)
+        {
+            centerRSPFace.SetActive(true);
+        }
+        
+        foreach (var rsp in cenerRSPs)
+        {
+            rsp.image.SetActive(false);
+        }
     }
 
     // 가위바위보 중앙 이미지 회전 애니메이션 시작
@@ -45,6 +56,13 @@ public class RSPUI : MonoBehaviour
         {
             StopCoroutine(centerRSPCoroutine);
         }
+        
+        // 게임 시작: centerRSPFace 끄고 cenerRSPs 활성화
+        if (centerRSPFace != null)
+        {
+            centerRSPFace.SetActive(false);
+        }
+        
         centerRSPCoroutine = StartCoroutine(PlayCenterRSPAnimationCo());
     }
     public void GameStartRSPAnimation()
@@ -54,7 +72,14 @@ public class RSPUI : MonoBehaviour
 
     public void GameEndRSPAnimation()
     {
+        // 게임 종료: cenerRSPs 끄기
         cenerRSPs.ForEach(rsp => rsp.image.SetActive(false));
+        
+        // 게임 종료: centerRSPFace 켜기 (평소 상태로 복귀)
+        if (centerRSPFace != null)
+        {
+            centerRSPFace.SetActive(true);
+        }
         
         // 게임 종료 시 모든 Number 비활성화
         HideAllNumbers();
