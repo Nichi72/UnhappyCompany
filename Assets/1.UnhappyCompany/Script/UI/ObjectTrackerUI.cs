@@ -61,8 +61,7 @@ public class ObjectTrackerUI : MonoBehaviour
         }
     }
 
-    // 기존 AddTarget 함수 주석 처리
-    /*
+    // AddTarget 함수 - IScannable 인터페이스 사용
     public void AddTarget(Transform newTarget, EObjectTrackerUIType targetType)
     {
         if (newTarget != null && !targets.Contains(newTarget))
@@ -71,76 +70,25 @@ public class ObjectTrackerUI : MonoBehaviour
             switch (targetType)
             {
                 case EObjectTrackerUIType.Enemy:
-                    BaseEnemyAIData enemyData = newTarget.GetComponent<BaseEnemyAIData>();
+                    // IScannable 인터페이스를 통해 정보 가져오기
+                    IScannable scannableEnemy = newTarget.GetComponent<IScannable>();
                     string enemyName = "...";
-                    if(enemyData != null)
+                    
+                    if(scannableEnemy != null)
                     {
-                        enemyName = enemyData.enemyName;
+                        // IScannable의 GetScanName()을 사용
+                        enemyName = scannableEnemy.GetScanName();
                     }
-                    newUI = Instantiate(enemyUI, initTarget.transform);
-                    newUI.GetComponent<ScanInfo>().SetScanInfoText(enemyName);
-                    break;
-                case EObjectTrackerUIType.Egg:
-                    Egg egg = newTarget.GetComponent<Egg>();
-                    string scanInfoText = "...";
-                    if(egg != null)
+                    else
                     {
-                        if(egg.isScanning == false)
+                        // 레거시 방식 (EnemyAIController 직접 접근)
+                        EnemyAIController enemyController = newTarget.GetComponent<EnemyAIController>();
+                        if(enemyController != null && enemyController.EnemyData != null)
                         {
-                            scanInfoText = "Scanning...";
+                            enemyName = enemyController.EnemyData.enemyName;
                         }
-                        else if(egg.isScanningOver == true)
-                        {
-                            
-                            scanInfoText = $"{egg.eggType.ToString()}";
-                        }
-                        else
-                        {
-                            Debug.LogError("스캔 Egg 상태 오류");
-                            scanInfoText = "...";
-                        }
-                    }
-                    newUI = Instantiate(eggUI, initTarget.transform);
-                    newUI.GetComponent<ScanInfo>().SetScanInfoText(scanInfoText);
-                    break;
-                case EObjectTrackerUIType.CollectibleItem:
-                    Item item = newTarget.GetComponent<Item>();
-                    string price = "...";
-                    if(item != null)
-                    {
-                        price = item.itemData.SellPrice.ToString();
                     }
                     
-                    newUI = Instantiate(collectibleItemUI, initTarget.transform);
-                    newUI.GetComponent<ScanInfo>().SetScanInfoText(price);
-                    break;
-                default:
-                    newUI = Instantiate(uiPrefab, initTarget.transform);
-                    break;
-            }
-            targets.Add(newTarget);
-            uiElements.Add(newUI);
-            newUI.SetActive(true);
-            StartCoroutine(RemoveUIAfterDelay(newTarget, newUI, showTime));
-        }
-    }
-    */
-
-    // 새로운 AddTarget 함수
-    public void AddTarget(Transform newTarget, EObjectTrackerUIType targetType)
-    {
-        if (newTarget != null && !targets.Contains(newTarget))
-        {
-            GameObject newUI = null;
-            switch (targetType)
-            {
-                case EObjectTrackerUIType.Enemy:
-                    BaseEnemyAIData enemyData = newTarget.GetComponent<BaseEnemyAIData>();
-                    string enemyName = "...";
-                    if(enemyData != null)
-                    {
-                        enemyName = enemyData.enemyName;
-                    }
                     newUI = Instantiate(enemyUI, initTarget.transform);
                     newUI.GetComponent<ScanInfo>().SetScanInfoText(enemyName);
                     break;
