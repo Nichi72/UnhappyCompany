@@ -165,15 +165,27 @@ public class ObjectTrackerUI : MonoBehaviour
                     }
                     break;
                 case EObjectTrackerUIType.CollectibleItem:
-                    Item item = newTarget.GetComponent<Item>();
-                    string price = "...";
-                    if(item != null)
+                    // IScannable 인터페이스를 통해 정보 가져오기
+                    IScannable scannableItem = newTarget.GetComponent<IScannable>();
+                    string displayText = "...";
+                    
+                    if(scannableItem != null)
                     {
-                        price = item.itemData.SellPrice.ToString();
+                        // IScannable의 GetScanName()을 사용 (itemData 없어도 작동)
+                        displayText = scannableItem.GetScanName();
+                    }
+                    else
+                    {
+                        // 레거시 방식 (ItemData 직접 접근)
+                        Item item = newTarget.GetComponent<Item>();
+                        if(item != null && item.itemData != null)
+                        {
+                            displayText = item.itemData.SellPrice.ToString();
+                        }
                     }
                     
                     newUI = Instantiate(collectibleItemUI, initTarget.transform);
-                    newUI.GetComponent<ScanInfo>().SetScanInfoText(price);
+                    newUI.GetComponent<ScanInfo>().SetScanInfoText(displayText);
                     break;
                 default:
                     newUI = Instantiate(uiPrefab, initTarget.transform);
