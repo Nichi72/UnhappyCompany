@@ -62,8 +62,8 @@ public class ScanningSystem : MonoBehaviour
                     {
                         scannedObjects.Add(scannable);
                         
-                        // UI 표시
-                        objectTrackerUI.AddTarget(scannable.GetTransform(), scannable.GetUIType());
+                        // UI 표시 (타입은 IScannable이 알아서 제공)
+                        objectTrackerUI.AddTarget(scannable.GetTransform());
                         
                         // 스캔 콜백 호출
                         scannable.OnScanned();

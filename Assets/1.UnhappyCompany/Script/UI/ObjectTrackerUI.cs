@@ -61,84 +61,75 @@ public class ObjectTrackerUI : MonoBehaviour
         }
     }
 
-    // AddTarget 함수 - IScannable 인터페이스 사용
-    public void AddTarget(Transform newTarget, EObjectTrackerUIType targetType)
+    /// <summary>
+    /// 스캔 가능한 객체의 UI를 추가합니다.
+    /// IScannable 인터페이스를 통해 타입과 정보를 자동으로 결정합니다.
+    /// </summary>
+    public void AddTarget(Transform newTarget)
     {
-        if (newTarget != null && !targets.Contains(newTarget))
+        if (newTarget == null || targets.Contains(newTarget))
+            return;
+        
+        // IScannable 인터페이스 확인
+        IScannable scannable = newTarget.GetComponent<IScannable>();
+        if (scannable == null)
         {
-            GameObject newUI = null;
-            switch (targetType)
-            {
-                case EObjectTrackerUIType.Enemy:
-                    // IScannable 인터페이스를 통해 정보 가져오기
-                    IScannable scannableEnemy = newTarget.GetComponent<IScannable>();
-                    string enemyName = "...";
+            Debug.LogWarning($"[ObjectTrackerUI] {newTarget.name}에 IScannable 인터페이스가 없습니다.");
+            return;
+        }
+        
+        // IScannable에서 타입과 정보 가져오기
+        EObjectTrackerUIType targetType = scannable.GetUIType();
+        string displayText = scannable.GetScanName();
+        
+        GameObject newUI = null;
+        
+        switch (targetType)
+        {
+            case EObjectTrackerUIType.Enemy:
+                newUI = Instantiate(enemyUI, initTarget.transform);
+                newUI.GetComponent<ScanInfo>().SetScanInfoText(displayText);
+                break;
+                
+            case EObjectTrackerUIType.Egg:
+                // Egg는 특수 처리 (스캔 애니메이션)
+                Egg egg = newTarget.GetComponent<Egg>();
+                if(egg != null)
+                {
+                    newUI = Instantiate(eggUI, initTarget.transform);
+                    ScanInfo scanInfo = newUI.GetComponent<ScanInfo>();
                     
-                    if(scannableEnemy != null)
+                    if(egg.isScanningOver)
                     {
-                        // IScannable의 GetScanName()을 사용
-                        enemyName = scannableEnemy.GetScanName();
+                        // 이미 스캔된 상태면 바로 위험도 표시
+                        scanInfo.SetScanInfoText(GetEggDangerLevel(egg));
                     }
                     else
                     {
-                        // 레거시 방식 (EnemyAIController 직접 접근)
-                        EnemyAIController enemyController = newTarget.GetComponent<EnemyAIController>();
-                        if(enemyController != null && enemyController.EnemyData != null)
-                        {
-                            enemyName = enemyController.EnemyData.enemyName;
-                        }
+                        // 아직 스캔되지 않은 상태면 Scanning... 표시 후 1초 후 업데이트
+                        scanInfo.SetScanInfoText("Scanning...");
+                        StartCoroutine(UpdateEggInfoAfterDelay(scanInfo, egg, 1f));
                     }
-                    
-                    newUI = Instantiate(enemyUI, initTarget.transform);
-                    newUI.GetComponent<ScanInfo>().SetScanInfoText(enemyName);
-                    break;
-                case EObjectTrackerUIType.Egg:
-                    Egg egg = newTarget.GetComponent<Egg>();
-                    if(egg != null)
-                    {
-                        newUI = Instantiate(eggUI, initTarget.transform);
-                        ScanInfo scanInfo = newUI.GetComponent<ScanInfo>();
-                        
-                        if(egg.isScanningOver)
-                        {
-                            // 이미 스캔된 상태면 바로 eggType 표시
-                            scanInfo.SetScanInfoText(GetEggDangerLevel(egg));
-                        }
-                        else
-                        {
-                            // 아직 스캔되지 않은 상태면 Scanning... 표시 후 1초 후에 eggType으로 변경
-                            scanInfo.SetScanInfoText("Scanning...");
-                            StartCoroutine(UpdateEggInfoAfterDelay(scanInfo, egg, 1f));
-                        }
-                    }
-                    break;
-                case EObjectTrackerUIType.CollectibleItem:
-                    // IScannable 인터페이스를 통해 정보 가져오기
-                    IScannable scannableItem = newTarget.GetComponent<IScannable>();
-                    string displayText = "...";
-                    
-                    if(scannableItem != null)
-                    {
-                        // IScannable의 GetScanName()을 사용 (itemData 없어도 작동)
-                        displayText = scannableItem.GetScanName();
-                    }
-                    else
-                    {
-                        // 레거시 방식 (ItemData 직접 접근)
-                        Item item = newTarget.GetComponent<Item>();
-                        if(item != null && item.itemData != null)
-                        {
-                            displayText = item.itemData.SellPrice.ToString();
-                        }
-                    }
-                    
-                    newUI = Instantiate(collectibleItemUI, initTarget.transform);
-                    newUI.GetComponent<ScanInfo>().SetScanInfoText(displayText);
-                    break;
-                default:
-                    newUI = Instantiate(uiPrefab, initTarget.transform);
-                    break;
-            }
+                }
+                break;
+                
+            case EObjectTrackerUIType.CollectibleItem:
+                newUI = Instantiate(collectibleItemUI, initTarget.transform);
+                newUI.GetComponent<ScanInfo>().SetScanInfoText(displayText);
+                break;
+                
+            default:
+                newUI = Instantiate(uiPrefab, initTarget.transform);
+                if(newUI != null)
+                {
+                    newUI.GetComponent<ScanInfo>()?.SetScanInfoText(displayText);
+                }
+                break;
+        }
+        
+        // UI 등록 및 활성화
+        if(newUI != null)
+        {
             targets.Add(newTarget);
             uiElements.Add(newUI);
             newUI.SetActive(true);
