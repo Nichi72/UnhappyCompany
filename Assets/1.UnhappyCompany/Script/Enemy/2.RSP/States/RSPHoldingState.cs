@@ -154,12 +154,69 @@ public class RSPHoldingState : IState
         
         Debug.Log("RSP: 모든 스택 클리어 완료!");
 
+        // 1. 부모 해제 전에 지면 위치 찾기
+        Vector3 targetPosition = controller.transform.position;
+        RaycastHit hit;
+        if (Physics.Raycast(controller.transform.position + Vector3.up * 2f, Vector3.down, out hit, 10f, LayerMask.GetMask("Ground")))
+        {
+            targetPosition = hit.point;
+            Debug.Log($"RSP: 지면 발견 위치 = {targetPosition}");
+        }
+        else
+        {
+            Debug.LogWarning("RSP: 지면을 찾지 못했습니다. 플레이어 주변 위치로 이동합니다.");
+            targetPosition = player.transform.position + player.transform.forward * 2f;
+        }
+        
+        // 2. 부모 해제 및 위치 설정
         controller.transform.parent = null;
+        controller.transform.position = targetPosition;
+        
+        // 3. 애니메이터 먼저 활성화
         controller.animator.enabled = true;
-        yield return new WaitUntil(() => controller.isGround);
-        Debug.Log("RSP: 지면에 도착했습니다.");
+        
+        // 4. NavMeshAgent와 Collider 활성화
         EnableCompoenet(true);
-        controller.ChangeState(new RSPPatrolState(controller));
+        
+        // 5. NavMeshAgent를 NavMesh 위로 강제 이동 (Warp)
+        if (controller.agent.enabled)
+        {
+            UnityEngine.AI.NavMeshHit navHit;
+            if (UnityEngine.AI.NavMesh.SamplePosition(targetPosition, out navHit, 5f, UnityEngine.AI.NavMesh.AllAreas))
+            {
+                controller.agent.Warp(navHit.position);
+                Debug.Log($"RSP: NavMesh 위치로 Warp 완료 = {navHit.position}");
+            }
+            else
+            {
+                Debug.LogError("RSP: NavMesh를 찾을 수 없습니다!");
+            }
+        }
+        
+        // 6. 지면 확인 대기 (최대 2초)
+        float waitStartTime = Time.time;
+        yield return new WaitUntil(() => controller.isGround || Time.time - waitStartTime > 2f);
+        
+        if (controller.isGround)
+        {
+            Debug.Log("RSP: 지면에 정상적으로 도착했습니다.");
+        }
+        else
+        {
+            Debug.LogWarning("RSP: 지면 도착 대기 시간 초과. 강제로 상태 전환합니다.");
+        }
+        
+        // 7. 스택 상태에 따라 적절한 상태로 전환
+        if (controller.GetCompulsoryPlayStack() == 0)
+        {
+            Debug.Log("RSP: 스택이 0이므로 비활성화 상태로 전환");
+            controller.ChangeState(new RSPDisableState(controller));
+        }
+        else
+        {
+            Debug.Log("RSP: 스택이 남아있으므로 순찰 상태로 전환");
+            controller.ChangeState(new RSPPatrolState(controller));
+        }
     }
     
     /// <summary>

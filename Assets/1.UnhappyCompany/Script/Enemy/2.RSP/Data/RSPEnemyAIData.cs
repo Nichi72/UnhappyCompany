@@ -1,4 +1,18 @@
 using UnityEngine;
+using System;
+
+/// <summary>
+/// 에미션을 제어할 렌더러와 인텐시티 값을 저장하는 구조체
+/// </summary>
+[Serializable]
+public struct EmissionRendererData
+{
+    [Tooltip("제어할 렌더러 (메테리얼은 런타임에 동적으로 가져옴)")]
+    public Renderer renderer;
+    
+    [Tooltip("복구할 에미션 인텐시티 값")]
+    public int emissionIntensity;
+}
 
 [CreateAssetMenu(fileName = "RSPEnemyAIData", menuName = "UnhappyCompany/Enemy/RSPEnemyAIData")]
 public class RSPEnemyAIData : BaseEnemyAIData
@@ -22,4 +36,8 @@ public class RSPEnemyAIData : BaseEnemyAIData
     public float minPatrolWaitTime = 1f;
     [Tooltip("최대 패트롤 대기 시간")]
     public float maxPatrolWaitTime = 3f;
+    
+    [Header("RSP 비활성화 설정")]
+    [Tooltip("비활성화 지속 시간 (초)")]
+    public float disabledDuration = 60f;
 } 

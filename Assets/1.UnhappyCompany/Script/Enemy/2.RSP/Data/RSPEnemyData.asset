@@ -14,16 +14,33 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyName: RSP
   prefab: {fileID: 706018679531887867, guid: f9fc5515336544b459232df840e18a28, type: 3}
+  dangerLevel: 0
   category: 0
   enemyType: 0
   enemyCost: 50
   patrolRadius: 10
-  chaseRadius: 15
-  attackRadius: 4.23
+  patrolDistanceMinRatio: 0.3
+  patrolDistanceMaxRatio: 0.7
+  fleeDistanceMinRatio: 0.8
+  fleeDistanceMaxRatio: 1.5
+  patrolRangeColor: {r: 0, g: 1, b: 0, a: 1}
+  fleeRangeColor: {r: 1, g: 0, b: 0, a: 1}
+  showRangesInGame: 0
   moveSpeed: 5
   Cost: 20
+  hpMax: 100
+  rotationSpeed: 5
+  detectionRange: 10
   attackCooldown: 2
-  specialAttackCooldown: 5
   specialAttackRange: 5
-  afternoonSpeedMultiplier: 1.3
-  afternoonPatrolRangeMultiplier: 1.4
+  specialAttackCooldown: 5
+  minPatrolWaitTime: 1
+  maxPatrolWaitTime: 3
+  disabledDuration: 60
+  emissionMaterials:
+  - material: {fileID: 2100000, guid: e0c237e4d72b11344836eac37d1cced9, type: 2}
+    emissionIntensity: 200
+  - material: {fileID: 2100000, guid: ef1092806dae53d40b30abc9a84b03ac, type: 2}
+    emissionIntensity: 200
+  - material: {fileID: 2100000, guid: 7c9305abbd836574c99f8fe72e9187ea, type: 2}
+    emissionIntensity: 50

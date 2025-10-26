@@ -5,7 +5,7 @@ using UnityEngine.AI;
 /// <summary>
 /// EnemyAIController는 적의 기본 AI 동작을 정의하는 추상 클래스입니다.
 /// </summary>
-public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
+public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager, IScannable
 {
     [Header("DEBUG")]
     public string currentStateName;
@@ -832,6 +832,61 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
         // 최종 대안으로 현재 위치 반환
         return transform.position;
     }
+
+    #region IScannable Implementation
+    
+    /// <summary>
+    /// 스캔 시 표시될 적의 이름을 반환합니다.
+    /// 자식 클래스에서 오버라이드하여 커스터마이즈 가능
+    /// </summary>
+    public virtual string GetScanName()
+    {
+        return EnemyData != null ? EnemyData.enemyName : "Unknown Enemy";
+    }
+
+    /// <summary>
+    /// 스캔 시 표시될 적의 상세 정보를 반환합니다.
+    /// 자식 클래스에서 오버라이드하여 추가 정보 표시 가능
+    /// </summary>
+    public virtual string GetScanDescription()
+    {
+        if (EnemyData != null)
+        {
+            string dangerLevel = EnemyData.dangerLevel.ToString();
+            string hpInfo = $"HP: {hp}/{EnemyData.hpMax}";
+            string stateInfo = !string.IsNullOrEmpty(currentStateName) ? $"State: {currentStateName}" : "State: Unknown";
+            return $"Danger: {dangerLevel} | {hpInfo} | {stateInfo}";
+        }
+        return "No data available";
+    }
+
+    /// <summary>
+    /// UI 위치 참조를 위한 Transform 반환
+    /// </summary>
+    public Transform GetTransform()
+    {
+        return transform;
+    }
+
+    /// <summary>
+    /// 스캔 UI 타입 반환
+    /// </summary>
+    public virtual EObjectTrackerUIType GetUIType()
+    {
+        return EObjectTrackerUIType.Enemy;
+    }
+
+    /// <summary>
+    /// 적이 스캔되었을 때 호출되는 메서드
+    /// 자식 클래스에서 오버라이드하여 스캔 반응 추가 가능
+    /// </summary>
+    public virtual void OnScanned()
+    {
+        Debug.Log($"[Enemy] {GetScanName()} 스캔됨! Danger Level: {EnemyData?.dangerLevel}");
+        // 기본 동작: 스캔 효과음이나 이펙트를 여기에 추가 가능
+    }
+    
+    #endregion
 }
 
 /// <summary>

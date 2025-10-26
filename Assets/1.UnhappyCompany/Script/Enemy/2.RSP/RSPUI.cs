@@ -9,12 +9,18 @@ public struct RSPChoiceImage
     public RSPChoice choice;
     public GameObject image;
 }
+[Serializable]
+public struct RSPResultImage
+{
+    public RSPResult result;
+    public GameObject resultImage;
+}
 public class RSPUI : MonoBehaviour
 {
     // public List<int> scores;
-  
+    public GameObject centerRSPFace; // 가위바위보 중앙 얼굴 이미지
     public List<RSPChoiceImage> cenerRSPs; // 가위바위보 중앙 이미지
-    public List<GameObject> results; // 결과 이미지
+    public List<RSPResultImage> results; // 결과 이미지
     public List<GameObject> numbers; // 숫자 이미지
     // 이벤트 호출 함수
     public Action onRotationEnd;
@@ -27,8 +33,20 @@ public class RSPUI : MonoBehaviour
     void Start()
     {
         // scores = new List<int>(){1,2,4,7,20};
-
         
+        // 게임 시작 전 모든 Number 비활성화
+        HideAllNumbers();
+        
+        // 평소 상태: centerRSPFace 켜기, cenerRSPs 끄기
+        if (centerRSPFace != null)
+        {
+            centerRSPFace.SetActive(true);
+        }
+        
+        foreach (var rsp in cenerRSPs)
+        {
+            rsp.image.SetActive(false);
+        }
     }
 
     // 가위바위보 중앙 이미지 회전 애니메이션 시작
@@ -38,6 +56,13 @@ public class RSPUI : MonoBehaviour
         {
             StopCoroutine(centerRSPCoroutine);
         }
+        
+        // 게임 시작: centerRSPFace 끄고 cenerRSPs 활성화
+        if (centerRSPFace != null)
+        {
+            centerRSPFace.SetActive(false);
+        }
+        
         centerRSPCoroutine = StartCoroutine(PlayCenterRSPAnimationCo());
     }
     public void GameStartRSPAnimation()
@@ -47,8 +72,17 @@ public class RSPUI : MonoBehaviour
 
     public void GameEndRSPAnimation()
     {
+        // 게임 종료: cenerRSPs 끄기
         cenerRSPs.ForEach(rsp => rsp.image.SetActive(false));
-
+        
+        // 게임 종료: centerRSPFace 켜기 (평소 상태로 복귀)
+        if (centerRSPFace != null)
+        {
+            centerRSPFace.SetActive(true);
+        }
+        
+        // 게임 종료 시 모든 Number 비활성화
+        HideAllNumbers();
     }
 
     // 가위바위보 중앙 이미지 회전 애니메이션 중지
@@ -94,7 +128,7 @@ public class RSPUI : MonoBehaviour
             currentIndex = (currentIndex + 1) % cenerRSPs.Count;
             
             // 소리 재생 (기존 코드와 유사하게)
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.rspWheelSpin, transform, "RSP 중앙 회전 돌아가는 소리");
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.rspWheelSpin, transform,null); // RSP 중앙 회전 돌아가는 소리
         }
     }
 
@@ -106,14 +140,23 @@ public class RSPUI : MonoBehaviour
 
     IEnumerator PlayMedalWinAnimationCo(int targetNumber)
     {
-        Debug.Log("targetNumber: " + targetNumber);
+        Debug.Log("메달 게임 애니메이션 시작 - 목표 점수: " + targetNumber);
         
-        int currentNumber = 0;
+        // 목표 점수에 해당하는 GameObject 찾기
+        GameObject scoreNumberstemp = GetNumberFromScore(targetNumber);
+        
+        // null 체크 - 찾지 못하면 애니메이션 중단
+        if(scoreNumberstemp == null)
+        {
+            Debug.LogError("메달 애니메이션 실패: 목표 점수에 해당하는 GameObject를 찾을 수 없습니다!");
+            isOver = true;
+            yield break;
+        }
+        
+        int index = GetIndexFromGameObject(scoreNumberstemp);
+        int currentNumber = GetCyclicIndex(index + 4); // 시작 위치를 목표보다 4칸 앞으로
         int maxNumber = numbers.Count;
         int loopCount = 0;
-        GameObject scoreNumberstemp = GetNumberFromScore(targetNumber);
-        int index = GetIndexFromGameObject(scoreNumberstemp);
-        currentNumber = GetCyclicIndex(index+4);
         
         foreach (var number in numbers)
         {
@@ -129,7 +172,7 @@ public class RSPUI : MonoBehaviour
             numbers[currentNumber].SetActive(false);
             
             currentNumber++;
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.rspWheelSpin, transform, "RSP 중앙 회전 돌아가는 소리");
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.rspWheelSpin, transform,null); // RSP 중앙 회전 돌아가는 소리
             if (currentNumber >= maxNumber)
             {
                 Debug.Log("loopCount: " + loopCount);
@@ -142,9 +185,17 @@ public class RSPUI : MonoBehaviour
                 if(scoreNumberstemp == numbers[currentNumber])
                 {
                     numbers[currentNumber].SetActive(true);
-                    results[0].SetActive(true);
-                    results[1].SetActive(true);
-                    Debug.Log("만나서 탈출");
+                    // results[0].SetActive(true);
+                    // results[1].SetActive(true);
+                    Debug.Log("메달 게임 당첨!");
+                    
+                    // 메달 게임 당첨 승리 사운드 재생
+                    AudioManager.instance.PlayOneShot(FMODEvents.instance.rspWin, transform, "메달 게임 당첨 사운드");
+                    
+                    // 당첨 숫자를 잠깐 보여준 후 모든 숫자 비활성화
+                    yield return new WaitForSeconds(1.5f);
+                    HideAllNumbers();
+                    
                     onRotationEnd?.Invoke();
                     isOver = true;
                     break;
@@ -153,8 +204,8 @@ public class RSPUI : MonoBehaviour
         }
         void ToggleResults(bool isActive)
         {
-            results[0].SetActive(isActive);
-            results[1].SetActive(!isActive);
+            // results[0].SetActive(isActive);
+            // results[1].SetActive(!isActive);
         }
         GameObject GetNumberFromScore(int score)
         {
@@ -162,20 +213,31 @@ public class RSPUI : MonoBehaviour
 
             for(int i = 0; i < numbers.Count; i++)
             {
-                Debug.Log("number.name: " + numbers[i].name + " score: " + score);
-                int extractedNumber = int.Parse(numbers[i].name.Split('(')[1].Split(')')[0]);
-                if(extractedNumber == score)
+                // GameObject 이름이 숫자로만 되어있는지 확인하고 파싱
+                if(int.TryParse(numbers[i].name, out int extractedNumber))
                 {
-                    // Number (1)(0) 형식에서 첫 번째 괄호 안의 숫자 추출
-                    Debug.Log("Extracted Number: " + extractedNumber);
-                    result.Add(numbers[i]);
+                    if(extractedNumber == score)
+                    {
+                        Debug.Log($"찾은 GameObject: {numbers[i].name} (인덱스: {i})");
+                        result.Add(numbers[i]);
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning($"GameObject 이름이 숫자가 아닙니다: {numbers[i].name}");
                 }
             }
 
-            int randomIndex = UnityEngine.Random.Range(0, result.Count);
-            var temp =  result[randomIndex];
+            if(result.Count == 0)
+            {
+                Debug.LogError($"점수 {score}에 해당하는 GameObject를 찾을 수 없습니다! numbers 리스트를 확인하세요.");
+                return null;
+            }
 
-            return temp;
+            // 같은 점수가 여러 개 있으면 랜덤으로 선택
+            int randomIndex = UnityEngine.Random.Range(0, result.Count);
+            Debug.Log($"점수 {score}에 해당하는 GameObject {result.Count}개 중 인덱스 {randomIndex} 선택");
+            return result[randomIndex];
         }
         /// <summary>
         /// numbers 리스트의 인덱스가 범위를 벗어날 때 순환되도록 처리하는 함수
@@ -218,6 +280,24 @@ public class RSPUI : MonoBehaviour
         }
     }
     
+    /// <summary>
+    /// 모든 Number GameObject를 비활성화하는 함수
+    /// </summary>
+    private void HideAllNumbers()
+    {
+        if (numbers == null || numbers.Count == 0)
+            return;
+            
+        foreach (var number in numbers)
+        {
+            if (number != null)
+            {
+                number.SetActive(false);
+            }
+        }
+        
+        Debug.Log("모든 Number GameObject 비활성화 완료");
+    }
 
 
     
