@@ -14,15 +14,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyName: Cube
   prefab: {fileID: 3818692283034673697, guid: b4ee305938e4db042b634a2edd2ae17f, type: 3}
+  dangerLevel: 0
   category: 0
   enemyType: 0
   enemyCost: 0
-  patrolRadius: 24.9
-  chaseRadius: 0
-  attackRadius: 5
+  patrolRadius: 54.97
+  patrolDistanceMinRatio: 0.3
+  patrolDistanceMaxRatio: 0.691
+  patrolRangeColor: {r: 0, g: 1, b: 0, a: 1}
+  showRangesInGame: 1
   moveSpeed: 5
-  rushForce: 30
-  torqueForce: 3
+  Cost: 10
+  hpMax: 100
+  attackGiveUpRadius: 28.2
+  rushForce: 30000
+  torqueForce: 3000
   rotationAttackAngle: 15
   chaseSpeedMultiplier: 1.5
   morningAttackCooldown: 1.5

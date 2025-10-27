@@ -11,6 +11,11 @@ public class MooAIController : EnemyAIController<MooAIData>
     [ReadOnly] [SerializeField] public string CurrentStateName = "";
     public new MooAIData EnemyData => enemyData;
     
+    // Moo 전용 Flee 설정 오버라이드
+    public override float FleeDistanceMin => EnemyData.patrolRadius * EnemyData.fleeDistanceMinRatio;
+    public override float FleeDistanceMax => EnemyData.patrolRadius * EnemyData.fleeDistanceMaxRatio;
+    public override Color FleeRangeColor => EnemyData.fleeRangeColor;
+    
     [Header("Slime Settings")]
     public float slimeEmitInterval = 10f;
     private float lastSlimeEmitTime;

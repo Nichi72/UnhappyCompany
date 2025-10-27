@@ -13,6 +13,7 @@ public class Player : MonoBehaviour
     public Animator armAnimator;
     public List<Transform> OffsetLists;
     public PlayerStatus playerStatus;
+    public GameObject Head;
 
     void Start()
     {

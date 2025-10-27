@@ -2,160 +2,148 @@ using UnityEngine;
 using UnityEngine.AI;
 
 /// <summary>
-/// PatrolState는 적이 순찰을 수행하는 상태를 나타냅니다.
-/// 무작위 순찰 지점을 설정하고 NavMeshAgent를 통해 이동을 제어합니다.
+/// Cube 적의 순찰 상태를 관리하는 클래스입니다.
+/// 이 상태에서 적은 지정된 구역을 랜덤하게 순찰하며 플레이어를 탐지합니다.
 /// </summary>
 public class CubePatrolState : IState
 {
-    private EnemyAICube controller;
+    private EnemyAICube controller;        // Cube 적 컨트롤러 참조
     private UtilityCalculator utilityCalculator;
-    
-    private Vector3 currentPatrolPoint;
-    private bool isMovingToPoint = false;
-    private float minDistanceToPoint = 1f; // 목적지 도달 판정 거리
-    private int currentPathIndex = 0;
-    private PathCalculator pathCalculator;
+    private float patrolTimer = 0f;       // 현재 위치에서 대기한 시간
+    private float patrolInterval = 1f;    // 다음 순찰 지점으로 이동하기까지 대기 시간
+    private Vector3 lastPosition;         // 마지막으로 기록된 위치 (막힘 상태 감지용)
+    private float stuckCheckTimer = 0f;   // 막힘 상태 체크 타이머
+    private float stuckCheckInterval = 10f; // 막힘 상태 체크 주기 (초)
+    private float stuckThreshold = 0.1f;  // 이동 거리가 이 값보다 작으면 막힘 상태로 간주
 
-    public CubePatrolState(EnemyAICube controller, UtilityCalculator calculator, PathCalculator pathCalculator)
+    /// <summary>
+    /// Cube 순찰 상태 생성자
+    /// </summary>
+    /// <param name="controller">Cube 적 컨트롤러</param>
+    /// <param name="calculator">유틸리티 계산기</param>
+    public CubePatrolState(EnemyAICube controller, UtilityCalculator calculator)
     {
         this.controller = controller;
         this.utilityCalculator = calculator;
-        this.pathCalculator = pathCalculator;
+        lastPosition = controller.transform.position;
     }
 
+    /// <summary>
+    /// 순찰 상태 진입 시 호출되는 메서드
+    /// </summary>
     public void Enter()
     {
-        pathCalculator.CalculateNewPath();
-        SetNewPatrolPoint(); // 초기 패트롤 포인트 설정
+        Debug.Log("Cube: 순찰 상태 시작");
+        // 상태 진입 시 즉시 순찰 목적지 설정
+        controller.SetRandomPatrolDestination();
     }
 
+    /// <summary>
+    /// 오전 시간대의 순찰 상태 실행 로직
+    /// </summary>
     public void ExecuteMorning()
     {
-        // float distanceToPlayer = Vector3.Distance(controller.transform.position, controller.playerTr.position);
-        // if(distanceToPlayer < controller.AttackRadius)
-        // {
-        //     controller.ChangeState(new CubeAttackState(controller, utilityCalculator));
-        //     return;
-        // }
-        // if (!isMovingToPoint || 
-        //     Vector3.Distance(controller.transform.position, currentPatrolPoint) < minDistanceToPoint)
-        // {
-        //     SetNewPatrolPoint();
-        // }
-
-        UpdateAnimation();
-        DrawPatrolGizmos();
-    }
-
-    public void ExecuteAfternoon()
-    {
-        float distanceToPlayer = Vector3.Distance(controller.transform.position, controller.playerTr.position);
-        // if(distanceToPlayer < controller.AttackRadius)
-        // {
-        //     controller.ChangeState(new CubeAttackState(controller, utilityCalculator));
-        //     return;
-        // }
-        // if (!isMovingToPoint || 
-        //     Vector3.Distance(controller.transform.position, currentPatrolPoint) < minDistanceToPoint)
-        // {
-        //     SetNewPatrolPoint();
-        // }
-
-        UpdateAnimation();
-        DrawPatrolGizmos();
-    }
-
-    public void ExecuteFixedMorning()
-    {
-        // PatrolState에서는 FixedUpdate에서 별도의 물리 연산이 필요 없으므로 빈 메서드로 둡니다.
-    }
-
-    public void ExecuteFixedAfternoon()
-    {
-        // PatrolState에서는 FixedUpdate에서 별도의 물리 연산이 필요 없으므로 빈 메서드로 둡니다.
-    }
-
-    public void ExecuteFixed()
-    {
-        // 기본 FixedExecute는 빈 메서드로 둡니다.
-    }
-
-    private void DrawPatrolGizmos()
-    {
-        Vector3 directionToTarget = (currentPatrolPoint - controller.transform.position).normalized;
-        Debug.DrawRay(controller.transform.position, directionToTarget * 5f, Color.red);
-        Debug.DrawLine(currentPatrolPoint + Vector3.up * 0.1f, currentPatrolPoint + Vector3.up * 2f, Color.green);
-        Debug.DrawLine(currentPatrolPoint - Vector3.right * 0.5f, currentPatrolPoint + Vector3.right * 0.5f, Color.green);
-        Debug.DrawLine(currentPatrolPoint - Vector3.forward * 0.5f, currentPatrolPoint + Vector3.forward * 0.5f, Color.green);
-    }
-
-    private void SetNewPatrolPoint()
-    {
-        TimeOfDay currentTime = controller.CurrentTimeOfDay;
-        Vector3 newPoint;
-
-        if (currentTime == TimeOfDay.Morning)
+        // 플레이어 감지 (근접 감지 또는 시야 감지)
+        if(controller.DetectPlayer())
         {
-            newPoint = GetRandomPatrolPointMorning();
-        }
-        else
-        {
-            newPoint = GetRandomPatrolPointAfternoon();
-        }
-
-        currentPatrolPoint = newPoint;
-        pathCalculator.target = new GameObject().transform; // 임시 타겟 생성
-        pathCalculator.target.position = currentPatrolPoint;
-        pathCalculator.CalculateNewPath();
-        currentPathIndex = 0;
-        isMovingToPoint = true;
-    }
-
-    private Vector3 GetRandomPatrolPointMorning()
-    {
-        Vector3 randomDirection = Random.insideUnitSphere * (controller.PatrolRadius / 2);
-        randomDirection += controller.transform.position;
-        NavMeshHit hit;
-        NavMesh.SamplePosition(randomDirection, out hit, controller.PatrolRadius / 2, NavMesh.AllAreas);
-        return hit.position;
-    }
-
-    private Vector3 GetRandomPatrolPointAfternoon()
-    {
-        Vector3 randomDirection = Random.insideUnitSphere * controller.PatrolRadius;
-        randomDirection += controller.transform.position;
-        NavMeshHit hit;
-        NavMesh.SamplePosition(randomDirection, out hit, controller.PatrolRadius, NavMesh.AllAreas);
-        return hit.position;
-    }
-
-    private void UpdateAnimation()
-    {
-        if (pathCalculator.path.corners.Length == 0 || currentPathIndex >= pathCalculator.path.corners.Length)
-        {
-            isMovingToPoint = false;
+            Debug.Log("Cube: 플레이어 감지! 공격 상태로 전환");
+            controller.ChangeState(new CubeAttackState(controller, utilityCalculator));
             return;
         }
+        
+        // 기본 순찰 행동 실행
+        PatrolBehavior();
+    }
 
-        Vector3 targetPosition = pathCalculator.path.corners[currentPathIndex];
-        Vector3 direction = (targetPosition - controller.transform.position).normalized;
-        float distance = Vector3.Distance(controller.transform.position, targetPosition);
-
-        if (distance < minDistanceToPoint)
+    /// <summary>
+    /// 오후 시간대의 순찰 상태 실행 로직
+    /// </summary>
+    public void ExecuteAfternoon()
+    {
+        // 플레이어 감지 (근접 감지 또는 시야 감지)
+        if(controller.DetectPlayer())
         {
-            currentPathIndex++;
+            Debug.Log("Cube: 플레이어 감지! 공격 상태로 전환");
+            controller.ChangeState(new CubeAttackState(controller, utilityCalculator));
+            return;
         }
-        else
+        
+        // 기본 순찰 행동 실행
+        PatrolBehavior();
+    }
+
+    /// <summary>
+    /// 순찰 행동의 핵심 로직
+    /// 목적지 도착 확인 및 새 목적지 설정을 처리합니다.
+    /// </summary>
+    private void PatrolBehavior()
+    {
+        // 목적지에 도착했는지 확인 (경로 계산이 완료되고 남은 거리가 정지 거리 이하인 경우)
+        if (!controller.agent.pathPending && controller.agent.remainingDistance <= controller.agent.stoppingDistance)
         {
-            // 루트 모션을 통해 이동
-            // controller.animator.SetFloat("Speed", controller.enemyData.moveSpeed);
-            // controller.animator.SetBool("IsMoving", true);
-            // controller.transform.rotation = Quaternion.LookRotation(direction);
+            patrolTimer += Time.deltaTime;
+            
+            // 일정 시간 대기 후 새로운 목적지 설정
+            if (patrolTimer >= patrolInterval)
+            {
+                controller.SetRandomPatrolDestination();
+                patrolTimer = 0f;
+            }
+        }
+        
+        // 주기적으로 막힘 상태 확인
+        CheckIfStuck();
+    }
+
+    /// <summary>
+    /// 적이 이동 중 막힘 상태인지 확인하는 메서드
+    /// 일정 시간 동안 거의 이동하지 않았다면 새 목적지를 설정합니다.
+    /// </summary>
+    private void CheckIfStuck()
+    {
+        stuckCheckTimer += Time.deltaTime;
+        
+        // 주기적으로 위치 확인 (stuckCheckInterval 시간마다)
+        if (stuckCheckTimer >= stuckCheckInterval)
+        {
+            stuckCheckTimer = 0f;
+            
+            // 마지막 기록 위치와 현재 위치 사이의 이동 거리 계산
+            float movedDistance = Vector3.Distance(controller.transform.position, lastPosition);
+            
+            // 경로가 활성화되어 있지만 거의 움직이지 않은 경우 (막힘 상태)
+            if (controller.agent.hasPath && movedDistance < stuckThreshold)
+            {
+                Debug.Log("Cube: 순찰 중 막힘 감지, 새 목적지 설정");
+                controller.SetRandomPatrolDestination();
+            }
+            
+            // 마지막 위치 업데이트
+            lastPosition = controller.transform.position;
         }
     }
 
+    /// <summary>
+    /// 순찰 상태 종료 시 호출되는 메서드
+    /// </summary>
     public void Exit()
     {
-        isMovingToPoint = false;
+        Debug.Log("Cube: 순찰 상태 종료");
+    }
+
+    /// <summary>
+    /// 물리 업데이트에서 오전 시간대 실행 로직
+    /// </summary>
+    public void ExecuteFixedMorning()
+    {
+        // 물리 기반 업데이트 로직 필요시 여기에 구현
+    }
+
+    /// <summary>
+    /// 물리 업데이트에서 오후 시간대 실행 로직
+    /// </summary>
+    public void ExecuteFixedAfternoon()
+    {
+        // 물리 기반 업데이트 로직 필요시 여기에 구현
     }
 }

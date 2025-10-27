@@ -27,12 +27,14 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
     // Range 설정
     public float PatrolDistanceMin => EnemyData.patrolRadius * EnemyData.patrolDistanceMinRatio;
     public float PatrolDistanceMax => EnemyData.patrolRadius * EnemyData.patrolDistanceMaxRatio;
-    public float FleeDistanceMin => EnemyData.patrolRadius * EnemyData.fleeDistanceMinRatio;
-    public float FleeDistanceMax => EnemyData.patrolRadius * EnemyData.fleeDistanceMaxRatio;
+    
+    // Flee 설정 (Moo 전용 - 다른 Enemy는 0 반환)
+    public virtual float FleeDistanceMin => 0f;
+    public virtual float FleeDistanceMax => 0f;
     
     // 시각화 설정
     public Color PatrolRangeColor => EnemyData.patrolRangeColor;
-    public Color FleeRangeColor => EnemyData.fleeRangeColor;
+    public virtual Color FleeRangeColor => Color.red;
     public bool ShowRangesInGame => EnemyData.showRangesInGame;
    
 
@@ -206,6 +208,20 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
             
             DrawWorldCircleGUI(transform.position, FleeDistanceMin, fleeMinColor, 32);
             DrawWorldCircleGUI(transform.position, FleeDistanceMax, fleeMaxColor, 32);
+        }
+        
+        // 시야 범위 시각화 (시야각 부채꼴)
+        if (vision.sightRange > 0)
+        {
+            Color sightColor = new Color(vision.sightColor.r, vision.sightColor.g, vision.sightColor.b, 0.3f);
+            DrawWorldVisionCone(transform.position, transform.forward, vision.sightRange, vision.sightAngle, sightColor, 32);
+        }
+        
+        // 근접 감지 범위 시각화 (원형)
+        if (vision.enableProximityDetection && vision.proximityDetectionRange > 0)
+        {
+            Color proximityColor = new Color(vision.proximityColor.r, vision.proximityColor.g, vision.proximityColor.b, 0.3f);
+            DrawWorldCircleGUI(transform.position, vision.proximityDetectionRange, proximityColor, 32);
         }
     }
 
@@ -579,6 +595,31 @@ public abstract class EnemyAIController : MonoBehaviour, IDamageable, IDamager
             
             Gizmos.DrawLine(prevPoint, point);
             prevPoint = point;
+        }
+        
+        // 근접 감지 범위 (원형) - 활성화된 경우만
+        if (vision.enableProximityDetection && vision.proximityDetectionRange > 0)
+        {
+            Gizmos.color = vision.proximityColor;
+            
+            // 원형으로 근접 감지 범위 그리기
+            int circleSegments = 32;
+            float angleStepCircle = 360f / circleSegments;
+            Vector3 prevCirclePoint = position + new Vector3(vision.proximityDetectionRange, 0, 0);
+            
+            for (int i = 1; i <= circleSegments; i++)
+            {
+                float angle = angleStepCircle * i;
+                float rad = angle * Mathf.Deg2Rad;
+                Vector3 circlePoint = position + new Vector3(
+                    Mathf.Cos(rad) * vision.proximityDetectionRange,
+                    0,
+                    Mathf.Sin(rad) * vision.proximityDetectionRange
+                );
+                
+                Gizmos.DrawLine(prevCirclePoint, circlePoint);
+                prevCirclePoint = circlePoint;
+            }
         }
         
         // 마지막으로 감지된 플레이어 위치 표시
