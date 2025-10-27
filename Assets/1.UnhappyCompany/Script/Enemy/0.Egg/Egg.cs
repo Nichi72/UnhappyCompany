@@ -12,7 +12,7 @@ public enum EggStage
     Stage3      // 최종 단계 (부화)
 }
 
-public class Egg : MonoBehaviour, IDamageable
+public class Egg : MonoBehaviour, IDamageable, IScannable
 {
     [Header("DEBUG")]
     public string currentTimeText;
@@ -432,4 +432,59 @@ public class Egg : MonoBehaviour, IDamageable
         HatchIntoEnemy();
     }
 
+    #region IScannable Implementation
+    
+    public string GetScanName()
+    {
+        if (isScanningOver)
+        {
+            // 스캔 완료 시 적의 이름 표시
+            return enemyAIData != null ? enemyAIData.enemyName : "Unknown Enemy";
+        }
+        else
+        {
+            // 스캔 중일 때
+            return "Unknown Egg";
+        }
+    }
+
+    public string GetScanDescription()
+    {
+        if (isScanningOver)
+        {
+            // 스캔 완료 시 위험도와 타입 정보 표시
+            string dangerLevel = enemyAIData != null ? enemyAIData.dangerLevel.ToString() : "Unknown";
+            return $"Type: {eggType} | Danger: {dangerLevel} | Stage: {currentStage}";
+        }
+        else if (isScanning)
+        {
+            return "Scanning in progress...";
+        }
+        else
+        {
+            return "Not scanned yet";
+        }
+    }
+
+    public Transform GetTransform()
+    {
+        return transform;
+    }
+
+    public EObjectTrackerUIType GetUIType()
+    {
+        return EObjectTrackerUIType.Egg;
+    }
+
+    public void OnScanned()
+    {
+        if (!isScanning)
+        {
+            isScanning = true;
+            AutoCompleteScanAfterDay();
+            Debug.Log($"[Egg {id}] 스캔 시작됨");
+        }
+    }
+    
+    #endregion
 }

@@ -95,3 +95,35 @@ public interface ISavable
     void SaveState();
     void LoadState();
 }
+
+/// <summary>
+/// 스캔 가능한 객체가 구현해야 하는 인터페이스
+/// 플레이어가 스캔 시스템을 통해 객체를 스캔할 때 사용됩니다.
+/// </summary>
+public interface IScannable
+{
+    /// <summary>
+    /// 스캔 시 표시될 객체 이름 반환
+    /// </summary>
+    string GetScanName();
+    
+    /// <summary>
+    /// 스캔 시 표시될 객체 설명 반환
+    /// </summary>
+    string GetScanDescription();
+    
+    /// <summary>
+    /// UI 위치 참조를 위한 Transform 반환
+    /// </summary>
+    Transform GetTransform();
+    
+    /// <summary>
+    /// 스캔 UI 타입 반환 (ObjectTrackerUI에서 사용)
+    /// </summary>
+    EObjectTrackerUIType GetUIType();
+    
+    /// <summary>
+    /// 스캔되었을 때 호출되는 메서드 (추가 로직 구현 가능)
+    /// </summary>
+    void OnScanned();
+}

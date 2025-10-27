@@ -32,8 +32,13 @@ public class ScanningSystem : MonoBehaviour
         int totalRays = horizontalSamples * verticalSamples;
         int hitCount = 0;
 
+        // 레거시 시스템 호환성 유지를 위한 딕셔너리
         Dictionary<Transform, BaseEnemyAIData> detectedEnemies = new Dictionary<Transform, BaseEnemyAIData>();
         Dictionary<Transform, Egg> detectedEggs = new Dictionary<Transform, Egg>();
+        
+        // 중복 스캔 방지를 위한 HashSet
+        HashSet<IScannable> scannedObjects = new HashSet<IScannable>();
+        
         for (int i = 0; i < horizontalSamples; i++)
         {
             for (int j = 0; j < verticalSamples; j++)
@@ -51,37 +56,26 @@ public class ScanningSystem : MonoBehaviour
                 // 레이캐스트
                 if (Physics.Raycast(ray, out RaycastHit hitInfo, distance, obstacleLayerMask))
                 {
-                    // 맞은 것이 "Enemy" 태그를 가진 오브젝트인지 확인
-                    if (hitInfo.transform.CompareTag("Egg"))
+                    // IScannable 인터페이스를 구현한 객체인지 확인
+                    IScannable scannable = hitInfo.transform.GetComponent<IScannable>();
+                    if (scannable != null && !scannedObjects.Contains(scannable))
                     {
-                        // 적 데이터 가져오기 
-                        Egg egg = hitInfo.transform.GetComponent<Egg>();
-                        if(egg != null && !detectedEggs.ContainsKey(hitInfo.transform))
-                        {
-                            objectTrackerUI.AddTarget(hitInfo.transform, EObjectTrackerUIType.Egg);
-                            if(egg.isScanning == false)
-                            {
-                                // Egg 타입일때 처리
-                                detectedEggs.Add(hitInfo.transform, egg);
-                                hitCount++;
-                                Debug.Log($"Egg detected: {hitInfo.transform.name}");
-                                egg.isScanning = true;
-                                egg.AutoCompleteScanAfterDay();
-                            }
-                        }
-                        // 일반 적도 개발해야함
+                        scannedObjects.Add(scannable);
                         
-                    }
-                    else if (hitInfo.transform.CompareTag("Enemy"))
-                    {
-                        // 적 처리
-                        // Egg egg = hitInfo.transform.GetComponent<>();
-                        // objectTrackerUI.AddTarget(hitInfo.transform);
-                    }
-                    else if (hitInfo.transform.CompareTag("CollectibleItem"))
-                    {
-                        // 수집 가능한 아이템 처리
-                        objectTrackerUI.AddTarget(hitInfo.transform, EObjectTrackerUIType.CollectibleItem);
+                        // UI 표시 (타입은 IScannable이 알아서 제공)
+                        objectTrackerUI.AddTarget(scannable.GetTransform());
+                        
+                        // 스캔 콜백 호출
+                        scannable.OnScanned();
+                        
+                        hitCount++;
+                        Debug.Log($"[Scan] {scannable.GetScanName()} - {scannable.GetScanDescription()}");
+                        
+                        // 레거시 시스템과의 호환성을 위한 처리 (Egg)
+                        if (scannable is Egg egg && !detectedEggs.ContainsKey(hitInfo.transform))
+                        {
+                            detectedEggs.Add(hitInfo.transform, egg);
+                        }
                     }
                 }
             }
@@ -90,13 +84,17 @@ public class ScanningSystem : MonoBehaviour
         // (2) 가시율 계산 및 결과 판정
         if (hitCount > 0)
         {
-            Debug.Log($"Total enemies detected: {hitCount}");
-            NotificationSystem.instance.ReceiveEnemyData(detectedEnemies, detectedEggs);
+            Debug.Log($"[Scan] Total {hitCount} objects scanned");
             
+            // 레거시 시스템 호환성 유지
+            if (detectedEggs.Count > 0)
+            {
+                NotificationSystem.instance.ReceiveEnemyData(detectedEnemies, detectedEggs);
+            }
         }
         else
         {
-            Debug.Log("No enemy detected in view.");
+            Debug.Log("[Scan] No scannable objects detected in view.");
         }
     }
 
