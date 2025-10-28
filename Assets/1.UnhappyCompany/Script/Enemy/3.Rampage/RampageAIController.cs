@@ -878,11 +878,18 @@ public class RampageAIController : EnemyAIController<RampageAIData>
         
         if (!FMODEvents.instance.rampageIdle.IsNull)
         {
-            idleSoundInstance = RuntimeManager.CreateInstance(FMODEvents.instance.rampageIdle);
-            idleSoundInstance.set3DAttributes(FMODUnity.RuntimeUtils.To3DAttributes(transform));
-            idleSoundInstance.start();
-            isIdleSoundPlaying = true;
-            Debug.Log("[Rampage Sound] Idle 사운드 시작");
+            try
+            {
+                idleSoundInstance = RuntimeManager.CreateInstance(FMODEvents.instance.rampageIdle);
+                idleSoundInstance.set3DAttributes(FMODUnity.RuntimeUtils.To3DAttributes(transform));
+                idleSoundInstance.start();
+                isIdleSoundPlaying = true;
+                Debug.Log("[Rampage Sound] Idle 사운드 시작");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"[Rampage Sound] Idle 사운드를 생성할 수 없습니다.\nPath: {FMODEvents.instance.rampageIdle.Path}\nError: {e.Message}");
+            }
         }
     }
     
@@ -893,10 +900,21 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     {
         if (!isIdleSoundPlaying) return;
         
-        idleSoundInstance.stop(FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
-        idleSoundInstance.release();
-        isIdleSoundPlaying = false;
-        Debug.Log("[Rampage Sound] Idle 사운드 정지");
+        try
+        {
+            if (idleSoundInstance.isValid())
+            {
+                idleSoundInstance.stop(FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
+                idleSoundInstance.release();
+            }
+            isIdleSoundPlaying = false;
+            Debug.Log("[Rampage Sound] Idle 사운드 정지");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"[Rampage Sound] Idle 사운드를 정지할 수 없습니다. Error: {e.Message}");
+            isIdleSoundPlaying = false;
+        }
     }
     
     /// <summary>
@@ -908,11 +926,18 @@ public class RampageAIController : EnemyAIController<RampageAIData>
         
         if (!FMODEvents.instance.rampageMoveLoop.IsNull)
         {
-            moveLoopInstance = RuntimeManager.CreateInstance(FMODEvents.instance.rampageMoveLoop);
-            moveLoopInstance.set3DAttributes(FMODUnity.RuntimeUtils.To3DAttributes(transform));
-            moveLoopInstance.start();
-            isMoveLoopPlaying = true;
-            Debug.Log("[Rampage Sound] MoveLoop 사운드 시작");
+            try
+            {
+                moveLoopInstance = RuntimeManager.CreateInstance(FMODEvents.instance.rampageMoveLoop);
+                moveLoopInstance.set3DAttributes(FMODUnity.RuntimeUtils.To3DAttributes(transform));
+                moveLoopInstance.start();
+                isMoveLoopPlaying = true;
+                Debug.Log("[Rampage Sound] MoveLoop 사운드 시작");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"[Rampage Sound] MoveLoop 사운드를 생성할 수 없습니다.\nPath: {FMODEvents.instance.rampageMoveLoop.Path}\nError: {e.Message}");
+            }
         }
     }
     
@@ -923,10 +948,21 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     {
         if (!isMoveLoopPlaying) return;
         
-        moveLoopInstance.stop(FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
-        moveLoopInstance.release();
-        isMoveLoopPlaying = false;
-        Debug.Log("[Rampage Sound] MoveLoop 사운드 정지");
+        try
+        {
+            if (moveLoopInstance.isValid())
+            {
+                moveLoopInstance.stop(FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
+                moveLoopInstance.release();
+            }
+            isMoveLoopPlaying = false;
+            Debug.Log("[Rampage Sound] MoveLoop 사운드 정지");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"[Rampage Sound] MoveLoop 사운드를 정지할 수 없습니다. Error: {e.Message}");
+            isMoveLoopPlaying = false;
+        }
     }
     
     /// <summary>
@@ -967,14 +1003,30 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     /// </summary>
     private void UpdateSoundPositions()
     {
-        if (isIdleSoundPlaying)
+        if (isIdleSoundPlaying && idleSoundInstance.isValid())
         {
-            idleSoundInstance.set3DAttributes(FMODUnity.RuntimeUtils.To3DAttributes(transform));
+            try
+            {
+                idleSoundInstance.set3DAttributes(FMODUnity.RuntimeUtils.To3DAttributes(transform));
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"[Rampage Sound] Idle 사운드 위치 갱신 실패. Error: {e.Message}");
+                isIdleSoundPlaying = false;
+            }
         }
         
-        if (isMoveLoopPlaying)
+        if (isMoveLoopPlaying && moveLoopInstance.isValid())
         {
-            moveLoopInstance.set3DAttributes(FMODUnity.RuntimeUtils.To3DAttributes(transform));
+            try
+            {
+                moveLoopInstance.set3DAttributes(FMODUnity.RuntimeUtils.To3DAttributes(transform));
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"[Rampage Sound] MoveLoop 사운드 위치 갱신 실패. Error: {e.Message}");
+                isMoveLoopPlaying = false;
+            }
         }
     }
     

@@ -29,11 +29,15 @@ public class CubeEnemyAIData : BaseEnemyAIData
     public float morningAttackCooldown = 1.5f;
     [Tooltip("공격 시전 시간(초)")]
     public float morningAttackCastingTime = 2f;
+    [Tooltip("돌진 후 재활성화 대기 시간(초)")]
+    public float morningReEnableDelay = 3f;
 
     [Header("== 오후 시간 설정 ==")]
     [Tooltip("공격 쿨다운 시간(초)")]
     public float afternoonAttackCooldown = 1.2f;
     [Tooltip("공격 시전 시간(초)")]
     public float afternoonAttackCastingTime = 1.5f;
+    [Tooltip("돌진 후 재활성화 대기 시간(초)")]
+    public float afternoonReEnableDelay = 2.5f;
 
 } 

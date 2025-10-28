@@ -154,40 +154,77 @@ public class AudioManager : MonoBehaviour
     /// </summary>
     public EventInstance PlayOneShot(EventReference eventReference, Transform targetTransform , string logMessage = null)
     {
+        // EventReference가 null이거나 유효하지 않으면 실행하지 않음
+        if (eventReference.IsNull)
+        {
+            if(logMessage != null)
+            {
+                Debug.LogWarning($"PlayOneShot: EventReference가 null입니다. 사운드를 재생할 수 없습니다. ({logMessage})");
+            }
+            else
+            {
+                Debug.LogWarning($"PlayOneShot: EventReference가 null입니다. 사운드를 재생할 수 없습니다.");
+            }
+            return default(EventInstance); // 유효하지 않은 EventInstance 반환
+        }
+
         if(logMessage != null)
         {
             Debug.Log($"PlayOneShot: {logMessage}");
         }
-        else
+        
+        try
         {
-            // Debug.Log($"PlayOneShot: {eventReference.Path}");
+            EventInstance eventInstance = RuntimeManager.CreateInstance(eventReference);
+            StartCoroutine(PlayOneShotCoroutine(eventInstance, targetTransform));
+            return eventInstance;
         }
-        EventInstance eventInstance = RuntimeManager.CreateInstance(eventReference);
-        StartCoroutine(PlayOneShotCoroutine(eventInstance, targetTransform));
-        return eventInstance;
+        catch (System.Exception e)
+        {
+            // FMOD에서 이벤트를 찾을 수 없는 경우 예외 처리
+            if(logMessage != null)
+            {
+                Debug.LogError($"PlayOneShot: FMOD 이벤트를 생성할 수 없습니다. ({logMessage})\nPath: {eventReference.Path}\nError: {e.Message}");
+            }
+            else
+            {
+                Debug.LogError($"PlayOneShot: FMOD 이벤트를 생성할 수 없습니다.\nPath: {eventReference.Path}\nError: {e.Message}");
+            }
+            return default(EventInstance); // 유효하지 않은 EventInstance 반환
+        }
     }
-
-    // /// <summary>
-    // /// 로그 메시지와 함께 3D 사운드 재생 (위치 기반)
-    // /// </summary>
-    // public EventInstance PlayOneShot(EventReference eventReference, Transform targetTransform, string logMessage)
-    // {
-    //     Debug.Log($"PlayOneShot: {logMessage}");
-    //     EventInstance eventInstance = RuntimeManager.CreateInstance(eventReference);
-    //     StartCoroutine(PlayOneShotCoroutine(eventInstance, targetTransform));
-    //     return eventInstance;
-    // }
 
     private EventInstance PlayOneShotTestBeep(EventReference eventReference, Transform targetTransform)
     {
-        EventInstance eventInstance = RuntimeManager.CreateInstance(eventReference);
-        StartCoroutine(PlayOneShotCoroutine(eventInstance, targetTransform));
-        eventInstance.setVolume(0.2f);
-        return eventInstance;
+        // EventReference가 null이거나 유효하지 않으면 실행하지 않음
+        if (eventReference.IsNull)
+        {
+            Debug.LogWarning($"PlayOneShotTestBeep: EventReference가 null입니다. 사운드를 재생할 수 없습니다.");
+            return default(EventInstance); // 유효하지 않은 EventInstance 반환
+        }
+
+        try
+        {
+            EventInstance eventInstance = RuntimeManager.CreateInstance(eventReference);
+            StartCoroutine(PlayOneShotCoroutine(eventInstance, targetTransform));
+            eventInstance.setVolume(0.2f);
+            return eventInstance;
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"PlayOneShotTestBeep: FMOD 이벤트를 생성할 수 없습니다.\nPath: {eventReference.Path}\nError: {e.Message}");
+            return default(EventInstance); // 유효하지 않은 EventInstance 반환
+        }
     }
 
     private IEnumerator PlayOneShotCoroutine(EventInstance eventInstance, Transform targetTransform)
     {
+        // EventInstance가 유효하지 않으면 실행하지 않음
+        if (!eventInstance.isValid())
+        {
+            yield break;
+        }
+
         // 사운드 시작
         eventInstance.start();
 

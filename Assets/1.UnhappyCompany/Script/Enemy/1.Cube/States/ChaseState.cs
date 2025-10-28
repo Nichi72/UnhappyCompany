@@ -28,6 +28,9 @@ public class CubeChaseState : IState
     public void Enter()
     {
         Debug.Log("Cube: 추적 상태 시작");
+        
+        // 이동 시작 - BlendShape 0 -> 100 애니메이션 시작
+        controller.StartMovementBlendShape();
     }
 
     /// <summary>

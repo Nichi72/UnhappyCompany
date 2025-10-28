@@ -21,10 +21,7 @@ MonoBehaviour:
   patrolRadius: 33
   patrolDistanceMinRatio: 0.313
   patrolDistanceMaxRatio: 0.753
-  fleeDistanceMinRatio: 0.88
-  fleeDistanceMaxRatio: 1.5
   patrolRangeColor: {r: 0, g: 1, b: 0, a: 1}
-  fleeRangeColor: {r: 1, g: 0, b: 0, a: 1}
   showRangesInGame: 1
   moveSpeed: 3
   Cost: 10
@@ -53,3 +50,6 @@ MonoBehaviour:
   explosionUpwardModifier: 1.5
   rushSpeed: 15
   rushDamage: 50
+  playerKnockbackForce: 150
+  playerKnockbackUpwardForce: 1
+  knockbackRestoreDelay: 1
