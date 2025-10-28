@@ -23,6 +23,9 @@ public class RampagePatrolState : IState
         agent.speed = patrolSpeed;
         SetRandomPatrolDestination();
         
+        // Idle 사운드 재생 (Idle 상태에서 넘어온 경우 이미 재생 중)
+        controller.PlayIdleSound();
+        
         // 이동 루프 사운드 재생
         controller.PlayMoveLoopSound();
     }
@@ -43,6 +46,9 @@ public class RampagePatrolState : IState
     {
         Debug.Log("Rampage: Patrol 상태 종료");
         controller.DisableLineRenderer();
+        
+        // Idle 사운드 정지 (Charge 상태로 전환될 때)
+        controller.StopIdleSound();
         
         // 이동 루프 사운드 정지
         controller.StopMoveLoopSound();

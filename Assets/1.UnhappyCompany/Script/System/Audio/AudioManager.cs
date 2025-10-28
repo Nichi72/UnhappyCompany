@@ -25,6 +25,42 @@ public class AudioManager : MonoBehaviour
     
     [Header("음소거 설정")]
     [SerializeField] private bool isMuted = false;
+    
+    [Header("디버그 설정")]
+    [SerializeField] private bool showSoundDebug = true;
+    [SerializeField] private float debugSphereSize = 0.5f;
+    [SerializeField] private Color oneShotColor = Color.cyan;
+    [SerializeField] private Color loopSoundColor = Color.yellow;
+    
+    // 재생 중인 사운드 추적
+    private class SoundDebugInfo
+    {
+        public EventInstance eventInstance;
+        public Transform targetTransform;
+        public Vector3 lastPosition;
+        public Vector3 previousPosition;
+        public string soundName;
+        public float startTime;
+        public bool isLoop;
+        
+        public SoundDebugInfo(EventInstance instance, Transform target, string name, bool loop)
+        {
+            eventInstance = instance;
+            targetTransform = target;
+            soundName = name;
+            startTime = Time.time;
+            isLoop = loop;
+            lastPosition = target != null ? target.position : Vector3.zero;
+            previousPosition = lastPosition;
+        }
+        
+        public Vector3 GetVelocity()
+        {
+            return (lastPosition - previousPosition) / Time.deltaTime;
+        }
+    }
+    
+    private List<SoundDebugInfo> activeSounds = new List<SoundDebugInfo>();
 
     private void Awake()
     {
@@ -42,6 +78,38 @@ public class AudioManager : MonoBehaviour
         else
         {
             Destroy(gameObject);
+        }
+    }
+    
+    private void Update()
+    {
+        if (showSoundDebug)
+        {
+            CleanupInactiveSounds();
+            UpdateSoundPositions();
+        }
+    }
+    
+    /// <summary>
+    /// 재생 완료된 사운드를 리스트에서 제거
+    /// </summary>
+    private void CleanupInactiveSounds()
+    {
+        activeSounds.RemoveAll(sound => !sound.eventInstance.isValid());
+    }
+    
+    /// <summary>
+    /// 디버그용 사운드 위치 업데이트
+    /// </summary>
+    private void UpdateSoundPositions()
+    {
+        foreach (var sound in activeSounds)
+        {
+            if (sound.targetTransform != null)
+            {
+                sound.previousPosition = sound.lastPosition;
+                sound.lastPosition = sound.targetTransform.position;
+            }
         }
     }
 
@@ -177,6 +245,14 @@ public class AudioManager : MonoBehaviour
         {
             EventInstance eventInstance = RuntimeManager.CreateInstance(eventReference);
             StartCoroutine(PlayOneShotCoroutine(eventInstance, targetTransform));
+            
+            // 디버그: 사운드 추적 추가
+            if (showSoundDebug)
+            {
+                string soundName = logMessage ?? eventReference.Path;
+                activeSounds.Add(new SoundDebugInfo(eventInstance, targetTransform, soundName, false));
+            }
+            
             return eventInstance;
         }
         catch (System.Exception e)
@@ -233,7 +309,8 @@ public class AudioManager : MonoBehaviour
         {
             if(targetTransform != null)
             {
-                eventInstance.set3DAttributes(RuntimeUtils.To3DAttributes(targetTransform.position));
+                // Transform 전체를 전달하여 위치, 회전, 속도 정보 모두 업데이트
+                eventInstance.set3DAttributes(RuntimeUtils.To3DAttributes(targetTransform));
             }
             yield return null;
         }
@@ -254,5 +331,179 @@ public class AudioManager : MonoBehaviour
         PlayOneShot(FMODEvents.instance.computerCursorClick, GameManager.instance.currentPlayer.transform, "UI Click Test");
     }
 
+    #region Safe FMOD Helper Methods
+    
+    /// <summary>
+    /// 루프 사운드를 안전하게 생성하고 재생
+    /// </summary>
+    public bool SafePlayLoopSound(EventReference eventReference, Transform targetTransform, out EventInstance eventInstance, string debugName = "Sound")
+    {
+        eventInstance = default(EventInstance);
+        
+        if (eventReference.IsNull)
+        {
+            Debug.LogWarning($"[AudioManager] {debugName}: EventReference가 null입니다.");
+            return false;
+        }
+        
+        try
+        {
+            eventInstance = RuntimeManager.CreateInstance(eventReference);
+            eventInstance.set3DAttributes(FMODUnity.RuntimeUtils.To3DAttributes(targetTransform));
+            eventInstance.start();
+            Debug.Log($"[AudioManager] {debugName} 재생 시작");
+            
+            // 디버그: 루프 사운드 추적 추가
+            if (showSoundDebug)
+            {
+                activeSounds.Add(new SoundDebugInfo(eventInstance, targetTransform, debugName, true));
+            }
+            
+            return true;
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"[AudioManager] {debugName} 재생 실패\nPath: {eventReference.Path}\nError: {e.Message}");
+            return false;
+        }
+    }
+    
+    /// <summary>
+    /// 루프 사운드를 안전하게 정지
+    /// </summary>
+    public bool SafeStopSound(ref EventInstance eventInstance, string debugName = "Sound")
+    {
+        try
+        {
+            if (eventInstance.isValid())
+            {
+                eventInstance.stop(FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
+                eventInstance.release();
+                Debug.Log($"[AudioManager] {debugName} 정지");
+                return true;
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"[AudioManager] {debugName} 정지 실패. Error: {e.Message}");
+        }
+        return false;
+    }
+    
+    /// <summary>
+    /// 사운드 3D 위치를 안전하게 업데이트
+    /// </summary>
+    public bool SafeUpdate3DAttributes(ref EventInstance eventInstance, Transform targetTransform, string debugName = "Sound")
+    {
+        if (!eventInstance.isValid())
+            return false;
+            
+        try
+        {
+            eventInstance.set3DAttributes(FMODUnity.RuntimeUtils.To3DAttributes(targetTransform));
+            return true;
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"[AudioManager] {debugName} 위치 업데이트 실패. Error: {e.Message}");
+            return false;
+        }
+    }
+    
+    #endregion
+    
+    #region Debug Visualization
+    
+    /// <summary>
+    /// 씬뷰에서 재생 중인 사운드를 시각화
+    /// </summary>
+    private void OnDrawGizmos()
+    {
+        if (!showSoundDebug || activeSounds == null)
+            return;
+        
+        foreach (var sound in activeSounds)
+        {
+            if (!sound.eventInstance.isValid())
+                continue;
+            
+            Vector3 position = sound.lastPosition;
+            
+            // 루프 사운드와 One-Shot 사운드 구분
+            Gizmos.color = sound.isLoop ? loopSoundColor : oneShotColor;
+            
+            // 구 그리기
+            Gizmos.DrawWireSphere(position, debugSphereSize);
+            Gizmos.DrawSphere(position, debugSphereSize * 0.3f);
+            
+            // 움직이는 사운드는 속도 방향 화살표 표시
+            Vector3 velocity = sound.GetVelocity();
+            if (velocity.magnitude > 0.1f) // 움직이고 있으면
+            {
+                Vector3 arrowEnd = position + velocity.normalized * (debugSphereSize * 2f);
+                Gizmos.color = Color.white;
+                Gizmos.DrawLine(position, arrowEnd);
+                
+                // 화살표 머리 그리기
+                Vector3 arrowDir = velocity.normalized;
+                Vector3 right = Vector3.Cross(arrowDir, Vector3.up).normalized;
+                if (right.magnitude < 0.1f) right = Vector3.Cross(arrowDir, Vector3.forward).normalized;
+                
+                float arrowHeadSize = debugSphereSize * 0.3f;
+                Gizmos.DrawLine(arrowEnd, arrowEnd - arrowDir * arrowHeadSize + right * arrowHeadSize * 0.5f);
+                Gizmos.DrawLine(arrowEnd, arrowEnd - arrowDir * arrowHeadSize - right * arrowHeadSize * 0.5f);
+            }
+            
+            // 사운드 이름 표시 (에디터에서만)
+            #if UNITY_EDITOR
+            string velocityInfo = velocity.magnitude > 0.1f ? $"\n속도: {velocity.magnitude:F1} m/s" : "";
+            UnityEditor.Handles.Label(
+                position + Vector3.up * (debugSphereSize + 0.3f),
+                $"{sound.soundName}\n{(sound.isLoop ? "[LOOP]" : "[ONE-SHOT]")}\n재생 시간: {(Time.time - sound.startTime):F1}초{velocityInfo}",
+                new GUIStyle()
+                {
+                    normal = new GUIStyleState() { textColor = sound.isLoop ? loopSoundColor : oneShotColor },
+                    alignment = TextAnchor.MiddleCenter,
+                    fontSize = 10,
+                    fontStyle = FontStyle.Bold
+                }
+            );
+            #endif
+        }
+    }
+    
+    /// <summary>
+    /// 현재 재생 중인 사운드 개수 반환
+    /// </summary>
+    public int GetActiveSoundCount()
+    {
+        return activeSounds.Count;
+    }
+    
+    /// <summary>
+    /// 모든 재생 중인 사운드 정보 반환
+    /// </summary>
+    public string GetActiveSoundsInfo()
+    {
+        if (activeSounds.Count == 0)
+            return "재생 중인 사운드 없음";
+        
+        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        sb.AppendLine($"재생 중인 사운드: {activeSounds.Count}개");
+        
+        foreach (var sound in activeSounds)
+        {
+            if (sound.eventInstance.isValid())
+            {
+                string type = sound.isLoop ? "LOOP" : "ONE-SHOT";
+                float duration = Time.time - sound.startTime;
+                sb.AppendLine($"  - [{type}] {sound.soundName} ({duration:F1}초)");
+            }
+        }
+        
+        return sb.ToString();
+    }
+    
+    #endregion
 
 }

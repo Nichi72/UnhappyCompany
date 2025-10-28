@@ -37,8 +37,8 @@ public class RampageIdleState : IState
     {
         Debug.Log("Rampage: Idle 상태 종료");
         
-        // Idle 사운드 정지
-        controller.StopIdleSound();
+        // Idle 사운드는 Patrol 상태에서도 유지되므로 여기서 정지하지 않음
+        // (Charge 상태로 전환될 때 정지됨)
     }
 
     public void ExecuteFixedMorning() { }
