@@ -5,7 +5,7 @@
 			<value>ComputerMouseHover</value>
 		</property>
 		<property name="outputFormat">
-			<value>0</value>
+			<value>2</value>
 		</property>
 		<relationship name="folder">
 			<destination>{3b35a6c9-04a5-4f89-a311-b5c067a915fd}</destination>
@@ -115,6 +115,7 @@
 	</object>
 	<object class="MixerBusEffectChain" id="{599a3528-7749-4eeb-9cca-94bea3215591}">
 		<relationship name="effects">
+			<destination>{27853507-1de4-4985-a90e-e538ad0fe376}</destination>
 			<destination>{8ff081b3-d039-4ad0-abf7-e9ce63da92d6}</destination>
 		</relationship>
 	</object>
@@ -126,6 +127,7 @@
 		</relationship>
 	</object>
 	<object class="MixerBusPanner" id="{15945744-53bc-4df1-837a-361e80d5ed82}" />
+	<object class="SpatialiserEffect" id="{27853507-1de4-4985-a90e-e538ad0fe376}" />
 	<object class="MixerBusFader" id="{8ff081b3-d039-4ad0-abf7-e9ce63da92d6}" />
 	<object class="MixerBusFader" id="{be83c365-983e-449a-a720-193afc8dbf88}" />
 </objects>

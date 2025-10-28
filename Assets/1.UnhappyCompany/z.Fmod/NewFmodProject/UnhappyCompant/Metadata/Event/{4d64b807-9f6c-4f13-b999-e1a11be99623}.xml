@@ -5,7 +5,7 @@
 			<value>ShopItemDrop</value>
 		</property>
 		<property name="outputFormat">
-			<value>0</value>
+			<value>2</value>
 		</property>
 		<relationship name="folder">
 			<destination>{aca6fb6b-9ff8-4fb6-8ed7-5c4033b237f9}</destination>
@@ -113,6 +113,7 @@
 	</object>
 	<object class="MixerBusEffectChain" id="{3e92a926-84f2-4b4b-a565-171d37ea59e3}">
 		<relationship name="effects">
+			<destination>{ce81d679-b1b5-480d-b16e-045fa230b17e}</destination>
 			<destination>{45d01a2f-d215-4b07-a8e5-c0741418afc5}</destination>
 		</relationship>
 	</object>
@@ -134,6 +135,7 @@
 		</relationship>
 	</object>
 	<object class="MixerBusPanner" id="{17fa41c8-7a14-415d-a29a-5d1c1ac8bdb3}" />
+	<object class="SpatialiserEffect" id="{ce81d679-b1b5-480d-b16e-045fa230b17e}" />
 	<object class="MixerBusFader" id="{45d01a2f-d215-4b07-a8e5-c0741418afc5}" />
 	<object class="MixerBusFader" id="{ff754f00-9555-47b4-a3c8-fbe41d129800}" />
 </objects>

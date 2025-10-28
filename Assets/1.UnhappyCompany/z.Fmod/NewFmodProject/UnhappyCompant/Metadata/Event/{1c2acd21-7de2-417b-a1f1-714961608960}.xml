@@ -5,7 +5,7 @@
 			<value>BigDoorOpen</value>
 		</property>
 		<property name="outputFormat">
-			<value>0</value>
+			<value>2</value>
 		</property>
 		<relationship name="folder">
 			<destination>{c706918c-6773-4d3d-8bfc-5a6f47fe3447}</destination>
@@ -112,6 +112,7 @@
 	</object>
 	<object class="MixerBusEffectChain" id="{c70c0da0-ff04-40bd-a6ef-95604687d7ef}">
 		<relationship name="effects">
+			<destination>{39a72cb8-8389-4876-ad22-b6b23d2ada95}</destination>
 			<destination>{630d4045-3eb2-45b8-9bcf-72ceea3d2cde}</destination>
 		</relationship>
 	</object>
@@ -123,6 +124,7 @@
 		</relationship>
 	</object>
 	<object class="MixerBusPanner" id="{c47f0b5f-fc84-472b-9f93-7e023dd43f4c}" />
+	<object class="SpatialiserEffect" id="{39a72cb8-8389-4876-ad22-b6b23d2ada95}" />
 	<object class="MixerBusFader" id="{630d4045-3eb2-45b8-9bcf-72ceea3d2cde}" />
 	<object class="MixerBusFader" id="{6b85314c-e8d0-4489-9736-0dcc43129393}" />
 </objects>
