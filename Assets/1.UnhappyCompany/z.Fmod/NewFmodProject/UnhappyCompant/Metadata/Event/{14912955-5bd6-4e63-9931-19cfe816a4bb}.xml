@@ -5,10 +5,10 @@
 			<value>ComputerAmb</value>
 		</property>
 		<property name="outputFormat">
-			<value>1</value>
+			<value>2</value>
 		</property>
 		<relationship name="folder">
-			<destination>{3b35a6c9-04a5-4f89-a311-b5c067a915fd}</destination>
+			<destination>{667c0398-18cd-4f03-99fb-24dd6824d99f}</destination>
 		</relationship>
 		<relationship name="mixer">
 			<destination>{24f1fedf-54f7-4e64-8954-ac7959ee06cb}</destination>
@@ -129,6 +129,7 @@
 	</object>
 	<object class="MixerBusEffectChain" id="{0cb37fda-f22a-4ff4-92e5-4a945ead5a57}">
 		<relationship name="effects">
+			<destination>{1383c2e6-3b0f-43d2-9a21-c9f41cdc9db9}</destination>
 			<destination>{46995e61-b488-40ee-8014-1780be0c43f6}</destination>
 		</relationship>
 	</object>
@@ -140,6 +141,7 @@
 		</relationship>
 	</object>
 	<object class="MixerBusPanner" id="{5179283f-88dc-405d-a62a-ff867926b1d9}" />
+	<object class="SpatialiserEffect" id="{1383c2e6-3b0f-43d2-9a21-c9f41cdc9db9}" />
 	<object class="MixerBusFader" id="{46995e61-b488-40ee-8014-1780be0c43f6}" />
 	<object class="MixerBusFader" id="{048831d2-2fa6-4021-b39c-63cb65f10271}" />
 </objects>

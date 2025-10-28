@@ -5,7 +5,7 @@
 			<value>CushionUnflod</value>
 		</property>
 		<property name="outputFormat">
-			<value>0</value>
+			<value>2</value>
 		</property>
 		<relationship name="folder">
 			<destination>{ce2ae95b-1c06-4411-996a-4e8c78458c13}</destination>
@@ -56,7 +56,11 @@
 			<destination>{646051c9-cf9c-4a0e-861c-e017af4bb4fe}</destination>
 		</relationship>
 	</object>
-	<object class="EventAutomatableProperties" id="{29e7a036-ebd0-4ddb-9926-66b6a9808433}" />
+	<object class="EventAutomatableProperties" id="{29e7a036-ebd0-4ddb-9926-66b6a9808433}">
+		<property name="dopplerEnabled">
+			<value>true</value>
+		</property>
+	</object>
 	<object class="MarkerTrack" id="{59da4353-badf-4e54-9247-24102526d422}" />
 	<object class="GroupTrack" id="{3c21dbe4-05c8-4817-93a6-9af3c1a74397}">
 		<relationship name="modules">
@@ -113,6 +117,7 @@
 	</object>
 	<object class="MixerBusEffectChain" id="{653a0b9b-c156-4028-8c92-a6d4be4cef8f}">
 		<relationship name="effects">
+			<destination>{44f63719-bd92-4505-ab64-f6138f522443}</destination>
 			<destination>{af61bd58-348e-4e1c-9663-3523fef9d65f}</destination>
 		</relationship>
 	</object>
@@ -134,6 +139,7 @@
 		</relationship>
 	</object>
 	<object class="MixerBusPanner" id="{1fa01862-a861-41e4-88ca-9b09d1abf0b2}" />
+	<object class="SpatialiserEffect" id="{44f63719-bd92-4505-ab64-f6138f522443}" />
 	<object class="MixerBusFader" id="{af61bd58-348e-4e1c-9663-3523fef9d65f}" />
 	<object class="MixerBusFader" id="{6eeee1d0-4456-4832-908b-51311943a5b9}" />
 </objects>

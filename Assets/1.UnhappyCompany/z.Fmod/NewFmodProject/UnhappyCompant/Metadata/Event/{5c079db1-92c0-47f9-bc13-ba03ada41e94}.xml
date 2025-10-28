@@ -5,7 +5,7 @@
 			<value>RampageBreakLevel3</value>
 		</property>
 		<property name="outputFormat">
-			<value>0</value>
+			<value>2</value>
 		</property>
 		<relationship name="folder">
 			<destination>{f6400afa-909e-4dae-bd0a-505a40650ac6}</destination>
@@ -56,7 +56,11 @@
 			<destination>{646051c9-cf9c-4a0e-861c-e017af4bb4fe}</destination>
 		</relationship>
 	</object>
-	<object class="EventAutomatableProperties" id="{52439943-6f2f-4388-acbb-79e78b5ca121}" />
+	<object class="EventAutomatableProperties" id="{52439943-6f2f-4388-acbb-79e78b5ca121}">
+		<property name="dopplerEnabled">
+			<value>true</value>
+		</property>
+	</object>
 	<object class="MarkerTrack" id="{d6343299-f3a2-45e0-ad4e-654b53887894}" />
 	<object class="GroupTrack" id="{cc3327b9-7365-4b7f-b5a8-2187b9184ca5}">
 		<relationship name="modules">
@@ -113,6 +117,7 @@
 	</object>
 	<object class="MixerBusEffectChain" id="{3288c307-a08b-436a-b537-27e5ba1fafde}">
 		<relationship name="effects">
+			<destination>{3caf7d25-7b49-4f5b-8a31-a3ed3139ea36}</destination>
 			<destination>{cb47ffe3-827e-47fa-a83d-bed7714c9923}</destination>
 		</relationship>
 	</object>
@@ -134,6 +139,7 @@
 		</relationship>
 	</object>
 	<object class="MixerBusPanner" id="{4fe3519f-3345-4813-ae6b-a7f560bd16ad}" />
+	<object class="SpatialiserEffect" id="{3caf7d25-7b49-4f5b-8a31-a3ed3139ea36}" />
 	<object class="MixerBusFader" id="{cb47ffe3-827e-47fa-a83d-bed7714c9923}" />
 	<object class="MixerBusFader" id="{c7e2da33-ea09-4d01-a609-a3bb36cbbc76}" />
 </objects>

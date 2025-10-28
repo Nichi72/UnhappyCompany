@@ -5,7 +5,7 @@
 			<value>EggDestroyed</value>
 		</property>
 		<property name="outputFormat">
-			<value>0</value>
+			<value>2</value>
 		</property>
 		<relationship name="folder">
 			<destination>{d7b4613f-3353-42ef-aec5-a37cdc84a7de}</destination>
@@ -114,6 +114,7 @@
 	</object>
 	<object class="MixerBusEffectChain" id="{76e09797-f116-44a1-be41-bede0ec0e2d3}">
 		<relationship name="effects">
+			<destination>{784fa7e5-8468-413f-afcf-f331d04843fc}</destination>
 			<destination>{1e2070b1-7748-4628-8c9c-230064af795b}</destination>
 		</relationship>
 	</object>
@@ -140,6 +141,7 @@
 		</relationship>
 	</object>
 	<object class="MixerBusPanner" id="{e444eb38-673e-4be1-88f4-65a94388c09c}" />
+	<object class="SpatialiserEffect" id="{784fa7e5-8468-413f-afcf-f331d04843fc}" />
 	<object class="MixerBusFader" id="{1e2070b1-7748-4628-8c9c-230064af795b}" />
 	<object class="MixerBusFader" id="{c21480a4-81c6-47b5-afc0-89bf7e20201f}" />
 </objects>

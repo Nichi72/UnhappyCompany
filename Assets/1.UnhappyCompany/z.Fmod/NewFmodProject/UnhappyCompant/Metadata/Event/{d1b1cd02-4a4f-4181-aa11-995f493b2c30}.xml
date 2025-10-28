@@ -5,7 +5,7 @@
 			<value>ComputerScreenClose</value>
 		</property>
 		<property name="outputFormat">
-			<value>0</value>
+			<value>2</value>
 		</property>
 		<relationship name="folder">
 			<destination>{3b35a6c9-04a5-4f89-a311-b5c067a915fd}</destination>
@@ -112,6 +112,7 @@
 	</object>
 	<object class="MixerBusEffectChain" id="{ccdb3428-beb0-4208-b65b-150ac28b9038}">
 		<relationship name="effects">
+			<destination>{eaabb9ff-f8ac-45e0-b4c0-e3f7f8a31f01}</destination>
 			<destination>{a2d620e9-acd4-4fa5-a3c3-591a737a5cac}</destination>
 		</relationship>
 	</object>
@@ -123,6 +124,7 @@
 		</relationship>
 	</object>
 	<object class="MixerBusPanner" id="{8f5ffff5-5ea6-491c-8925-4cdcbd2a5768}" />
+	<object class="SpatialiserEffect" id="{eaabb9ff-f8ac-45e0-b4c0-e3f7f8a31f01}" />
 	<object class="MixerBusFader" id="{a2d620e9-acd4-4fa5-a3c3-591a737a5cac}" />
 	<object class="MixerBusFader" id="{04142aca-e8c0-4e93-af79-9e5145783265}" />
 </objects>

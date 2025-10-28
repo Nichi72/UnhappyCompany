@@ -5,7 +5,7 @@
 			<value>EggLevel1</value>
 		</property>
 		<property name="outputFormat">
-			<value>0</value>
+			<value>2</value>
 		</property>
 		<relationship name="folder">
 			<destination>{d7b4613f-3353-42ef-aec5-a37cdc84a7de}</destination>
@@ -131,6 +131,7 @@
 	</object>
 	<object class="MixerBusEffectChain" id="{6657d991-8dba-4540-ae6b-eaf427b61c9d}">
 		<relationship name="effects">
+			<destination>{5374b28e-162e-4e94-a592-2adf95c583e5}</destination>
 			<destination>{c1f58413-3470-4b94-a400-4c84a6215028}</destination>
 		</relationship>
 	</object>
@@ -157,6 +158,7 @@
 		</relationship>
 	</object>
 	<object class="MixerBusPanner" id="{e0044f4a-8f92-494c-8b7e-f1036209dd7c}" />
+	<object class="SpatialiserEffect" id="{5374b28e-162e-4e94-a592-2adf95c583e5}" />
 	<object class="MixerBusFader" id="{c1f58413-3470-4b94-a400-4c84a6215028}" />
 	<object class="MixerBusFader" id="{02402910-4374-4076-b2ca-3cc944637db1}" />
 </objects>

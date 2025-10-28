@@ -5,7 +5,7 @@
 			<value>TrapButtonPress</value>
 		</property>
 		<property name="outputFormat">
-			<value>0</value>
+			<value>2</value>
 		</property>
 		<relationship name="folder">
 			<destination>{7c936add-48f7-40cb-8e79-d520c7b43a27}</destination>
@@ -114,6 +114,7 @@
 	</object>
 	<object class="MixerBusEffectChain" id="{30e42bb1-8465-4374-91b5-9eb552af43e8}">
 		<relationship name="effects">
+			<destination>{542ca6dd-c708-4d27-9f15-94cf185aecd8}</destination>
 			<destination>{de59a206-eaff-4132-a2e4-388f665a37f0}</destination>
 		</relationship>
 	</object>
@@ -140,6 +141,7 @@
 		</relationship>
 	</object>
 	<object class="MixerBusPanner" id="{c9f7c4d7-0867-4eaf-86b2-17b404172fde}" />
+	<object class="SpatialiserEffect" id="{542ca6dd-c708-4d27-9f15-94cf185aecd8}" />
 	<object class="MixerBusFader" id="{de59a206-eaff-4132-a2e4-388f665a37f0}" />
 	<object class="MixerBusFader" id="{43239cc7-6c17-4134-9be8-aae1af9ec1d0}" />
 </objects>
