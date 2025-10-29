@@ -151,7 +151,7 @@ public class ItemGiftBox : Item
         if (AudioManager.instance != null && FMODEvents.instance != null && 
             !FMODEvents.instance.giftBoxOpen.IsNull)
         {
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.giftBoxOpen, transform, "선물상자 열기 소리");
+            AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.giftBoxOpen, transform, 40f, "Gift Box Open");
         }
     }
     

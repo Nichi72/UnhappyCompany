@@ -237,11 +237,11 @@ public class RSPSystem : MonoBehaviour
         // 가위바위보 결과에 따른 사운드 재생
         if (rspResult == RSPResult.Win)
         {
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.rspWin, transform, "가위바위보 승리 사운드");
+            AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rspWin, transform, 40f, "RSP Win");
         }
         else if (rspResult == RSPResult.Lose)
         {
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.rspLose, transform, "가위바위보 패배 사운드");
+            AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rspLose, transform, 40f, "RSP Lose");
         }
         
         yield return new WaitForSeconds(1.0f); // 사운드 재생 시간

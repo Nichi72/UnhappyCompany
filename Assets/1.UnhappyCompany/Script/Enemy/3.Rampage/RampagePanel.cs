@@ -63,7 +63,7 @@ public class RampagePanel : MonoBehaviour , IDamageable
         if (AudioManager.instance != null && FMODEvents.instance != null && 
             !FMODEvents.instance.rampagePanelDamage.IsNull)
         {
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.rampagePanelDamage, transform, "RampagePanel 데미지 사운드");
+            AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rampagePanelDamage, transform, 40f, "Rampage Panel Damage");
         }
     }
 }

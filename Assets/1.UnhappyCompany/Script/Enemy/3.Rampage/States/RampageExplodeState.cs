@@ -88,10 +88,10 @@ public class RampageExplodeState : IState
     /// </summary>
     private void PlayExplodeSound()
     {
-        // TODO: FMODEvents에 폭발 사운드 추가 후 구현
+        // 폭발 시점의 위치를 저장하고 Position으로 재생 (오브젝트가 파괴되므로)
         if (AudioManager.instance != null && FMODEvents.instance != null)
         {
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.rampageExplode, controller.transform);
+            AudioManager.instance.Play3DSoundAtPosition(FMODEvents.instance.rampageExplode, controller.transform.position, 100f, "Rampage Explode");
         }
     }
     

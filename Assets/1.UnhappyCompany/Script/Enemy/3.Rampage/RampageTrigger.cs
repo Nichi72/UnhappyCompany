@@ -27,7 +27,7 @@ public class RampageTrigger : MonoBehaviour
                     Debug.Log("플레이어와 충돌 발생 - 데미지 & 넉백 적용");
                     
                     // 사운드 재생
-                    AudioManager.instance.PlayOneShot(FMODEvents.instance.rampageCollisionPlayer, transform, "Rampage 플레이어와 충돌 소리");
+                    AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rampageCollisionPlayer, transform, 60f, "Rampage Player Collision");
                     
                     // 데미지 적용
                     other.GetComponent<IDamageable>()?.TakeDamage(rampageAIController.EnemyData.rushDamage, DamageType.Nomal);
@@ -45,7 +45,7 @@ public class RampageTrigger : MonoBehaviour
             {
                 Push(other);
                 Debug.Log("Pushable 충돌 발생");
-                AudioManager.instance.PlayOneShot(FMODEvents.instance.rampageCollisionObject, transform, "Pushable 충돌하는 소리");
+                AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rampageCollisionObject, transform, 60f, "Rampage Object Collision");
             }
         }
     }
@@ -238,10 +238,10 @@ public class RampageTrigger : MonoBehaviour
             debugMessage = "벽 충돌 Level 3 (HP 위험!)";
         }
         
-        // 사운드 재생
+        // 사운드 재생 (벽 충돌은 큰 소리이므로 50m)
         if (!soundToPlay.IsNull)
         {
-            AudioManager.instance.PlayOneShot(soundToPlay, transform, debugMessage);
+            AudioManager.instance.Play3DSoundByTransform(soundToPlay, transform, 80f, debugMessage);
             Debug.Log($"[Rampage Wall Hit Sound] {debugMessage} - HP: {rampageAIController.hp}/{rampageAIController.EnemyData.maxHP} ({hpPercent:P0})");
         }
     }

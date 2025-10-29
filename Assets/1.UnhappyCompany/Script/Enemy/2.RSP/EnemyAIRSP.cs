@@ -316,16 +316,16 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
         switch (index)
         {
             case 1:
-                instance = AudioManager.instance.PlayOneShot(FMODEvents.instance.rspStack[0], transform);
+                instance = AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rspStack[0], transform, 20f, "RSP Stack 1")?.emitter.EventInstance ?? default;
                 break;
             case 2:
-                instance = AudioManager.instance.PlayOneShot(FMODEvents.instance.rspStack[1], transform);
+                instance = AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rspStack[1], transform, 20f, "RSP Stack 2")?.emitter.EventInstance ?? default;
                 break;
             case 3:
-                instance = AudioManager.instance.PlayOneShot(FMODEvents.instance.rspStack[2], transform);
+                instance = AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rspStack[2], transform, 20f, "RSP Stack 3")?.emitter.EventInstance ?? default;
                 break;
             case 4:
-                instance = AudioManager.instance.PlayOneShot(FMODEvents.instance.rspStack[3], transform);
+                instance = AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rspStack[3], transform, 20f, "RSP Stack 4")?.emitter.EventInstance ?? default;
                 break;
         }
 

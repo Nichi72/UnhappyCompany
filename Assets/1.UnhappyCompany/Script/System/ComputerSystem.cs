@@ -41,7 +41,7 @@ public class ComputerSystem : MonoBehaviour
         computer.currentUsePlayer = null;
         
         // 컴퓨터 화면 닫는 소리 재생
-        AudioManager.instance.PlayOneShot(FMODEvents.instance.computerScreenClose, transform, "Computer Screen Closed");
+        AudioManager.instance.PlayUISound(FMODEvents.instance.computerScreenClose, "Computer Screen Closed");
     }
     
     public void BtnEvtCloseComputer()
@@ -63,7 +63,7 @@ public class ComputerSystem : MonoBehaviour
             itemObj.transform.position = computer.spwanTr.position;
             var rigidbody = itemObj.GetComponent<Rigidbody>();
             rigidbody.AddForce(computer.spwanTr.transform.right * 250f);
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.shopItemDrop, itemObj.transform, "BuyItem Drop");
+            AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.shopItemDrop, itemObj.transform, 20f, "BuyItem Drop");
         }
     }
 
@@ -78,12 +78,12 @@ public class ComputerSystem : MonoBehaviour
         Debug.Log("BtnEvtPressed");
         
         // 컴퓨터 클릭음 재생
-        AudioManager.instance.PlayOneShot(FMODEvents.instance.computerCursorClick, transform, "Computer Cursor Click");
+        AudioManager.instance.PlayUISound(FMODEvents.instance.computerCursorClick, "Computer Cursor Click");
         
         // 창을 닫을 때 (현재 활성화 상태 -> 비활성화) 창 닫는 소리 재생
         if (view != null && view.activeSelf)
         {
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.computerScreenClose, transform, "Computer Screen Closed");
+            AudioManager.instance.PlayUISound(FMODEvents.instance.computerScreenClose, "Computer Screen Closed");
         }
         
         UIManager.instance.ToggleObject(view);

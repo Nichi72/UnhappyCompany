@@ -128,7 +128,7 @@ public class RSPUI : MonoBehaviour
             currentIndex = (currentIndex + 1) % cenerRSPs.Count;
             
             // 소리 재생 (기존 코드와 유사하게)
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.rspWheelSpin, transform,null); // RSP 중앙 회전 돌아가는 소리
+            AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rspWheelSpin, transform, 20f, "RSP Wheel Spin");
         }
     }
 
@@ -172,7 +172,7 @@ public class RSPUI : MonoBehaviour
             numbers[currentNumber].SetActive(false);
             
             currentNumber++;
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.rspWheelSpin, transform,null); // RSP 중앙 회전 돌아가는 소리
+            AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rspWheelSpin, transform, 20f, "RSP Wheel Spin");
             if (currentNumber >= maxNumber)
             {
                 Debug.Log("loopCount: " + loopCount);
@@ -190,7 +190,7 @@ public class RSPUI : MonoBehaviour
                     Debug.Log("메달 게임 당첨!");
                     
                     // 메달 게임 당첨 승리 사운드 재생
-                    AudioManager.instance.PlayOneShot(FMODEvents.instance.rspWin, transform, "메달 게임 당첨 사운드");
+                    AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rspWin, transform, 40f, "RSP Medal Win");
                     
                     // 당첨 숫자를 잠깐 보여준 후 모든 숫자 비활성화
                     yield return new WaitForSeconds(1.5f);
