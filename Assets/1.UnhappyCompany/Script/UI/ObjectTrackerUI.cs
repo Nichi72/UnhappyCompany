@@ -47,6 +47,25 @@ public class ObjectTrackerUI : MonoBehaviour
                 continue;
 
             Vector3 screenPos = mobileCamera.WorldToScreenPoint(target.position);
+            
+            // 카메라 뒤에 있는 오브젝트는 UI 숨기기 (z <= 0이면 카메라 뒤)
+            if (screenPos.z <= 0)
+            {
+                uiElement.SetActive(false);
+                continue;
+            }
+            
+            // 화면 밖에 있는 오브젝트도 UI 숨기기
+            if (screenPos.x < 0 || screenPos.x > Screen.width || 
+                screenPos.y < 0 || screenPos.y > Screen.height)
+            {
+                uiElement.SetActive(false);
+                continue;
+            }
+            
+            // 화면에 보이는 경우에만 UI 활성화 및 위치 업데이트
+            uiElement.SetActive(true);
+            
             RectTransform canvasRect = canvas.GetComponent<RectTransform>();
             Vector2 localPoint;
 
