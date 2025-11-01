@@ -39,6 +39,7 @@ public class FMODEvents : MonoBehaviour
 	
 	[field: Header("Ambience")]
 	[field: SerializeField] public EventReference computerAmb { get; private set; }
+	[field: SerializeField] public EventReference CenterAMB { get; private set; }
 
     
     [field: Header("Enemy - Rampage")]
@@ -92,6 +93,11 @@ public class FMODEvents : MonoBehaviour
     [field: SerializeField] public EventReference rspLose { get; private set; }
     [field: SerializeField] public EventReference rspWheelSpin { get; private set; } // RSP 중앙 회전 돌아가는 소리
     [field: SerializeField] public List<EventReference> rspStack { get; private set; }
+    
+    [field: Header("Enemy - Egg")]
+    [field: SerializeField] public EventReference EggLevel1 { get; private set; }           // Stage1 무적 상태에서 공격받을 때
+    [field: SerializeField] public EventReference EggLevel2Breaking { get; private set; }   // Stage2로 전환될 때 (깨질 수 있는 상태로 변경)
+    [field: SerializeField] public EventReference EggLevel2Break { get; private set; }      // 알이 파괴될 때
     
     [field: Header("TEST")]
     [field: SerializeField] public EventReference TEST { get; private set; }

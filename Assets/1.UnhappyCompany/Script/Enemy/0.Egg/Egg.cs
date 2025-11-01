@@ -232,6 +232,9 @@ public class Egg : MonoBehaviour, IDamageable, IScannable
                     UpdateVisuals(EggStage.Stage2);
                     Debug.Log($"Egg entered Stage 2 - Vulnerable (현실 경과 시간: {realElapsedMinutes:F2}분, 게임 시간: {currentGameTime})");
                     
+                    // EggLevel2Breaking: Stage2로 전환될 때 (깨질 수 있는 상태로 변경) 사운드
+                    AudioManager.instance.PlayOneShot(FMODEvents.instance.EggLevel2Breaking, transform);
+                    
                     // Stage2 종료 시간 설정 (종료 시간은 게임 내 시간이 아닌 현실 경과 시간 기준으로 설정)
                     float stage2RealTimeToEnd = stage2Duration * (TimeManager.instance.realTimeMinutesPerGameDay / (float)TimeSpan.FromHours(24).TotalSeconds);
                     stage2EndTime = currentGameTime.Add(TimeSpan.FromSeconds(stage2Duration));
@@ -336,6 +339,8 @@ public class Egg : MonoBehaviour, IDamageable, IScannable
         {
             Debug.Log($"{gameObject.name}은(는) 아직 무적 상태입니다!");
             AudioManager.instance.PlayOneShot(FMODEvents.instance.missDamage, transform);
+            // EggLevel1: Stage1 무적 상태에서 공격받을 때 사운드
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.EggLevel1, transform);
             return;
         }
 
@@ -389,6 +394,9 @@ public class Egg : MonoBehaviour, IDamageable, IScannable
 
     void DestroyEgg()
     {
+        // EggLevel2Break: 알이 파괴될 때 사운드
+        AudioManager.instance.PlayOneShot(FMODEvents.instance.EggLevel2Break, transform);
+        
         // 알 파괴 후 파편을 생성
         Instantiate(eggShatterItemPrefab, transform.position, Quaternion.identity);
         
