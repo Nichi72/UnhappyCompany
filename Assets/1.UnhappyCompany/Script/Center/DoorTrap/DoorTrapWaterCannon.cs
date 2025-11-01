@@ -100,7 +100,7 @@ public class DoorTrapWaterCannon : MonoBehaviour
         if (isOnProcessing)
         {
             Debug.Log("물 대포 트랩이 이미 실행 중입니다.");
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.trapWaterCannonAlreadyActive, waterMainParticle.gameObject.transform, "물 대포 트랩이 이미 실행 중입니다.");
+            AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.trapWaterCannonAlreadyActive, waterMainParticle.gameObject.transform, 20f, "물 대포 트랩이 이미 실행 중입니다.");
             return;
         }
 
@@ -108,7 +108,7 @@ public class DoorTrapWaterCannon : MonoBehaviour
         if (count <= 0)
         {
             Debug.Log("물 대포 트랩 발사 횟수를 초과했습니다.");
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.trapWaterCannonLimitExceeded, waterMainParticle.gameObject.transform, "물 대포 트랩 발사 횟수를 초과했습니다.");
+            AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.trapWaterCannonLimitExceeded, waterMainParticle.gameObject.transform, 20f, "물 대포 트랩 발사 횟수를 초과했습니다.");
             return;
         }
 
@@ -132,7 +132,7 @@ public class DoorTrapWaterCannon : MonoBehaviour
         ParticleControl();
         // 2초 후 자동으로 끄기
         autoOffCoroutine = StartCoroutine(AutoOffAfterDelay(2f));
-        AudioManager.instance.PlayOneShot(FMODEvents.instance.trapWaterCannonFire, waterMainParticle.gameObject.transform, "강력한 물 대포 소리. 고압으로 분사되는 물줄기 소리. 촤아아악 하는 물 분사음과 튕기는 물 소리. 꺼질때까지 진행되어야함.");
+        AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.trapWaterCannonFire, waterMainParticle.gameObject.transform, 40f, "강력한 물 대포 소리. 고압으로 분사되는 물줄기 소리. 촤아아악 하는 물 분사음과 튕기는 물 소리. 꺼질때까지 진행되어야함.");
         
         void ParticleControl()
         {

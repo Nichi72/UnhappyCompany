@@ -99,7 +99,7 @@ public class DoorTrapFire : MonoBehaviour
         if (isOnProcessing)
         {
             Debug.Log("불 트랩이 이미 실행 중입니다.");
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.trapFireAlreadyActive, fireMainParticle.gameObject.transform, "불 트랩이 이미 실행 중입니다.");
+            AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.trapFireAlreadyActive, fireMainParticle.gameObject.transform, 20f, "불 트랩이 이미 실행 중입니다.");
             return;
         }
 
@@ -107,7 +107,7 @@ public class DoorTrapFire : MonoBehaviour
         if (count <= 0)
         {
             Debug.Log("불 트랩 발사 횟수를 초과했습니다."); 
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.trapFireLimitExceeded, fireMainParticle.gameObject.transform, "불 트랩 발사 횟수를 초과했습니다.");
+            AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.trapFireLimitExceeded, fireMainParticle.gameObject.transform, 20f, "불 트랩 발사 횟수를 초과했습니다.");
             return;
         }
 
@@ -131,7 +131,7 @@ public class DoorTrapFire : MonoBehaviour
         ParticleControl();
         // 2초 후 자동으로 끄기
         autoOffCoroutine = StartCoroutine(AutoOffAfterDelay(2f));
-        AudioManager.instance.PlayOneShot(FMODEvents.instance.trapFireIgnite, fireMainParticle.gameObject.transform, "불타는 소리 시작. 엄청 화르륵 화력쌘 개무서운 불 소리. 그냥 이 불에 스치면 뒤질거같은 그런 느낌. 꺼질때까지 진행되어야함.");
+        AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.trapFireIgnite, fireMainParticle.gameObject.transform, 40f, "불타는 소리 시작. 엄청 화르륵 화력쌘 개무서운 불 소리. 그냥 이 불에 스치면 뒤질거같은 그런 느낌. 꺼질때까지 진행되어야함.");
         void ParticleControl()
         {
              // 모든 파티클 재생

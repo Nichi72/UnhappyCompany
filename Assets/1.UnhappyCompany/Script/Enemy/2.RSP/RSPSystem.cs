@@ -26,9 +26,18 @@ public class RSPSystem : MonoBehaviour
     private float loseProbability = 40f;
     
     private bool isRSPActive = false;
-    private System.Action<RSPResult, int> onGameComplete; // RSP 결과와 메달 게임 결과 콜백
+    private System.Action<RSPResult, int, bool> onGameComplete; // RSP 결과, 메달 게임 결과, 코인 부족 여부 콜백
     private List<GameObject> rspSymbols;
     public RSPUI rspUI;
+
+    [Header("코인 설정")]
+    [Tooltip("RSP 게임에 사용할 코인 프리팹")]
+    [SerializeField] private GameObject coinPrefab;
+    
+    [Tooltip("코인을 뱉을 위치 (설정하지 않으면 RSP 위치 사용)")]
+    [SerializeField] private Transform coinSpawnPosition;
+    
+    private Player currentPlayer; // 현재 게임 중인 플레이어
 
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -180,9 +189,10 @@ public class RSPSystem : MonoBehaviour
     }
 
     // 전체 가위바위보 + 메달 게임 시작
-    public void StartRSPWithMedalGame(System.Action<RSPResult, int> callback)
+    public void StartRSPWithMedalGame(System.Action<RSPResult, int, bool> callback, Player player)
     {
         onGameComplete = callback;
+        currentPlayer = player;
         isRSPActive = true;
         
         // 코루틴 시작
@@ -192,6 +202,26 @@ public class RSPSystem : MonoBehaviour
     // 가위바위보와 메달 게임 연동 코루틴
     private IEnumerator PlayRSPAndMedalGame()
     {
+        // 0. 코인 확인 및 소모
+        if (currentPlayer != null && currentPlayer.quickSlotSystem != null)
+        {
+            if (!currentPlayer.quickSlotSystem.HasCoin())
+            {
+                Debug.LogWarning("RSP: 코인이 없어 게임을 시작할 수 없습니다!");
+                isRSPActive = false;
+                onGameComplete?.Invoke(RSPResult.Lose, 0, true); // 코인 없음을 알림 (hasNoCoin = true)
+                yield break;
+            }
+            
+            // 코인 소모
+            int removedCoinValue = currentPlayer.quickSlotSystem.RemoveCoin();
+            Debug.Log($"RSP: 코인 {removedCoinValue}개를 소모하여 게임을 시작합니다.");
+        }
+        else
+        {
+            Debug.LogWarning("RSP: 플레이어 참조가 없어 코인 시스템을 사용할 수 없습니다.");
+        }
+        
         // 1. 가위바위보 게임 진행
         RSPResult rspResult = RSPResult.Draw; // 기본값
         
@@ -234,6 +264,12 @@ public class RSPSystem : MonoBehaviour
         rspResult = RSPCalculate(playerChoice, enemyChoice);
         Debug.Log($"RSP 결과: {rspResult}");
         
+        // 가위바위보 결과에 따른 UI 표시
+        if (rspUI != null)
+        {
+            rspUI.ShowResult(rspResult);
+        }
+        
         // 가위바위보 결과에 따른 사운드 재생
         if (rspResult == RSPResult.Win)
         {
@@ -243,10 +279,14 @@ public class RSPSystem : MonoBehaviour
         {
             AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rspLose, transform, 40f, "RSP Lose");
         }
+        else if (rspResult == RSPResult.Draw)
+        {
+            AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rspDraw, transform, 40f, "RSP Draw");
+        }
         
         yield return new WaitForSeconds(1.0f); // 사운드 재생 시간
         
-        // 2. 메달 게임은 승리한 경우에만 시작
+        // 2. 메달 게임은 승리한 경우에만 시작 (무승부는 스킵)
         int medalResult = 0;
         
         if (rspResult == RSPResult.Win && medalGame != null)
@@ -257,6 +297,17 @@ public class RSPSystem : MonoBehaviour
             medalGame.StartGame();
             // 메달 게임 완료 대기
             yield return new WaitUntil(() => medalGame.IsGameActive());
+            
+            // 승리 시 리워드만큼 코인 생성
+            // TODO: medalResult 값을 메달 게임에서 받아와야 함
+            // 임시로 랜덤 리워드 사용 (1~5개)
+            int rewardAmount = UnityEngine.Random.Range(1, 6);
+            SpawnRewardCoins(rewardAmount);
+        }
+        else if (rspResult == RSPResult.Draw)
+        {
+            Debug.Log("무승부입니다. 메달 게임(룰렛) 없이 게임이 종료됩니다.");
+            yield return new WaitForSeconds(1.0f); // 잠시 대기
         }
         else
         {
@@ -266,7 +317,60 @@ public class RSPSystem : MonoBehaviour
         
         // 3. 전체 게임 완료 및 결과 반환
         isRSPActive = false;
-        onGameComplete?.Invoke(rspResult, medalResult);
+        onGameComplete?.Invoke(rspResult, medalResult, false); // 정상적으로 게임이 진행된 경우 hasNoCoin = false
+    }
+    
+    /// <summary>
+    /// RSP가 코인을 생성하여 뱉습니다
+    /// </summary>
+    /// <param name="amount">생성할 코인 개수</param>
+    private void SpawnRewardCoins(int amount)
+    {
+        if (coinPrefab == null)
+        {
+            Debug.LogWarning("RSP: 코인 프리팹이 설정되지 않았습니다!");
+            return;
+        }
+        
+        // 코인 생성 위치 결정
+        Vector3 spawnPos = coinSpawnPosition != null ? coinSpawnPosition.position : transform.position + Vector3.up * 2f;
+        
+        Debug.Log($"RSP: {amount}개의 코인을 생성합니다.");
+        
+        for (int i = 0; i < amount; i++)
+        {
+            // 약간의 랜덤 위치 오프셋 추가 (코인들이 겹치지 않도록)
+            Vector3 randomOffset = new Vector3(
+                UnityEngine.Random.Range(-0.5f, 0.5f),
+                UnityEngine.Random.Range(0f, 0.5f),
+                UnityEngine.Random.Range(-0.5f, 0.5f)
+            );
+            
+            Vector3 finalSpawnPos = spawnPos + randomOffset;
+            
+            // 코인 생성
+            GameObject coinObj = Instantiate(coinPrefab, finalSpawnPos, Quaternion.identity);
+            
+            // 약간의 랜덤 방향으로 힘 추가 (뱉는 효과)
+            Rigidbody rb = coinObj.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                Vector3 randomForce = new Vector3(
+                    UnityEngine.Random.Range(-2f, 2f),
+                    UnityEngine.Random.Range(3f, 5f),
+                    UnityEngine.Random.Range(-2f, 2f)
+                );
+                rb.AddForce(randomForce, ForceMode.Impulse);
+                
+                // 약간의 회전도 추가
+                Vector3 randomTorque = new Vector3(
+                    UnityEngine.Random.Range(-10f, 10f),
+                    UnityEngine.Random.Range(-10f, 10f),
+                    UnityEngine.Random.Range(-10f, 10f)
+                );
+                rb.AddTorque(randomTorque, ForceMode.Impulse);
+            }
+        }
     }
 
     public void RSPAnimation()

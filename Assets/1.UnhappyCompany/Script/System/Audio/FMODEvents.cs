@@ -90,8 +90,11 @@ public class FMODEvents : MonoBehaviour
     [field: Header("RSP Game")]
     [field: SerializeField] public EventReference rspWin { get; private set; }
     [field: SerializeField] public EventReference rspLose { get; private set; }
+    [field: SerializeField] public EventReference rspDraw { get; private set; }
     [field: SerializeField] public EventReference rspWheelSpin { get; private set; } // RSP 중앙 회전 돌아가는 소리
     [field: SerializeField] public List<EventReference> rspStack { get; private set; }
+    [field: SerializeField] public EventReference rspNoCoin { get; private set; }
+    [field: SerializeField] public EventReference rspInsertCoin { get; private set; }
     
     [field: Header("TEST")]
     [field: SerializeField] public EventReference TEST { get; private set; }

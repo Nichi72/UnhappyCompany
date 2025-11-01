@@ -184,7 +184,6 @@ public class AudioManagerTestExample : MonoBehaviour
         string info = AudioManager.instance.GetEmitterPoolInfo();
         Debug.Log($"[Pool 정보] {info}");
         Debug.Log($"[활성 Emitter] {AudioManager.instance.GetActiveEmitterCount()}개");
-        Debug.Log($"[OneShot 사운드] {AudioManager.instance.GetActiveSoundCount()}개");
     }
     
     void OnGUI()
@@ -224,7 +223,6 @@ public class AudioManagerTestExample : MonoBehaviour
         {
             GUILayout.Label(AudioManager.instance.GetEmitterPoolInfo());
             GUILayout.Label($"활성 Emitter: {AudioManager.instance.GetActiveEmitterCount()}개");
-            GUILayout.Label($"OneShot 사운드: {AudioManager.instance.GetActiveSoundCount()}개");
         }
         
         GUILayout.EndArea();

@@ -2,7 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using FMOD.Studio;
+using FMODUnity;
 using System;
+using Unity.Collections;
 
 /// <summary>
 /// RSP 타입 적의 AI 컨트롤러입니다.
@@ -19,8 +21,10 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
     public bool isAnimationEnd = false;
     public bool isPlayerFound = false;
     
-    public bool isCoolDown = false; // 홀드 이후에 쿨타임 처리
+    public bool isCoolDown = false; // 홀드 이후에 쿨타임 처리 (currentCooldown > 0 여부)
     public bool isGround = true; // 바닥에 있는지 여부를 저장하는 변수
+    [SerializeField] private float currentCooldown = 0f; // 현재 남은 쿨다운 시간 (초)
+    private Coroutine cooldownCoroutine = null; // 쿨다운 코루틴 참조
 
     [SerializeField] private float groundCheckDistance = 0.3f; // 지면 체크 거리
     [SerializeField] private LayerMask groundLayer; // 지면으로 간주할 레이어
@@ -33,18 +37,22 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
     // 에미션 제어용
     private bool isEmissionEnabled = true;
     private const string EmissionKeyword = "_EMISSION";
-    private Dictionary<Renderer, Color[]> originalEmissiveColors = new Dictionary<Renderer, Color[]>(); // 렌더러별 원본 색상 배열
+    private Dictionary<Renderer, EmissionData[]> originalEmissionData = new Dictionary<Renderer, EmissionData[]>(); // 렌더러별 원본 에미션 데이터 배열
 
     private string interactionText = "가위바위보 하기";
     public string InteractionTextF { get => interactionText; set => interactionText = value; }
-    public bool IgnoreInteractionF { get => stack == 0; set => IgnoreInteractionF = value; }
+    
+    public bool IgnoreInteractionF { get => ignoreInteractionF; set => ignoreInteractionF = value; }
+    private bool ignoreInteractionF = false;
 
 
     public RSPSystem rspSystem;
     public Animator animator;
 
     [SerializeField] private int stack = 0; // 반드시 플레이 해야하는 스택
-    private Stack<EventInstance> soundInstances = new Stack<EventInstance>();
+    
+    // 루프 사운드 관리용 - 스택 레벨별로 개별 관리 (인덱스 1~4 사용)
+    private PooledEmitter[] stackLoopEmitters = new PooledEmitter[5]; // 인덱스 0은 사용안함, 1~4 사용
 
     
 
@@ -68,14 +76,13 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
         ChangeState(new RSPPatrolState(this));
         OnStackZero += () => 
         {
-            isCoolDown = true;
             Debug.Log("RSP: 스택 0 - 비활성화 상태로 전환 및 쿨다운 시작");
             
             // 비활성화 상태로 전환
             ChangeState(new RSPDisableState(this));
             
-            // enemyData의 비활성화 지속 시간 사용
-            Invoke(nameof(ResetCoolDown), enemyData.disabledDuration);
+            // 쿨다운 코루틴 시작
+            StartCooldownCoroutine(enemyData.disabledDuration);
         };
         
         // 에미션 원본 색상 캐시
@@ -83,7 +90,7 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
     }
     
     /// <summary>
-    /// 렌더러에서 현재 에미션 색상을 캐시합니다.
+    /// 렌더러에서 현재 에미션 색상과 인텐시티를 캐시합니다.
     /// </summary>
     private void CacheOriginalEmissiveColors()
     {
@@ -97,59 +104,131 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
             
             // 렌더러에서 메테리얼 가져오기 (인스턴스 자동 생성)
             Material[] materials = data.renderer.materials;
-            Color[] colors = new Color[materials.Length];
+            EmissionData[] emissionDataArray = new EmissionData[materials.Length];
             
             for (int i = 0; i < materials.Length; i++)
             {
-                if (materials[i].HasProperty("_EmissiveColor"))
+                Material mat = materials[i];
+                
+                if (mat.HasProperty("_EmissiveColor"))
                 {
-                    // 현재 에미션 색상 저장 (설정된 intensity 적용)
-                    Color currentColor = materials[i].GetColor("_EmissiveColor");
+                    // HDRP는 _EmissiveColor와 _EmissiveIntensity를 별도로 관리
+                    emissionDataArray[i].color = data.emissionColor;
                     
-                    // 색상 방향 정규화
-                    float magnitude = Mathf.Sqrt(currentColor.r * currentColor.r + 
-                                                 currentColor.g * currentColor.g + 
-                                                 currentColor.b * currentColor.b);
-                    
-                    Color baseDirection;
-                    if (magnitude > 0.001f)
+                    // _EmissiveIntensity 프로퍼티가 있으면 사용, 없으면 기본값
+                    if (mat.HasProperty("_EmissiveIntensity"))
                     {
-                        baseDirection = new Color(currentColor.r / magnitude, 
-                                                 currentColor.g / magnitude, 
-                                                 currentColor.b / magnitude, 
-                                                 currentColor.a);
+                        emissionDataArray[i].intensity = data.emissionIntensity;
                     }
                     else
                     {
-                        baseDirection = Color.white;
+                        emissionDataArray[i].intensity = 1.0f;
                     }
                     
-                    // 설정된 인텐시티로 색상 계산
-                    colors[i] = baseDirection * data.emissionIntensity;
+                    // HDRP 에미션 설정 초기화
+                    mat.EnableKeyword("_EMISSION");
+                    if (mat.HasProperty("_UseEmissiveIntensity"))
+                    {
+                        mat.SetFloat("_UseEmissiveIntensity", 1f);
+                    }
+                    
+                    // 초기 값 설정
+                    mat.SetColor("_EmissiveColor", emissionDataArray[i].color);
+                    if (mat.HasProperty("_EmissiveIntensity"))
+                    {
+                        mat.SetFloat("_EmissiveIntensity", emissionDataArray[i].intensity);
+                    }
+                    
+                    Debug.Log($"RSP: 메테리얼 '{mat.name}' 캐시 및 초기화 - Color: {emissionDataArray[i].color}, Intensity: {emissionDataArray[i].intensity}");
                 }
                 else
                 {
-                    colors[i] = Color.black;
+                    emissionDataArray[i].color = Color.black;
+                    emissionDataArray[i].intensity = 0f;
                 }
             }
             
-            originalEmissiveColors[data.renderer] = colors;
-            Debug.Log($"RSP: 렌더러 '{data.renderer.name}' 에미션 캐시 완료 (메테리얼 {materials.Length}개, intensity: {data.emissionIntensity})");
+            originalEmissionData[data.renderer] = emissionDataArray;
+            Debug.Log($"RSP: 렌더러 '{data.renderer.name}' 에미션 캐시 완료 (메테리얼 {materials.Length}개)");
         }
     }
 
-    private void ResetCoolDown()
+    /// <summary>
+    /// 쿨다운 코루틴 시작
+    /// </summary>
+    private void StartCooldownCoroutine(float duration)
     {
+        // 기존 쿨다운 코루틴이 있으면 중지
+        if (cooldownCoroutine != null)
+        {
+            StopCoroutine(cooldownCoroutine);
+        }
+        
+        // 새 쿨다운 시작
+        currentCooldown = duration;
+        cooldownCoroutine = StartCoroutine(CooldownCoroutine());
+    }
+    
+    /// <summary>
+    /// 쿨다운 처리 코루틴
+    /// </summary>
+    private IEnumerator CooldownCoroutine()
+    {
+        Debug.Log($"RSP: 쿨다운 시작 ({currentCooldown}초)");
+        
+        while (currentCooldown > 0f)
+        {
+            currentCooldown -= Time.deltaTime;
+            
+            // currentCooldown 기반으로 isCoolDown 자동 업데이트
+            isCoolDown = currentCooldown > 0f;
+            
+            yield return null;
+        }
+        
+        // 쿨다운 완료
+        currentCooldown = 0f;
         isCoolDown = false;
-        Debug.Log("RSP: 쿨타임 초기화");
+        cooldownCoroutine = null;
+        
+        // 쿨다운 완료 시 자동으로 복구
+        EnableEmission();
+        ChangeState(new RSPPatrolState(this));
+        
+        Debug.Log("RSP: 쿨다운 완료 - 에미션 복구 및 Patrol 상태로 전환");
+    }
+    
+    /// <summary>
+    /// 쿨다운 강제 중지
+    /// </summary>
+    private void StopCooldownCoroutine()
+    {
+        if (cooldownCoroutine != null)
+        {
+            StopCoroutine(cooldownCoroutine);
+            cooldownCoroutine = null;
+        }
+        
+        currentCooldown = 0f;
+        isCoolDown = false;
     }
     
     protected override void OnDestroy()
     {
         base.OnDestroy();
         
+        // 쿨다운 코루틴 정리
+        if (cooldownCoroutine != null)
+        {
+            StopCoroutine(cooldownCoroutine);
+            cooldownCoroutine = null;
+        }
+        
+        // 모든 루프 사운드 정지
+        StopAllLoopSounds();
+        
         // 메테리얼 인스턴스는 Renderer가 자동으로 관리하므로 Dictionary만 클리어
-        originalEmissiveColors.Clear();
+        originalEmissionData.Clear();
         
         Debug.Log("RSP: 에미션 데이터 정리 완료");
     }
@@ -157,6 +236,7 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
     protected override void Update()
     {
         base.Update();
+        ignoreInteractionF = IsStackZero; // 스택이 0이면 인터랙션 무시
         
         // agent의 현재 속도를 기반으로 애니메이터 파라미터 업데이트
         if (animator != null && agent != null)
@@ -167,12 +247,29 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
 
         // 지면 체크 수행
         CheckGround();
+        if(HasCoin() == false)
+        {
+            InteractionTextF = "코인이 없어 게임을 시작할 수 없습니다!";
+        }
+        else
+        {
+            InteractionTextF = "가위바위보 하기";
+        }
 
         // 테스트용: F2 키로 스택 증가
         if (Input.GetKeyDown(KeyCode.F2))
         {
             IncrementStack();
-            Debug.Log($"RSP: 스택 증가 테스트 (현재 스택: {stack})");
+            currentCooldown = 1f; // 디버그용
+            
+            // 쿨다운 중이면 쿨다운도 초기화
+            if (isCoolDown)
+            {
+                StopCooldownCoroutine();
+                Debug.Log("RSP: 쿨다운 초기화됨 (F2 테스트)");
+            }
+            
+            Debug.Log($"RSP: 스택 증가 테스트 (현재 스택: {stack}, 쿨다운: {isCoolDown})");
         }
     }
 
@@ -229,6 +326,16 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
 
     public void HitEventInteractionF(Player rayOrigin)
     {
+        if(HasCoin() == false)
+        {
+            Debug.Log("RSP: 코인이 없어 게임을 시작할 수 없습니다!");
+            AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rspNoCoin, transform, 20f, "RSP: 코인이 없어 게임을 시작할 수 없습니다!");
+            return;
+        }
+        else
+        {
+            Debug.Log("RSP: 게임을 시작합니다!");
+        }
         ChangeState(new RSPHoldingState(this, utilityCalculator, rayOrigin, rspSystem));
     }
 
@@ -271,17 +378,14 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
     {
         if (stack > 0)
         {
+            // 감소하기 전의 스택 레벨 사운드를 정지
+            int previousStack = stack;
             stack--;
-            if (soundInstances.Count > 0)
-            {
-                EventInstance lastInstance = soundInstances.Pop();
-                if (lastInstance.isValid())
-                {
-                    Debug.Log("RSP: 음악 중지");
-                    lastInstance.stop(STOP_MODE.IMMEDIATE);
-                    lastInstance.release();
-                }
-            }
+            
+            // 이전 레벨의 루프 사운드 정지
+            StopStackLoopSound(previousStack);
+            
+            Debug.Log($"RSP: 스택 감소 {previousStack} → {stack}");
             
             // 스택이 감소한 후 0이 되었는지 확인
             if (stack == 0)
@@ -307,32 +411,86 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
 
     public void PlaySoundBasedOnCompulsoryPlayStack(int index)
     {
-        if (stack == 0)
+        if (index < 1 || index > 4)
         {
-            return; // compulsoryPlayStack가 0이면 재생안함
+            Debug.LogWarning($"RSP: 유효하지 않은 스택 인덱스 {index}");
+            return;
         }
 
-        EventInstance instance = default; // 기본값으로 초기화
+        // 이미 해당 인덱스의 사운드가 재생 중이면 재생하지 않음
+        if (stackLoopEmitters[index] != null)
+        {
+            Debug.LogWarning($"RSP: Stack {index} 사운드가 이미 재생 중입니다.");
+            return;
+        }
+
+        // 스택에 따른 사운드 이벤트 선택
+        EventReference soundEvent = default;
+        string debugName = "";
+        
         switch (index)
         {
             case 1:
-                instance = AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rspStack[0], transform, 20f, "RSP Stack 1")?.emitter.EventInstance ?? default;
+                soundEvent = FMODEvents.instance.rspStack[0];
+                debugName = "RSP Stack 1 Loop";
                 break;
             case 2:
-                instance = AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rspStack[1], transform, 20f, "RSP Stack 2")?.emitter.EventInstance ?? default;
+                soundEvent = FMODEvents.instance.rspStack[1];
+                debugName = "RSP Stack 2 Loop";
                 break;
             case 3:
-                instance = AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rspStack[2], transform, 20f, "RSP Stack 3")?.emitter.EventInstance ?? default;
+                soundEvent = FMODEvents.instance.rspStack[2];
+                debugName = "RSP Stack 3 Loop";
                 break;
             case 4:
-                instance = AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rspStack[3], transform, 20f, "RSP Stack 4")?.emitter.EventInstance ?? default;
+                soundEvent = FMODEvents.instance.rspStack[3];
+                debugName = "RSP Stack 4 Loop";
                 break;
         }
 
-        if (instance.isValid())
+        // 해당 레벨의 루프 사운드 재생
+        if (!soundEvent.IsNull)
         {
-            soundInstances.Push(instance);
+            PooledEmitter emitter = AudioManager.instance.PlayLoopSoundByTransform(soundEvent, transform, 20f, debugName);
+            
+            if (emitter != null)
+            {
+                stackLoopEmitters[index] = emitter;
+                Debug.Log($"RSP: {debugName} 루프 재생 시작 (누적)");
+            }
+            else
+            {
+                Debug.LogWarning($"RSP: {debugName} 루프 재생 실패");
+            }
         }
+    }
+    
+    /// <summary>
+    /// 특정 스택 레벨의 루프 사운드 정지
+    /// </summary>
+    private void StopStackLoopSound(int index)
+    {
+        if (index < 1 || index > 4)
+            return;
+            
+        if (stackLoopEmitters[index] != null)
+        {
+            AudioManager.instance.StopEmitter(stackLoopEmitters[index]);
+            stackLoopEmitters[index] = null;
+            Debug.Log($"RSP: Stack {index} 루프 사운드 정지");
+        }
+    }
+    
+    /// <summary>
+    /// 모든 루프 사운드 정지
+    /// </summary>
+    private void StopAllLoopSounds()
+    {
+        for (int i = 1; i <= 4; i++)
+        {
+            StopStackLoopSound(i);
+        }
+        Debug.Log("RSP: 모든 루프 사운드 정지");
     }
 
     #endregion
@@ -352,12 +510,10 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
     #region Emission Control
     
     /// <summary>
-    /// 에미션을 활성화하고 저장된 인텐시티 값으로 복원합니다.
+    /// 에미션을 활성화하고 저장된 색상과 인텐시티 값으로 복원합니다.
     /// </summary>
     public void EnableEmission()
     {
-        if (isEmissionEnabled) return;
-        
         if (emissionRenderers == null || emissionRenderers.Length == 0)
         {
             Debug.LogWarning("RSP: 에미션 렌더러가 설정되지 않았습니다.");
@@ -369,25 +525,44 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
             if (data.renderer == null)
                 continue;
             
-            // 캐시된 색상 배열 가져오기
-            if (originalEmissiveColors.TryGetValue(data.renderer, out Color[] cachedColors))
+            // 캐시된 에미션 데이터 배열 가져오기
+            if (originalEmissionData.TryGetValue(data.renderer, out EmissionData[] cachedData))
             {
                 // 렌더러에서 메테리얼 가져오기
                 Material[] materials = data.renderer.materials;
                 
-                for (int i = 0; i < Mathf.Min(materials.Length, cachedColors.Length); i++)
+                for (int i = 0; i < Mathf.Min(materials.Length, cachedData.Length); i++)
                 {
-                    if (materials[i].HasProperty("_EmissiveColor"))
+                    Material mat = materials[i];
+                    
+                    if (mat.HasProperty("_EmissiveColor"))
                     {
-                        materials[i].SetColor("_EmissiveColor", cachedColors[i]);
+                        // HDRP 에미션 활성화
+                        mat.EnableKeyword("_EMISSION");
+                        
+                        // 색상과 인텐시티를 별도로 설정
+                        mat.SetColor("_EmissiveColor", cachedData[i].color);
+                        
+                        if (mat.HasProperty("_EmissiveIntensity"))
+                        {
+                            mat.SetFloat("_EmissiveIntensity", cachedData[i].intensity);
+                        }
+                        
+                        // HDRP에서 에미션 인텐시티 사용 활성화
+                        if (mat.HasProperty("_UseEmissiveIntensity"))
+                        {
+                            mat.SetFloat("_UseEmissiveIntensity", 1f);
+                        }
+                        
+                        Debug.Log($"RSP: 메테리얼 '{mat.name}' 에미션 활성화 완료 - Color: {cachedData[i].color}, Intensity: {cachedData[i].intensity}");
                     }
                 }
                 
-                Debug.Log($"RSP: '{data.renderer.name}' 에미션 활성화 (intensity: {data.emissionIntensity})");
+                Debug.Log($"RSP: '{data.renderer.name}' 에미션 활성화");
             }
             else
             {
-                Debug.LogWarning($"RSP: '{data.renderer.name}' 캐시된 색상을 찾을 수 없습니다.");
+                Debug.LogWarning($"RSP: '{data.renderer.name}' 캐시된 에미션 데이터를 찾을 수 없습니다.");
             }
         }
         
@@ -400,8 +575,6 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
     /// </summary>
     public void DisableEmission()
     {
-        if (!isEmissionEnabled) return;
-        
         if (emissionRenderers == null || emissionRenderers.Length == 0)
         {
             Debug.LogWarning("RSP: 에미션 렌더러가 설정되지 않았습니다.");
@@ -418,22 +591,48 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
             
             for (int i = 0; i < materials.Length; i++)
             {
-                if (materials[i].HasProperty("_EmissiveColor"))
+                Material mat = materials[i];
+                
+                if (mat.HasProperty("_EmissiveIntensity"))
                 {
-                    // 에미션 인텐시티를 0으로 (Color.black)
-                    materials[i].SetColor("_EmissiveColor", Color.black);
+                    // 인텐시티만 0으로 설정 (색상은 유지)
+                    mat.SetFloat("_EmissiveIntensity", 0f);
+                    Debug.Log($"RSP: 메테리얼 '{mat.name}' 에미션 인텐시티 0으로 설정");
+                }
+                else if (mat.HasProperty("_EmissiveColor"))
+                {
+                    // _EmissiveIntensity 프로퍼티가 없는 경우 색상을 black으로
+                    mat.SetColor("_EmissiveColor", Color.black);
+                    Debug.Log($"RSP: 메테리얼 '{mat.name}' 에미션 색상 black으로 설정");
                 }
                 else
                 {
-                    Debug.LogWarning($"RSP: '{data.renderer.name}' 에미션 속성을 찾을 수 없습니다.");
+                    Debug.LogWarning($"RSP: 메테리얼 '{mat.name}' 에미션 속성을 찾을 수 없습니다.");
                 }
             }
             
-            Debug.Log($"RSP: '{data.renderer.name}' 에미션 비활성화 (intensity: 0)");
+            Debug.Log($"RSP: '{data.renderer.name}' 에미션 비활성화");
         }
         
         isEmissionEnabled = false;
         Debug.Log("RSP: 에미션 비활성화 완료");
+    }
+    
+    /// <summary>
+    /// Disable 상태에서 깨어나며 모든 상태를 복구합니다.
+    /// </summary>
+    public void WakeUpFromDisable()
+    {
+        // 쿨다운 중지
+        StopCooldownCoroutine();
+        
+        // 에미션 복구
+        EnableEmission();
+        
+        // Disable 상태에서 벗어나 Patrol 상태로 전환
+        ChangeState(new RSPPatrolState(this));
+        
+        Debug.Log("RSP: Disable 상태에서 복구 완료 - Patrol 상태로 전환");
     }
     
     #endregion
@@ -468,6 +667,13 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
     public void TestEnableEmission()
     {
         EnableEmission();
+    }
+    
+    [ContextMenu("Test - Wake Up From Disable")]
+    public void TestWakeUpFromDisable()
+    {
+        WakeUpFromDisable();
+        Debug.Log("RSP: 비활성화 상태에서 깨어남 (테스트)");
     }
     #endregion
 
@@ -541,6 +747,19 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
         }
     }
 
+    public bool HasCoin()
+    {
+        if(GameManager.instance.currentPlayer.quickSlotSystem.HasCoin())
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+        
+    }
+
     #region Debug UI Override
 
     /// <summary>
@@ -578,11 +797,16 @@ public class EnemyAIRSP : EnemyAIController<RSPEnemyAIData> ,IInteractableF
                      "Stack", currentStack, maxStack, stackPercent, stackColor);
 
         // 쿨다운 바 그리기 (쿨다운 중일 때만)
-        if (isCoolDown)
+        if (isCoolDown && currentCooldown > 0)
         {
-            // 쿨다운 진행도를 표시 (정확한 진행도를 보여주려면 쿨다운 시작 시간 추적 필요)
+            // currentCooldown 기반으로 진행도 계산
+            float cooldownDuration = enemyData.disabledDuration;
+            float cooldownPercent = Mathf.Clamp01(1f - (currentCooldown / cooldownDuration));
+            
+            // 쿨다운 바 그리기 (진행도와 남은 시간 표시)
             DrawDebugBar(startX, startY + (baseBarHeight + barSpacing) * 2, baseBarWidth, baseBarHeight,
-                         "Cooldown", 0, 1, 0f, new Color(0.5f, 0.5f, 1f));
+                         $"Cooldown ({currentCooldown:F1}s)", (int)currentCooldown, (int)cooldownDuration, 
+                         cooldownPercent, Color.Lerp(new Color(0.5f, 0.5f, 1f), Color.green, cooldownPercent));
         }
 
         // 상태 텍스트 (바들 아래에 표시)

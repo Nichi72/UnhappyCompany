@@ -3,6 +3,7 @@ using FMODUnity;
 using FMOD.Studio;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine.UI;
 using TMPro;
 
@@ -98,8 +99,6 @@ public class AudioManager : MonoBehaviour
     [Header("디버그 설정")]
     [SerializeField] private bool showSoundDebug = true;
     [SerializeField] private float debugSphereSize = 0.5f;
-    [SerializeField] private Color oneShotColor = Color.cyan;
-    [SerializeField] private Color loopSoundColor = Color.yellow;
     [SerializeField] private Color emitterColor = Color.green;
     
     [Header("Emitter Gizmo 설정")]
@@ -121,35 +120,8 @@ public class AudioManager : MonoBehaviour
     private int totalEmittersCreated = 0;
     private float lastCleanupTime = 0f;
     
-    // 재생 중인 사운드 추적
-    private class SoundDebugInfo
-    {
-        public EventInstance eventInstance;
-        public Transform targetTransform;
-        public Vector3 lastPosition;
-        public Vector3 previousPosition;
-        public string soundName;
-        public float startTime;
-        public bool isLoop;
-        
-        public SoundDebugInfo(EventInstance instance, Transform target, string name, bool loop)
-        {
-            eventInstance = instance;
-            targetTransform = target;
-            soundName = name;
-            startTime = Time.time;
-            isLoop = loop;
-            lastPosition = target != null ? target.position : Vector3.zero;
-            previousPosition = lastPosition;
-        }
-        
-        public Vector3 GetVelocity()
-        {
-            return (lastPosition - previousPosition) / Time.deltaTime;
-        }
-    }
-    
-    private List<SoundDebugInfo> activeSounds = new List<SoundDebugInfo>();
+
+    #region Unity Lifecycle
 
     private void Awake()
     {
@@ -178,12 +150,6 @@ public class AudioManager : MonoBehaviour
     
     private void Update()
     {
-        if (showSoundDebug)
-        {
-            CleanupInactiveSounds();
-            UpdateSoundPositions();
-        }
-        
         // Emitter Pool 업데이트
         if (useEmitterPool && activeEmitters != null)
         {
@@ -198,29 +164,10 @@ public class AudioManager : MonoBehaviour
             }
         }
     }
-    
-    /// <summary>
-    /// 재생 완료된 사운드를 리스트에서 제거
-    /// </summary>
-    private void CleanupInactiveSounds()
-    {
-        activeSounds.RemoveAll(sound => !sound.eventInstance.isValid());
-    }
-    
-    /// <summary>
-    /// 디버그용 사운드 위치 업데이트
-    /// </summary>
-    private void UpdateSoundPositions()
-    {
-        foreach (var sound in activeSounds)
-        {
-            if (sound.targetTransform != null)
-            {
-                sound.previousPosition = sound.lastPosition;
-                sound.lastPosition = sound.targetTransform.position;
-            }
-        }
-    }
+
+    #endregion
+
+    #region Initialization
 
     private void InitializeAudioBuses()
     {
@@ -270,7 +217,10 @@ public class AudioManager : MonoBehaviour
         PlayerPrefs.Save();
     }
 
-    #region 볼륨 제어 함수
+    #endregion
+
+    #region Volume Control
+
     // 마스터 볼륨 설정
     public void SetMasterVolume(float volume)
     {
@@ -324,116 +274,175 @@ public class AudioManager : MonoBehaviour
     public float GetSFXVolume() => sfxVolume;
     public float GetVoiceVolume() => voiceVolume;
     public bool IsMuted() => isMuted;
+
     #endregion
 
-    /// <summary>
-    /// 기본적인 사운드 재생 (Emitter Pool 기반)
-    /// Transform이 null이면 2D 사운드, 아니면 3D 사운드로 재생
-    /// </summary>
-    public EventInstance PlayOneShot(EventReference eventReference, Transform targetTransform , string logMessage = null)
-    {
-        // EventReference가 null이거나 유효하지 않으면 실행하지 않음
-        if (eventReference.IsNull)
-        {
-            if(logMessage != null)
-            {
-                Debug.LogWarning($"PlayOneShot: EventReference가 null입니다. 사운드를 재생할 수 없습니다. ({logMessage})");
-            }
-            else
-            {
-                Debug.LogWarning($"PlayOneShot: EventReference가 null입니다. 사운드를 재생할 수 없습니다.");
-            }
-            return default(EventInstance); // 유효하지 않은 EventInstance 반환
-        }
+    #region Public API - Sound Playback
 
-        if(logMessage != null && showSoundDebug)
+    /// <summary>
+    /// UI 사운드 재생 (2D)
+    /// </summary>
+    public EventInstance PlayUISound(EventReference eventRef, string debugName = null)
+    {
+        if (eventRef.IsNull)
         {
-            Debug.Log($"PlayOneShot: {logMessage}");
+            if (debugName != null)
+            {
+                Debug.LogWarning($"PlayUISound: EventReference가 null입니다. ({debugName})");
+            }
+            return default(EventInstance);
         }
         
         try
         {
-            // Transform이 null이면 2D 사운드 (UI)
-            if (targetTransform == null)
+            EventInstance eventInstance = RuntimeManager.CreateInstance(eventRef);
+            eventInstance.start();
+            eventInstance.release();
+            
+            if (showSoundDebug && debugName != null)
             {
-                EventInstance eventInstance = RuntimeManager.CreateInstance(eventReference);
-                eventInstance.start();
-                eventInstance.release();
-                return eventInstance;
+                Debug.Log($"PlayUISound: {debugName}");
             }
             
-            // Transform이 있으면 3D 사운드 (Emitter Pool 사용)
-            PooledEmitter emitter = Play3DSoundByTransform(
-                eventReference, 
-                targetTransform, 
-                -1f,  // FMOD 기본 MaxDistance
-                logMessage
-            );
-            
-            // EventInstance 반환 (호환성 유지)
-            return emitter != null ? emitter.emitter.EventInstance : default(EventInstance);
+            return eventInstance;
         }
         catch (System.Exception e)
         {
-            // FMOD에서 이벤트를 찾을 수 없는 경우 예외 처리
-            if(logMessage != null)
-            {
-                Debug.LogError($"PlayOneShot: FMOD 이벤트를 생성할 수 없습니다. ({logMessage})\nPath: {eventReference.Path}\nError: {e.Message}");
-            }
-            else
-            {
-                Debug.LogError($"PlayOneShot: FMOD 이벤트를 생성할 수 없습니다.\nPath: {eventReference.Path}\nError: {e.Message}");
-            }
-            return default(EventInstance); // 유효하지 않은 EventInstance 반환
-        }
-    }
-
-    private EventInstance PlayOneShotTestBeep(EventReference eventReference, Transform targetTransform)
-    {
-        // EventReference가 null이거나 유효하지 않으면 실행하지 않음
-        if (eventReference.IsNull)
-        {
-            Debug.LogWarning($"PlayOneShotTestBeep: EventReference가 null입니다. 사운드를 재생할 수 없습니다.");
-            return default(EventInstance); // 유효하지 않은 EventInstance 반환
-        }
-
-        try
-        {
-            // Emitter Pool 사용으로 변경
-            PooledEmitter emitter = Play3DSoundByTransform(
-                eventReference, 
-                targetTransform, 
-                -1f,  // FMOD 기본 MaxDistance
-                "Test Beep"
-            );
-            
-            if (emitter != null)
-            {
-                emitter.emitter.EventInstance.setVolume(0.2f);
-                return emitter.emitter.EventInstance;
-            }
-            
+            Debug.LogError($"PlayUISound: FMOD 이벤트를 생성할 수 없습니다. ({debugName})\nPath: {eventRef.Path}\nError: {e.Message}");
             return default(EventInstance);
         }
-        catch (System.Exception e)
+    }
+    
+    /// <summary>
+    /// 3D 사운드 재생 - 위치 기반 (한 번만 재생)
+    /// </summary>
+    /// <param name="maxDistance">최대 거리 (-1 = FMOD 기본값)</param>
+    public PooledEmitter Play3DSoundAtPosition(EventReference eventRef, Vector3 position, float maxDistance = -1f, string debugName = null)
+    {
+        // Distance 설정이 있으면 옵션 사용
+        if (maxDistance > 0)
         {
-            Debug.LogWarning($"PlayOneShotTestBeep: FMOD 이벤트를 생성할 수 없습니다.\nPath: {eventReference.Path}\nError: {e.Message}");
-            return default(EventInstance); // 유효하지 않은 EventInstance 반환
+            var options = new EmitterPlayOptions
+            {
+                position = position,
+                overrideAttenuation = true,
+                minDistance = 0f,  // 항상 0으로 고정
+                maxDistance = maxDistance,
+                lifetime = 3f,
+                debugName = debugName
+            };
+            return PlayWithEmitter(eventRef, options);
+        }
+        
+        // 기본값 사용
+        return PlayWithEmitter(eventRef, position, debugName, 3f);
+    }
+    
+    /// <summary>
+    /// 3D 사운드 재생 - Transform 추적 (한 번만 재생)
+    /// </summary>
+    /// <param name="maxDistance">최대 거리 (-1 = FMOD 기본값)</param>
+    public PooledEmitter Play3DSoundByTransform(EventReference eventRef, Transform target, float maxDistance = -1f, string debugName = null)
+    {
+        // Distance 설정이 있으면 옵션 사용
+        if (maxDistance > 0)
+        {
+            var options = new EmitterPlayOptions
+            {
+                followTarget = target,
+                overrideAttenuation = true,
+                maxDistance = maxDistance, // min은 0으로 고정한다.
+                lifetime = 5f,
+                debugName = debugName
+            };
+            return PlayWithEmitter(eventRef, options);
+        }
+        
+        // 기본값 사용
+        return PlayWithEmitter(eventRef, target, debugName, 5f);
+    }
+    
+    /// <summary>
+    /// 루프 사운드 재생 - Transform 추적 (수동 정지 필요)
+    /// </summary>
+    /// <param name="maxDistance">최대 거리 (-1 = FMOD 기본값)</param>
+    public PooledEmitter PlayLoopSoundByTransform(EventReference eventRef, Transform target, float maxDistance = -1f, string debugName = null)
+    {
+        // Distance 설정이 있으면 옵션 사용
+        if (maxDistance > 0)
+        {
+            var options = new EmitterPlayOptions
+            {
+                followTarget = target,
+                overrideAttenuation = true,
+                minDistance = 0f,  // 항상 0으로 고정
+                maxDistance = maxDistance,
+                lifetime = 0f,
+                debugName = debugName
+            };
+            return PlayWithEmitter(eventRef, options);
+        }
+        
+        // 기본값 사용
+        return PlayWithEmitter(eventRef, target, debugName, 0f);
+    }
+    
+    /// <summary>
+    /// 특정 PooledEmitter 수동 정지 및 반환
+    /// </summary>
+    public void StopEmitter(PooledEmitter pooled)
+    {
+        if (pooled != null && pooled.isActive)
+        {
+            ReturnEmitterToPool(pooled);
         }
     }
+    
+    /// <summary>
+    /// 현재 활성 Emitter 개수 반환
+    /// </summary>
+    public int GetActiveEmitterCount()
+    {
+        return activeEmitters != null ? activeEmitters.Count : 0;
+    }
+    
+    /// <summary>
+    /// Emitter Pool 정보 반환
+    /// </summary>
+    public string GetEmitterPoolInfo()
+    {
+        if (!useEmitterPool) return "Emitter Pool 비활성화";
+        
+        int available = availableEmitters != null ? availableEmitters.Count : 0;
+        int active = activeEmitters != null ? activeEmitters.Count : 0;
+        
+        return $"Emitter Pool: 사용 가능 {available}개 / 활성 {active}개 / 총 생성 {totalEmittersCreated}개";
+    }
 
+    #endregion
+
+    #region Test & Utility Functions
 
     public void PlayTestBeep(string eventName, Transform targetTransform)
     {
         Debug.Log($"TestBeep {eventName}");
-        AudioManager.instance.PlayOneShotTestBeep(FMODEvents.instance.TestBeep, targetTransform);
+        PooledEmitter emitter = Play3DSoundByTransform(FMODEvents.instance.TestBeep, targetTransform, -1f, "Test Beep");
+        if (emitter != null)
+        {
+            emitter.emitter.EventInstance.setVolume(0.2f);
+        }
     }
     
     // 설정 UI 테스트용 사운드 재생
     public void PlaySettingsTestSound()
     {
-        PlayOneShot(FMODEvents.instance.computerCursorClick, GameManager.instance.currentPlayer.transform, "UI Click Test");
+        if (GameManager.instance.currentPlayer != null)
+        {
+            Play3DSoundByTransform(FMODEvents.instance.computerCursorClick, GameManager.instance.currentPlayer.transform, 20f, "UI Click Test");
+        }
     }
+
+    #endregion
 
     #region Safe FMOD Helper Methods
     
@@ -456,12 +465,6 @@ public class AudioManager : MonoBehaviour
             eventInstance.set3DAttributes(FMODUnity.RuntimeUtils.To3DAttributes(targetTransform));
             eventInstance.start();
             Debug.Log($"[AudioManager] {debugName} 재생 시작");
-            
-            // 디버그: 루프 사운드 추적 추가
-            if (showSoundDebug)
-            {
-                activeSounds.Add(new SoundDebugInfo(eventInstance, targetTransform, debugName, true));
-            }
             
             return true;
         }
@@ -516,8 +519,8 @@ public class AudioManager : MonoBehaviour
     
     #endregion
     
-    #region Emitter Pool System (StudioEventEmitter 기반)
-    
+    #region Emitter Pool System (Internal)
+
     /// <summary>
     /// Emitter Pool 초기화
     /// </summary>
@@ -607,6 +610,9 @@ public class AudioManager : MonoBehaviour
             pooled.emitter.Stop();
         }
         
+        // Emitter 초기화
+        ResetEmitter(pooled);
+        
         pooled.gameObject.SetActive(false);
         pooled.isActive = false;
         pooled.followTarget = false;
@@ -615,6 +621,97 @@ public class AudioManager : MonoBehaviour
         
         activeEmitters.Remove(pooled);
         availableEmitters.Enqueue(pooled);
+    }
+    
+    /// <summary>
+    /// Emitter를 기본 상태로 초기화 (재사용 전 필수)
+    /// StudioEventEmitter의 내부 캐시(eventDescription, instance)를 완전히 초기화
+    /// </summary>
+    private void ResetEmitter(PooledEmitter pooled)
+    {
+        if (pooled == null || pooled.emitter == null) return;
+        
+        try
+        {
+            // 1. 재생 중지 및 인스턴스 완전 해제
+            if (pooled.emitter.IsPlaying())
+            {
+                pooled.emitter.Stop();
+            }
+            
+            // 2. Stop() 후에도 남아있을 수 있는 인스턴스 강제 해제
+            // Stop()이 AllowFadeout일 때 instance를 즉시 해제하지 않으므로 명시적으로 해제
+            if (pooled.emitter.EventInstance.isValid())
+            {
+                try
+                {
+                    var instance = pooled.emitter.EventInstance;
+                    instance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
+                    instance.release();
+                    instance.clearHandle();
+                }
+                catch (System.Exception e)
+                {
+                    // 이미 해제된 경우 무시
+                    if (showSoundDebug)
+                    {
+                        Debug.LogWarning($"[AudioManager] 인스턴스 해제 중 예외 (무시 가능): {e.Message}");
+                    }
+                }
+            }
+            
+            // 3. EventReference 초기화 (중요: 이게 없으면 Lookup()이 작동하지 않음)
+            pooled.emitter.EventReference = default(EventReference);
+            
+            // 4. 거리 오버라이드 초기화
+            pooled.emitter.OverrideAttenuation = false;
+            pooled.emitter.OverrideMinDistance = 0f;
+            pooled.emitter.OverrideMaxDistance = 0f;
+            
+            // 5. 리플렉션을 사용하여 내부 캐시 완전 초기화
+            // eventDescription과 내부 상태를 리셋하기 위해
+            var emitterType = pooled.emitter.GetType();
+            
+            // eventDescription 필드 초기화 (private protected)
+            var eventDescriptionField = emitterType.GetField("eventDescription", 
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (eventDescriptionField != null)
+            {
+                eventDescriptionField.SetValue(pooled.emitter, default(FMOD.Studio.EventDescription));
+            }
+            
+            // instance 필드 초기화 (protected)
+            var instanceField = emitterType.GetField("instance", 
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (instanceField != null)
+            {
+                instanceField.SetValue(pooled.emitter, default(FMOD.Studio.EventInstance));
+            }
+            
+            // hasTriggered 플래그 리셋 (TriggerOnce 사용 시 중요)
+            var hasTriggeredField = emitterType.GetField("hasTriggered", 
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (hasTriggeredField != null)
+            {
+                hasTriggeredField.SetValue(pooled.emitter, false);
+            }
+            
+            // cachedParams 리스트 초기화
+            var cachedParamsField = emitterType.GetField("cachedParams", 
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (cachedParamsField != null)
+            {
+                var cachedParams = cachedParamsField.GetValue(pooled.emitter);
+                if (cachedParams is System.Collections.IList list)
+                {
+                    list.Clear();
+                }
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"[AudioManager] Emitter 초기화 중 오류 발생: {e.Message}\nStack: {e.StackTrace}");
+        }
     }
     
     /// <summary>
@@ -729,6 +826,9 @@ public class AudioManager : MonoBehaviour
     
     try
     {
+        // 재사용 전 Emitter 완전 초기화
+        ResetEmitter(pooled);
+        
         // Emitter 설정
         pooled.gameObject.SetActive(true);
         pooled.transform.position = position;
@@ -839,14 +939,22 @@ public class AudioManager : MonoBehaviour
                 }
             }
             
-            // 거리 오버라이드
+            // 거리 오버라이드 (항상 명시적으로 설정)
             if (options.overrideAttenuation)
             {
                 pooled.emitter.OverrideAttenuation = true;
-                // if (options.minDistance > 0) 
-                pooled.emitter.OverrideMinDistance = 0;
+                pooled.emitter.OverrideMinDistance = 0f; // 항상 0으로 고정
                 if (options.maxDistance > 0) 
+                {
                     pooled.emitter.OverrideMaxDistance = options.maxDistance;
+                }
+            }
+            else
+            {
+                // overrideAttenuation이 false면 명시적으로 초기화
+                pooled.emitter.OverrideAttenuation = false;
+                pooled.emitter.OverrideMinDistance = 0f;
+                pooled.emitter.OverrideMaxDistance = 0f;
             }
             
             // Transform 추적
@@ -874,125 +982,6 @@ public class AudioManager : MonoBehaviour
     return pooled;
     }
     
-    #region 간편 API (명확한 함수명)
-    
-    /// <summary>
-    /// UI 사운드 재생 (2D, 기존 PlayOneShot 사용)
-    /// </summary>
-    public EventInstance PlayUISound(EventReference eventRef, string debugName = null)
-    {
-        // UI 사운드는 2D이므로 Transform을 null로 전달
-        return PlayOneShot(eventRef, null, debugName);
-    }
-    
-    /// <summary>
-    /// 3D 사운드 재생 - 위치 기반 (한 번만 재생)
-    /// </summary>
-    /// <param name="maxDistance">최대 거리 (-1 = FMOD 기본값)</param>
-    public PooledEmitter Play3DSoundAtPosition(EventReference eventRef, Vector3 position, float maxDistance = -1f, string debugName = null)
-    {
-        // Distance 설정이 있으면 옵션 사용
-        if (maxDistance > 0)
-        {
-            var options = new EmitterPlayOptions
-            {
-                position = position,
-                overrideAttenuation = true,
-                minDistance = 0f,  // 항상 0으로 고정
-                maxDistance = maxDistance,
-                lifetime = 3f,
-                debugName = debugName
-            };
-            return PlayWithEmitter(eventRef, options);
-        }
-        
-        // 기본값 사용
-        return PlayWithEmitter(eventRef, position, debugName, 3f);
-    }
-    
-    /// <summary>
-    /// 3D 사운드 재생 - Transform 추적 (한 번만 재생)
-    /// </summary>
-    /// <param name="maxDistance">최대 거리 (-1 = FMOD 기본값)</param>
-    public PooledEmitter Play3DSoundByTransform(EventReference eventRef, Transform target, float maxDistance = -1f, string debugName = null)
-    {
-        // Distance 설정이 있으면 옵션 사용
-        if (maxDistance > 0)
-        {
-            var options = new EmitterPlayOptions
-            {
-                followTarget = target,
-                overrideAttenuation = true,
-                maxDistance = maxDistance, // min은 0으로 고정한다.
-                lifetime = 5f,
-                debugName = debugName
-            };
-            return PlayWithEmitter(eventRef, options);
-        }
-        
-        // 기본값 사용
-        return PlayWithEmitter(eventRef, target, debugName, 5f);
-    }
-    
-    /// <summary>
-    /// 루프 사운드 재생 - Transform 추적 (수동 정지 필요)
-    /// </summary>
-    /// <param name="maxDistance">최대 거리 (-1 = FMOD 기본값)</param>
-    public PooledEmitter PlayLoopSoundByTransform(EventReference eventRef, Transform target, float maxDistance = -1f, string debugName = null)
-    {
-        // Distance 설정이 있으면 옵션 사용
-        if (maxDistance > 0)
-        {
-            var options = new EmitterPlayOptions
-            {
-                followTarget = target,
-                overrideAttenuation = true,
-                minDistance = 0f,  // 항상 0으로 고정
-                maxDistance = maxDistance,
-                lifetime = 0f,
-                debugName = debugName
-            };
-            return PlayWithEmitter(eventRef, options);
-        }
-        
-        // 기본값 사용
-        return PlayWithEmitter(eventRef, target, debugName, 0f);
-    }
-    
-    #endregion
-    
-    /// <summary>
-    /// 특정 PooledEmitter 수동 정지 및 반환
-    /// </summary>
-    public void StopEmitter(PooledEmitter pooled)
-    {
-        if (pooled != null && pooled.isActive)
-        {
-            ReturnEmitterToPool(pooled);
-        }
-    }
-    
-    /// <summary>
-    /// 현재 활성 Emitter 개수 반환
-    /// </summary>
-    public int GetActiveEmitterCount()
-    {
-        return activeEmitters != null ? activeEmitters.Count : 0;
-    }
-    
-    /// <summary>
-    /// Emitter Pool 정보 반환
-    /// </summary>
-    public string GetEmitterPoolInfo()
-    {
-        if (!useEmitterPool) return "Emitter Pool 비활성화";
-        
-        int available = availableEmitters != null ? availableEmitters.Count : 0;
-        int active = activeEmitters != null ? activeEmitters.Count : 0;
-        
-        return $"Emitter Pool: 사용 가능 {available}개 / 활성 {active}개 / 총 생성 {totalEmittersCreated}개";
-    }
-    
     #endregion
     
     #region Debug Visualization
@@ -1005,71 +994,10 @@ public class AudioManager : MonoBehaviour
         if (!showSoundDebug)
             return;
         
-        // PlayOneShot 방식 사운드 시각화
-        DrawOneShotSounds();
-        
         // Emitter Pool 사운드 시각화
         if (useEmitterPool)
         {
             DrawEmitterPoolSounds();
-        }
-    }
-    
-    /// <summary>
-    /// PlayOneShot 방식 사운드 시각화
-    /// </summary>
-    private void DrawOneShotSounds()
-    {
-        if (activeSounds == null)
-            return;
-        
-        foreach (var sound in activeSounds)
-        {
-            if (!sound.eventInstance.isValid())
-                continue;
-            
-            Vector3 position = sound.lastPosition;
-            
-            // 루프 사운드와 One-Shot 사운드 구분
-            Gizmos.color = sound.isLoop ? loopSoundColor : oneShotColor;
-            
-            // 구 그리기
-            Gizmos.DrawWireSphere(position, debugSphereSize);
-            Gizmos.DrawSphere(position, debugSphereSize * 0.3f);
-            
-            // 움직이는 사운드는 속도 방향 화살표 표시
-            Vector3 velocity = sound.GetVelocity();
-            if (velocity.magnitude > 0.1f) // 움직이고 있으면
-            {
-                Vector3 arrowEnd = position + velocity.normalized * (debugSphereSize * 2f);
-                Gizmos.color = Color.white;
-                Gizmos.DrawLine(position, arrowEnd);
-                
-                // 화살표 머리 그리기
-                Vector3 arrowDir = velocity.normalized;
-                Vector3 right = Vector3.Cross(arrowDir, Vector3.up).normalized;
-                if (right.magnitude < 0.1f) right = Vector3.Cross(arrowDir, Vector3.forward).normalized;
-                
-                float arrowHeadSize = debugSphereSize * 0.3f;
-                Gizmos.DrawLine(arrowEnd, arrowEnd - arrowDir * arrowHeadSize + right * arrowHeadSize * 0.5f);
-                Gizmos.DrawLine(arrowEnd, arrowEnd - arrowDir * arrowHeadSize - right * arrowHeadSize * 0.5f);
-            }
-            
-            // 사운드 이름 표시 (에디터에서만)
-            #if UNITY_EDITOR
-            string velocityInfo = velocity.magnitude > 0.1f ? $"\n속도: {velocity.magnitude:F1} m/s" : "";
-            UnityEditor.Handles.Label(
-                position + Vector3.up * (debugSphereSize + 0.3f),
-                $"{sound.soundName}\n{(sound.isLoop ? "[LOOP]" : "[ONE-SHOT]")}\n재생 시간: {(Time.time - sound.startTime):F1}초{velocityInfo}",
-                new GUIStyle()
-                {
-                    normal = new GUIStyleState() { textColor = sound.isLoop ? loopSoundColor : oneShotColor },
-                    alignment = TextAnchor.MiddleCenter,
-                    fontSize = 10,
-                    fontStyle = FontStyle.Bold
-                }
-            );
-            #endif
         }
     }
     
@@ -1183,38 +1111,6 @@ public class AudioManager : MonoBehaviour
             Gizmos.color = new Color(1f, 0f, 0f, 0.8f);
             Gizmos.DrawWireSphere(position, maxDistance);
         }
-    }
-    
-    /// <summary>
-    /// 현재 재생 중인 사운드 개수 반환
-    /// </summary>
-    public int GetActiveSoundCount()
-    {
-        return activeSounds.Count;
-    }
-    
-    /// <summary>
-    /// 모든 재생 중인 사운드 정보 반환
-    /// </summary>
-    public string GetActiveSoundsInfo()
-    {
-        if (activeSounds.Count == 0)
-            return "재생 중인 사운드 없음";
-        
-        System.Text.StringBuilder sb = new System.Text.StringBuilder();
-        sb.AppendLine($"재생 중인 사운드: {activeSounds.Count}개");
-        
-        foreach (var sound in activeSounds)
-        {
-            if (sound.eventInstance.isValid())
-            {
-                string type = sound.isLoop ? "LOOP" : "ONE-SHOT";
-                float duration = Time.time - sound.startTime;
-                sb.AppendLine($"  - [{type}] {sound.soundName} ({duration:F1}초)");
-            }
-        }
-        
-        return sb.ToString();
     }
     
     #endregion
