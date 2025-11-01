@@ -14,6 +14,7 @@ public class CubeAttackState : IState
     private float attackCastingStartTime; // 공격 시전 시작 시간
     private bool isAttackCasting; // 공격 시전 중인지 여부
     private bool isReenablingAgent; // Agent 재활성화 중인지 여부
+    private bool hasStartedChargingScale; // 차징 크기 변화 시작 여부
 
 
     public CubeAttackState(EnemyAICube controller, UtilityCalculator calculator)
@@ -29,6 +30,10 @@ public class CubeAttackState : IState
         lastAttackTime = Time.time;
         isAttackCasting = false;
         isReenablingAgent = false;
+        hasStartedChargingScale = false;
+        
+        // 공격 상태 시작
+        controller.SetAttackingState(true);
     }
 
     /// <summary>
@@ -56,6 +61,12 @@ public class CubeAttackState : IState
         
         // 상태 종료 시 돌진 상태 비활성화
         controller.SetRushingState(false);
+        
+        // 공격 상태 종료
+        controller.SetAttackingState(false);
+        
+        // 크기 복원
+        controller.ResetScale();
     }
 
     public void ExecuteMorning()
@@ -93,7 +104,11 @@ public class CubeAttackState : IState
         {
             isAttackCasting = true;
             attackCastingStartTime = Time.time;
+            hasStartedChargingScale = false; // 차징 스케일 플래그 초기화
             ChangeMaterialColor(Color.red);
+            
+            // 공격 시작 - BlendShape 100 -> 0 애니메이션 시작
+            controller.StartAttackBlendShape();
             
             // NavMeshAgent를 완전히 비활성화 (Y축 이동을 방해하지 않도록)
             if (controller.agent != null && controller.agent.enabled)
@@ -113,6 +128,14 @@ public class CubeAttackState : IState
             Vector3 directionToPlayer = (playerHeadPos - controller.transform.position).normalized;
             Quaternion targetRotation = Quaternion.LookRotation(directionToPlayer);
             controller.transform.rotation = Quaternion.Slerp(controller.transform.rotation, targetRotation, Time.fixedDeltaTime * 5f);
+            
+            // 발사 직전에 크기 줄이기 (한 번만)
+            float remainingTime = controller.AttackCastingTime - (Time.time - attackCastingStartTime);
+            if (!hasStartedChargingScale && remainingTime <= controller.scaleChargingStartBeforeRush)
+            {
+                controller.StartAttackChargingScale();
+                hasStartedChargingScale = true;
+            }
         }
 
         // 공격 시전 시간이 끝나면 플레이어 Head로 돌진 공격 실행
@@ -129,6 +152,9 @@ public class CubeAttackState : IState
                 // 돌진 상태 활성화 (데미지 트리거용)
                 controller.SetRushingState(true);
                 
+                // 공격 러쉬 - 크기 복원
+                controller.StartAttackRushScale();
+                
                 // Rigidbody 제약 해제 (Y축 이동 허용)
                 rigidbody.constraints = RigidbodyConstraints.None;
                 rigidbody.isKinematic = false;
@@ -140,39 +166,14 @@ public class CubeAttackState : IState
 
             // 돌진 후 잠시 대기 후 NavMeshAgent 재활성화
             isReenablingAgent = true; // Agent 재활성화 시작
-            controller.StartCoroutine(ReEnableAgentAfterDelay(3f));
+            controller.StartCoroutine(ReEnableAgentAfterDelay(controller.ReEnableDelay));
 
             lastAttackTime = Time.time;
             isAttackCasting = false;
             Debug.Log("Cube: 공격 실행!");
         }
     }
-    // private void DisableAgentSafely()
-    // {
-    //     if (controller.agent != null && controller.agent.enabled)
-    //     {
-    //         controller.agent.isStopped = true; // NavMeshAgent의 이동을 중지
-    //         controller.agent.enabled = false;  // NavMeshAgent 비활성화
-    //         Debug.Log("NavMeshAgent가 안전하게 비활성화되었습니다.");
-    //     }
-    //     else
-    //     {
-    //         Debug.LogWarning("NavMeshAgent가 이미 비활성화되어 있거나 존재하지 않습니다.");
-    //     }
-    // }
-    // private void EnableAgentSafely()
-    // {
-    //     if (controller.agent != null && !controller.agent.enabled)
-    //     {
-    //         controller.agent.enabled = true;   // NavMeshAgent 활성화
-    //         controller.agent.isStopped = false; // NavMeshAgent의 이동 재개
-    //         Debug.Log("NavMeshAgent가 안전하게 활성화되었습니다.");
-    //     }
-    //     else
-    //     {
-    //         Debug.LogWarning("NavMeshAgent가 이미 활성화되어 있거나 존재하지 않습니다.");
-    //     }
-    // }
+   
     private Material originalMaterial;
     private Color originalColor;
 
@@ -209,12 +210,46 @@ public class CubeAttackState : IState
     }
 
     /// <summary>
-    /// 돌진 후 일정 시간 대기 후 NavMeshAgent 재활성화 및 상태 판단
+    /// 돌진 후 안정화 대기 → 일정 시간 대기 → NavMeshAgent 재활성화 및 상태 판단
     /// </summary>
     private System.Collections.IEnumerator ReEnableAgentAfterDelay(float delay)
     {
-        Debug.Log($"Cube: Agent 재활성화 대기 시작 ({delay}초)");
-        yield return new WaitForSeconds(delay);
+        // 타이머 시작 (안정화 대기 상태)
+        controller.StartReEnableTimer(delay, true);
+        Debug.Log("Cube: 안정화 대기 중...");
+        
+        // 1단계: 돌진 시작 후 1초 대기 (초기 속도 0 방지)
+        float initialDelay = 1f;
+        yield return new WaitForSeconds(initialDelay);
+        
+        // 2단계: 속도 기반 안정화 체크
+        float stabilizedSpeedThreshold = 0.5f; // 이 속도 이하면 안정화로 판단
+        float checkInterval = 0.1f; // 0.1초마다 체크
+        
+        Debug.Log("Cube: 속도 기반 안정화 체크 시작...");
+        
+        while (rigidbody != null && rigidbody.linearVelocity.magnitude > stabilizedSpeedThreshold)
+        {
+            // 디버그용 속도 출력 (필요시)
+            // Debug.Log($"Cube 현재 속도: {rigidbody.linearVelocity.magnitude:F2}");
+            yield return new WaitForSeconds(checkInterval);
+        }
+        
+        // 안정화 감지
+        controller.OnLandingDetected();
+        Debug.Log($"Cube: 안정화 감지! (속도: {rigidbody?.linearVelocity.magnitude:F2}) 이제 {delay}초 대기 시작");
+        
+        // 3단계: 안정화 후 추가 대기 시간 (타이머 표시하며 대기)
+        float elapsed = 0f;
+        while (elapsed < delay)
+        {
+            elapsed += Time.deltaTime;
+            controller.UpdateReEnableTimer(Time.deltaTime);
+            yield return null;
+        }
+        
+        // 타이머 종료
+        controller.StopReEnableTimer();
         
         // 돌진 상태 비활성화 (데미지 적용 종료)
         controller.SetRushingState(false);

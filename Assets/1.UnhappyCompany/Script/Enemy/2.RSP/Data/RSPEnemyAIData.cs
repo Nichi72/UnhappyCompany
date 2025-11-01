@@ -2,7 +2,17 @@ using UnityEngine;
 using System;
 
 /// <summary>
-/// 에미션을 제어할 렌더러와 인텐시티 값을 저장하는 구조체
+/// 메테리얼별 에미션 데이터 (색상과 인텐시티를 함께 저장)
+/// </summary>
+[Serializable]
+public struct EmissionData
+{
+    public Color color;
+    public float intensity;
+}
+
+/// <summary>
+/// 에미션을 제어할 렌더러와 인텐시티, 색상 값을 저장하는 구조체
 /// </summary>
 [Serializable]
 public struct EmissionRendererData
@@ -10,8 +20,11 @@ public struct EmissionRendererData
     [Tooltip("제어할 렌더러 (메테리얼은 런타임에 동적으로 가져옴)")]
     public Renderer renderer;
     
-    [Tooltip("복구할 에미션 인텐시티 값")]
-    public int emissionIntensity;
+    [Tooltip("복구할 에미션 인텐시티 값 (HDRP의 Emission Intensity)")]
+    public float emissionIntensity;
+    
+    [Tooltip("복구할 에미션 색상 (베이스 컬러, HDRP의 Emissive Map 색상)")]
+    public Color emissionColor;
 }
 
 [CreateAssetMenu(fileName = "RSPEnemyAIData", menuName = "UnhappyCompany/Enemy/RSPEnemyAIData")]

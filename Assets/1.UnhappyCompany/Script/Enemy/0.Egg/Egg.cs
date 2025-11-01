@@ -338,9 +338,7 @@ public class Egg : MonoBehaviour, IDamageable, IScannable
         if (currentStage == EggStage.Stage1)
         {
             Debug.Log($"{gameObject.name}은(는) 아직 무적 상태입니다!");
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.missDamage, transform);
-            // EggLevel1: Stage1 무적 상태에서 공격받을 때 사운드
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.EggLevel1, transform);
+            AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.missDamage, transform, 40f, "Egg Miss Damage");
             return;
         }
 
@@ -357,7 +355,7 @@ public class Egg : MonoBehaviour, IDamageable, IScannable
 
             hp -= damage;
             Debug.Log($"{gameObject.name}({eggType}) Take Damage {damage} from {damageType} _ Left HP :{hp}");
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.damage, transform);
+            AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.damage, transform, 40f, "Egg Damage");
             
             if(hp <= 0)
             {

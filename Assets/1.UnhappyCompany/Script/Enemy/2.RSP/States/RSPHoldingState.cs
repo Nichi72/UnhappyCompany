@@ -134,6 +134,9 @@ public class RSPHoldingState : IState
 
         yield return new WaitForSeconds(1f);
         
+        // 플래그 초기화
+        shouldExitDueToNoCoin = false;
+        
         // compulsoryPlayStack이 0이 될 때까지 계속 진행
         while (controller.GetCompulsoryPlayStack() > 0)
         {
@@ -142,11 +145,20 @@ public class RSPHoldingState : IState
             // 게임 진행 중 플래그 초기화
             gameInProgress = true;
             
-            // RSP+메달 게임 시작
-            rspSystem.StartRSPWithMedalGame(OnRSPMedalGameComplete);
+            // RSP+메달 게임 시작 (플레이어 참조 전달)
+            rspSystem.StartRSPWithMedalGame(OnRSPMedalGameComplete, player);
             
             // 게임이 완료될 때까지 대기
+            Debug.Log($"[RSPHoldingState] 게임 완료 대기 중... gameInProgress={gameInProgress}");
             yield return new WaitUntil(() => !gameInProgress);
+            Debug.Log($"[RSPHoldingState] 게임 완료! shouldExitDueToNoCoin={shouldExitDueToNoCoin}");
+            
+            // 코인이 없어서 게임을 중단해야 하는 경우
+            if (shouldExitDueToNoCoin)
+            {
+                Debug.Log("[RSPHoldingState] ★★★ 코인 부족으로 속박 상태에서 벗어납니다 ★★★");
+                break;
+            }
             
             // 짧은 대기 시간 추가
             yield return new WaitForSeconds(1f);
@@ -231,6 +243,9 @@ public class RSPHoldingState : IState
     // 게임 진행 중 여부를 트래킹하는 플래그
     public bool gameInProgress = true;
     
+    // 코인 부족으로 게임을 중단해야 하는지 여부
+    private bool shouldExitDueToNoCoin = false;
+    
     private void EnableCompoenet(bool isEnable)
     {
         controller.agent.enabled = isEnable;
@@ -238,15 +253,33 @@ public class RSPHoldingState : IState
     }
 
     // 메달 게임이 끝나면 처리할 콜백
-    private void OnRSPMedalGameComplete(RSPResult rspResult, int medalResult)
+    private void OnRSPMedalGameComplete(RSPResult rspResult, int medalResult, bool hasNoCoin = false)
     {
-        Debug.Log($"RSP+메달 게임 최종 결과: RSP={rspResult}, 메달 번호={medalResult}");
+        Debug.Log($"[RSPHoldingState] 콜백 호출됨! RSP={rspResult}, 메달={medalResult}, 코인부족={hasNoCoin}");
+        
+        // 코인이 없어서 게임이 시작되지 않은 경우
+        if (hasNoCoin)
+        {
+            Debug.LogWarning("[RSPHoldingState] 코인이 없어 게임을 진행할 수 없습니다. 속박에서 벗어납니다.");
+            Debug.Log($"[RSPHoldingState] shouldExitDueToNoCoin 설정 전: {shouldExitDueToNoCoin}");
+            shouldExitDueToNoCoin = true;
+            Debug.Log($"[RSPHoldingState] shouldExitDueToNoCoin 설정 후: {shouldExitDueToNoCoin}");
+            gameInProgress = false;
+            Debug.Log("[RSPHoldingState] gameInProgress = false 설정 완료");
+            return;
+        }
         
         // RSP 결과에 따른 처리
         if (rspResult == RSPResult.Win)
         {
             Debug.Log($"승리하고 메달 번호 {medalResult}을(를) 획득했습니다!");
             // 스택 감소 (승리 시)
+            controller.DecrementStack();
+        }
+        else if (rspResult == RSPResult.Draw)
+        {
+            Debug.Log($"가위바위보 무승부! 게임이 종료됩니다.");
+            // 무승부도 스택 감소하여 게임 종료
             controller.DecrementStack();
         }
         else

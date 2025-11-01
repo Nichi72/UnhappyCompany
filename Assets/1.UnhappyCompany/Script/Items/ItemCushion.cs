@@ -317,10 +317,11 @@ public class ItemCushion : Item
     {
         if (FMODEvents.instance != null && AudioManager.instance != null)
         {
-            AudioManager.instance.PlayOneShot(
+            AudioManager.instance.Play3DSoundByTransform(
                 FMODEvents.instance.cushionDeployStart, 
                 transform, 
-                "쿠션 설치 시작 - 설치 확정 소리 (예: 딸깍)"
+                40f,
+                "Cushion Deploy Start"
             );
         }
     }
@@ -332,10 +333,11 @@ public class ItemCushion : Item
     {
         if (FMODEvents.instance != null && AudioManager.instance != null)
         {
-            AudioManager.instance.PlayOneShot(
+            AudioManager.instance.Play3DSoundByTransform(
                 FMODEvents.instance.cushionDeployUnfold, 
                 transform, 
-                "쿠션 펼치는 중 - 공기 빠지는 소리/천 펼치는 소리"
+                40f,
+                "Cushion Deploy Unfold"
             );
         }
     }
@@ -347,10 +349,11 @@ public class ItemCushion : Item
     {
         if (FMODEvents.instance != null && AudioManager.instance != null)
         {
-            AudioManager.instance.PlayOneShot(
+            AudioManager.instance.Play3DSoundByTransform(
                 FMODEvents.instance.cushionDeployComplete, 
                 transform, 
-                "쿠션 설치 완료 - 펴짐 완료 소리 (예: 퐁!)"
+                40f,
+                "Cushion Deploy Complete"
             );
         }
     }
@@ -441,10 +444,11 @@ public class ItemCushion : Item
     {
         if (FMODEvents.instance != null && AudioManager.instance != null)
         {
-            AudioManager.instance.PlayOneShot(
+            AudioManager.instance.Play3DSoundByTransform(
                 FMODEvents.instance.cushionRetract, 
                 transform, 
-                "쿠션 회수 사운드 - 접히는 소리"
+                40f,
+                "Cushion Retract"
             );
         }
     }
@@ -609,10 +613,11 @@ public class ItemCushion : Item
     {
         if (FMODEvents.instance != null && AudioManager.instance != null)
         {
-            AudioManager.instance.PlayOneShot(
+            AudioManager.instance.Play3DSoundByTransform(
                 FMODEvents.instance.cushionImpact, 
                 transform, 
-                "쿠션 충격 흡수 사운드 - 둔탁한 소리"
+                40f,
+                "Cushion Impact"
             );
         }
     }

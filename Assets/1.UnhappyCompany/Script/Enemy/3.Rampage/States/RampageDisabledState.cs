@@ -30,10 +30,11 @@ public class RampageDisabledState : IState
         if (AudioManager.instance != null && FMODEvents.instance != null && 
             !FMODEvents.instance.rampageBreakWarning.IsNull)
         {
-            AudioManager.instance.PlayOneShot(
+            AudioManager.instance.Play3DSoundByTransform(
                 FMODEvents.instance.rampageBreakWarning, 
                 controller.transform,
-                "Rampage 부서지기 직전 경고음"
+                60f,
+                "Rampage Break Warning"
             );
             Debug.Log("부서지기 직전 소리 재생");
         }
@@ -47,10 +48,11 @@ public class RampageDisabledState : IState
         if (AudioManager.instance != null && FMODEvents.instance != null && 
             !FMODEvents.instance.rampageBreak.IsNull)
         {
-            AudioManager.instance.PlayOneShot(
+            AudioManager.instance.Play3DSoundByTransform(
                 FMODEvents.instance.rampageBreak,
                 controller.transform,
-                "Rampage 부서지는 소리"
+                100f,
+                "Rampage Break"
             );
             Debug.Log("부서지는 소리 재생");
         }

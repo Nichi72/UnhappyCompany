@@ -34,6 +34,10 @@ public class CubePatrolState : IState
     public void Enter()
     {
         Debug.Log("Cube: 순찰 상태 시작");
+        
+        // 이동 시작 - BlendShape 0 -> 100 애니메이션 시작
+        controller.StartMovementBlendShape();
+        
         // 상태 진입 시 즉시 순찰 목적지 설정
         controller.SetRandomPatrolDestination();
     }

@@ -56,4 +56,12 @@ public class RampageAIData : BaseEnemyAIData
     [Header("RUSH")]
     public float rushSpeed = 10f;
     public int rushDamage = 50;
+    
+    [Header("Player Knockback Settings")]
+    [Tooltip("플레이어 넉백 힘 (수평 방향)")]
+    public float playerKnockbackForce = 15f;
+    [Tooltip("플레이어 넉백 위쪽 힘 (살짝 띄움)")]
+    public float playerKnockbackUpwardForce = 3f;
+    [Tooltip("넉백 후 플레이어 제어 복구 시간 (초)")]
+    public float knockbackRestoreDelay = 0.5f;
 } 

@@ -20,15 +20,15 @@ public class ShopItemBuyItem : MonoBehaviour, IPointerEnterHandler
     public void BtnPressed()
     {
         // 컴퓨터 클릭음 재생
-        AudioManager.instance.PlayOneShot(FMODEvents.instance.computerCursorClick, transform, "Computer Cursor Click");
+        AudioManager.instance.PlayUISound(FMODEvents.instance.computerCursorClick, "Computer Cursor Click");
         
         ComputerSystem.instance.BtnEvtBuyItem(itemData);
         Debug.Log("BuyItem");
-        AudioManager.instance.PlayOneShot(FMODEvents.instance.shopItemBuy, transform, "BuyItem BtnPressed");
+        AudioManager.instance.PlayUISound(FMODEvents.instance.shopItemBuy, "BuyItem BtnPressed");
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        AudioManager.instance.PlayOneShot(FMODEvents.instance.computerCursorHover, transform, "BuyItem OnPointerEnter");
+        AudioManager.instance.PlayUISound(FMODEvents.instance.computerCursorHover, "BuyItem OnPointerEnter");
     }
 }

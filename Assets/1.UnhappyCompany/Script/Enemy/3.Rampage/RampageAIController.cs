@@ -17,9 +17,8 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     
     [Header("Sound Management")]
     private EventInstance idleSoundInstance;      // 공회전 루프 사운드 인스턴스
-    private EventInstance moveLoopInstance;       // 이동 루프 사운드 인스턴스
     private bool isIdleSoundPlaying = false;
-    private bool isMoveLoopPlaying = false;
+    private PooledEmitter moveLoopEmitter;        // 이동 루프 사운드 Emitter (새로운 방식)
      // LineRenderer for visualizing detection
     [SerializeField] private LineRenderer lineRenderer;
 
@@ -198,7 +197,7 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     {
         // Rampage는 기본적으로 무적입니다. 돌진에 의해 벽에 박았을 때만 데미지를 입습니다.
         // 따라서 플레이어에 의해 데미지는 입지 않습니다. 그래서 데미지 계산을 하지않습니다.
-        AudioManager.instance.PlayOneShot(FMODEvents.instance.rampageHitBlock, transform, "Rampage_Hit 하지만 데미지 안받아서 둔탁한 소리가 나야함.");
+        AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rampageHitBlock, transform, 60f, "Rampage Hit Block");
     }
 
     /// <summary>
@@ -876,14 +875,12 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     {
         if (isIdleSoundPlaying) return;
         
-        if (!FMODEvents.instance.rampageIdle.IsNull)
-        {
-            idleSoundInstance = RuntimeManager.CreateInstance(FMODEvents.instance.rampageIdle);
-            idleSoundInstance.set3DAttributes(FMODUnity.RuntimeUtils.To3DAttributes(transform));
-            idleSoundInstance.start();
-            isIdleSoundPlaying = true;
-            Debug.Log("[Rampage Sound] Idle 사운드 시작");
-        }
+        isIdleSoundPlaying = AudioManager.instance.SafePlayLoopSound(
+            FMODEvents.instance.rampageIdle, 
+            transform, 
+            out idleSoundInstance, 
+            "Rampage Idle"
+        );
     }
     
     /// <summary>
@@ -893,40 +890,34 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     {
         if (!isIdleSoundPlaying) return;
         
-        idleSoundInstance.stop(FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
-        idleSoundInstance.release();
+        AudioManager.instance.SafeStopSound(ref idleSoundInstance, "Rampage Idle");
         isIdleSoundPlaying = false;
-        Debug.Log("[Rampage Sound] Idle 사운드 정지");
     }
     
     /// <summary>
-    /// 이동 루프 사운드 재생
+    /// 이동 루프 사운드 재생 (새로운 Emitter 방식)
     /// </summary>
     public void PlayMoveLoopSound()
     {
-        if (isMoveLoopPlaying) return;
+        if (moveLoopEmitter != null && moveLoopEmitter.isActive) return;
         
-        if (!FMODEvents.instance.rampageMoveLoop.IsNull)
-        {
-            moveLoopInstance = RuntimeManager.CreateInstance(FMODEvents.instance.rampageMoveLoop);
-            moveLoopInstance.set3DAttributes(FMODUnity.RuntimeUtils.To3DAttributes(transform));
-            moveLoopInstance.start();
-            isMoveLoopPlaying = true;
-            Debug.Log("[Rampage Sound] MoveLoop 사운드 시작");
-        }
+        moveLoopEmitter = AudioManager.instance.PlayLoopSoundByTransform(
+            FMODEvents.instance.rampageMoveLoop,
+            transform,
+            40f,  // MaxDistance = 40m
+            "Rampage MoveLoop"
+        );
     }
     
     /// <summary>
-    /// 이동 루프 사운드 정지
+    /// 이동 루프 사운드 정지 (새로운 Emitter 방식)
     /// </summary>
     public void StopMoveLoopSound()
     {
-        if (!isMoveLoopPlaying) return;
+        if (moveLoopEmitter == null || !moveLoopEmitter.isActive) return;
         
-        moveLoopInstance.stop(FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
-        moveLoopInstance.release();
-        isMoveLoopPlaying = false;
-        Debug.Log("[Rampage Sound] MoveLoop 사운드 정지");
+        AudioManager.instance.StopEmitter(moveLoopEmitter);
+        moveLoopEmitter = null;
     }
     
     /// <summary>
@@ -936,7 +927,7 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     {
         if (!FMODEvents.instance.rampageStart.IsNull)
         {
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.rampageStart, transform, "Rampage 출발 (RPM 상승)");
+            AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rampageStart, transform, 60f, "Rampage Start");
             Debug.Log("[Rampage Sound] Start 사운드 재생");
         }
     }
@@ -948,7 +939,7 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     {
         if (!FMODEvents.instance.rampageDrift.IsNull)
         {
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.rampageDrift, transform, "Rampage 드리프트");
+            AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rampageDrift, transform, 60f, "Rampage Drift");
             Debug.Log("[Rampage Sound] Drift 사운드 재생");
         }
     }
@@ -969,13 +960,13 @@ public class RampageAIController : EnemyAIController<RampageAIData>
     {
         if (isIdleSoundPlaying)
         {
-            idleSoundInstance.set3DAttributes(FMODUnity.RuntimeUtils.To3DAttributes(transform));
+            if (!AudioManager.instance.SafeUpdate3DAttributes(ref idleSoundInstance, transform, "Rampage Idle"))
+            {
+                isIdleSoundPlaying = false;
+            }
         }
         
-        if (isMoveLoopPlaying)
-        {
-            moveLoopInstance.set3DAttributes(FMODUnity.RuntimeUtils.To3DAttributes(transform));
-        }
+        // MoveLoop 사운드는 Emitter가 자동으로 Transform 추적하므로 수동 업데이트 불필요
     }
     
     /// <summary>

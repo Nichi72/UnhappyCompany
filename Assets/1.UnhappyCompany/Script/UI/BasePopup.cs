@@ -104,9 +104,9 @@ public abstract class BasePopup : MonoBehaviour
         {
             closeButton.onClick.AddListener(() => {
                 // 클릭 사운드 재생
-                if (AudioManager.instance != null && FMODEvents.instance != null && GameManager.instance?.currentPlayer != null)
+                if (AudioManager.instance != null && FMODEvents.instance != null)
                 {
-                    AudioManager.instance.PlayOneShot(FMODEvents.instance.computerCursorClick, GameManager.instance.currentPlayer.transform, "컴퓨터 커서 클릭");
+                    AudioManager.instance.PlayUISound(FMODEvents.instance.computerCursorClick, "컴퓨터 커서 클릭");
                 }
                 ClosePopup();
             });
@@ -457,9 +457,9 @@ public abstract class BasePopup : MonoBehaviour
     /// </summary>
     protected virtual void PlayOpenSound()
     {
-        if (AudioManager.instance != null && FMODEvents.instance != null && GameManager.instance?.currentPlayer != null)
+        if (AudioManager.instance != null && FMODEvents.instance != null)
         {
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.ComputerPopupOpen, GameManager.instance.currentPlayer.transform, "팝업 열림");
+            AudioManager.instance.PlayUISound(FMODEvents.instance.ComputerPopupOpen, "팝업 열림");
         }
     }
     
@@ -468,9 +468,9 @@ public abstract class BasePopup : MonoBehaviour
     /// </summary>
     protected virtual void PlayCloseSound()
     {
-        if (AudioManager.instance != null && FMODEvents.instance != null && GameManager.instance?.currentPlayer != null)
+        if (AudioManager.instance != null && FMODEvents.instance != null)
         {
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.computerScreenClose, GameManager.instance.currentPlayer.transform, "팝업 닫힘");
+            AudioManager.instance.PlayUISound(FMODEvents.instance.computerScreenClose, "팝업 닫힘");
         }
     }
     

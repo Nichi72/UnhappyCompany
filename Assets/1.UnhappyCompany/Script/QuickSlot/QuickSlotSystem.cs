@@ -274,6 +274,67 @@ public class QuickSlotSystem : MonoBehaviour
         totalWeight = totalWeightTemp;
         player.firstPersonController.SetSpeedBasedOnWeight(totalWeight);
     }
+    
+    /// <summary>
+    /// 퀵슬롯에서 코인을 찾습니다
+    /// </summary>
+    /// <returns>코인을 찾으면 true, 못 찾으면 false</returns>
+    public bool HasCoin()
+    {
+        foreach (QuickSlot slot in quickSlots)
+        {
+            if (!slot.IsEmpty())
+            {
+                Item item = slot.GetItem();
+                if (item is CoinItem)
+                {
+                    Debug.Log("HasCoin: " + item.itemData.name);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    /// <summary>
+    /// 퀵슬롯에서 코인을 제거합니다 (1개만)
+    /// </summary>
+    /// <returns>제거된 코인의 가치, 없으면 0</returns>
+    public int RemoveCoin()
+    {
+        for (int i = 0; i < quickSlots.Count; i++)
+        {
+            QuickSlot slot = quickSlots[i];
+            if (!slot.IsEmpty())
+            {
+                Item item = slot.GetItem();
+                if (item is CoinItem coinItem)
+                {
+                    int coinValue = coinItem.GetCoinValue();
+                    
+                    // 현재 들고 있는 아이템이면 언마운트하고 삭제
+                    if (selectedSlotIndex == i && currentItemObject != null)
+                    {
+                        currentItemObject.GetComponent<Item>().UnMount();
+                        Destroy(currentItemObject);
+                        currentItemObject = null;
+                        currentItem = null;
+                    }
+                    
+                    // 슬롯에서 아이템 제거
+                    slot.icon.sprite = null;
+                    slot.icon.enabled = false;
+                    slot.RemoveItem();
+                    UpdatePlayerSpeed();
+                    
+                    Debug.Log($"QuickSlotSystem: 코인 제거 완료 (가치: {coinValue})");
+                    return coinValue;
+                }
+            }
+        }
+        Debug.LogWarning("QuickSlotSystem: 제거할 코인을 찾을 수 없습니다.");
+        return 0;
+    }
 
     // (1) 퀵슬롯들의 상태를 한꺼번에 담을 클래스
     [Serializable]

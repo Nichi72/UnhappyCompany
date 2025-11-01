@@ -46,16 +46,17 @@ public class ItemCharger : MonoBehaviour, IInteractableF, IToolTip
                 return;
             }
 
-            // 이미 완전 충전된 경우 충전기 사용 불가
-            if (rechargeableItem.IsFullyCharged)
+            // 완전 충전 상태가 아닐 때만 실제 충전 수행
+            if (!rechargeableItem.IsFullyCharged)
+            {
+                CheckAndChargePlayerItem(player);
+            }
+            else
             {
                 Debug.Log($"{rechargeableItem.GetItemName()}: 이미 최대 충전된 상태입니다");
-                return;
             }
 
-            // 플레이어가 손에 든 아이템이 충전 가능한지 확인하고 충전
-            CheckAndChargePlayerItem(player);
-
+            // 충전 여부와 관계없이 애니메이션 실행
             currentUsePlayer = player;
             OpenCharger(currentUsePlayer);
             chargerState = ChargerState.Open; // 즉시 상태 변경

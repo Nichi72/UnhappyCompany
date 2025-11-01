@@ -25,6 +25,12 @@ public class RSPUI : MonoBehaviour
     // 이벤트 호출 함수
     public Action onRotationEnd;
 
+    // 결과 이미지 인덱스 상수 정의 (명확성을 위해)
+    private const int RESULT_WIN_INDEX_1 = 0;  // Win 결과 이미지 1
+    private const int RESULT_WIN_INDEX_2 = 1;  // Win 결과 이미지 2
+    private const int RESULT_DRAW_INDEX = 2;   // Draw 결과 이미지
+    private const int RESULT_LOSE_INDEX = 3;   // Lose 결과 이미지
+
     float waitTime = 0.25f;
     float rspRotationTime = 0.2f; // 가위바위보 회전 시간
     public bool isOver = false;
@@ -36,6 +42,9 @@ public class RSPUI : MonoBehaviour
         
         // 게임 시작 전 모든 Number 비활성화
         HideAllNumbers();
+        
+        // 게임 시작 전 모든 결과 이미지 비활성화
+        HideAllResults();
         
         // 평소 상태: centerRSPFace 켜기, cenerRSPs 끄기
         if (centerRSPFace != null)
@@ -83,6 +92,9 @@ public class RSPUI : MonoBehaviour
         
         // 게임 종료 시 모든 Number 비활성화
         HideAllNumbers();
+        
+        // 게임 종료 시 모든 결과 이미지 비활성화
+        HideAllResults();
     }
 
     // 가위바위보 중앙 이미지 회전 애니메이션 중지
@@ -127,8 +139,8 @@ public class RSPUI : MonoBehaviour
             // 다음 인덱스로 이동 (순환)
             currentIndex = (currentIndex + 1) % cenerRSPs.Count;
             
-            // 소리 재생 (기존 코드와 유사하게)
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.rspWheelSpin, transform,null); // RSP 중앙 회전 돌아가는 소리
+            // 소리 재생
+            AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rspWheelSpin, transform, 20f, "RSP Wheel Spin");
         }
     }
 
@@ -172,7 +184,7 @@ public class RSPUI : MonoBehaviour
             numbers[currentNumber].SetActive(false);
             
             currentNumber++;
-            AudioManager.instance.PlayOneShot(FMODEvents.instance.rspWheelSpin, transform,null); // RSP 중앙 회전 돌아가는 소리
+            AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rspWheelSpin, transform, 20f, "RSP Wheel Spin");
             if (currentNumber >= maxNumber)
             {
                 Debug.Log("loopCount: " + loopCount);
@@ -190,7 +202,7 @@ public class RSPUI : MonoBehaviour
                     Debug.Log("메달 게임 당첨!");
                     
                     // 메달 게임 당첨 승리 사운드 재생
-                    AudioManager.instance.PlayOneShot(FMODEvents.instance.rspWin, transform, "메달 게임 당첨 사운드");
+                    AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rspWin, transform, 40f, "RSP Medal Win");
                     
                     // 당첨 숫자를 잠깐 보여준 후 모든 숫자 비활성화
                     yield return new WaitForSeconds(1.5f);
@@ -299,6 +311,70 @@ public class RSPUI : MonoBehaviour
         Debug.Log("모든 Number GameObject 비활성화 완료");
     }
 
+    /// <summary>
+    /// 모든 결과 이미지를 비활성화하는 함수
+    /// </summary>
+    private void HideAllResults()
+    {
+        if (results == null || results.Count == 0)
+            return;
+            
+        foreach (var result in results)
+        {
+            if (result.resultImage != null)
+            {
+                result.resultImage.SetActive(false);
+            }
+        }
+        
+        Debug.Log("모든 결과 이미지 비활성화 완료");
+    }
+
+    /// <summary>
+    /// RSP 결과에 따라 해당하는 결과 이미지를 활성화하는 함수
+    /// Win의 경우 랜덤으로 두 개 중 하나를 선택하여 활성화
+    /// </summary>
+    /// <param name="result">RSP 게임 결과 (Win, Draw, Lose)</param>
+    public void ShowResult(RSPResult result)
+    {
+        // 먼저 모든 결과 이미지 비활성화
+        HideAllResults();
+        
+        // 결과에 따라 해당 이미지 활성화
+        switch (result)
+        {
+            case RSPResult.Win:
+                // Win의 경우 랜덤으로 인덱스 0 또는 1 중 하나 선택
+                int winIndex = UnityEngine.Random.Range(0, 2); // 0 또는 1
+                if (winIndex == 0 && results.Count > RESULT_WIN_INDEX_1 && results[RESULT_WIN_INDEX_1].resultImage != null)
+                {
+                    results[RESULT_WIN_INDEX_1].resultImage.SetActive(true);
+                    Debug.Log($"RSP 결과: Win (인덱스 {RESULT_WIN_INDEX_1} 활성화)");
+                }
+                else if (winIndex == 1 && results.Count > RESULT_WIN_INDEX_2 && results[RESULT_WIN_INDEX_2].resultImage != null)
+                {
+                    results[RESULT_WIN_INDEX_2].resultImage.SetActive(true);
+                    Debug.Log($"RSP 결과: Win (인덱스 {RESULT_WIN_INDEX_2} 활성화)");
+                }
+                break;
+                
+            case RSPResult.Draw:
+                if (results.Count > RESULT_DRAW_INDEX && results[RESULT_DRAW_INDEX].resultImage != null)
+                {
+                    results[RESULT_DRAW_INDEX].resultImage.SetActive(true);
+                    Debug.Log($"RSP 결과: Draw (인덱스 {RESULT_DRAW_INDEX} 활성화)");
+                }
+                break;
+                
+            case RSPResult.Lose:
+                if (results.Count > RESULT_LOSE_INDEX && results[RESULT_LOSE_INDEX].resultImage != null)
+                {
+                    results[RESULT_LOSE_INDEX].resultImage.SetActive(true);
+                    Debug.Log($"RSP 결과: Lose (인덱스 {RESULT_LOSE_INDEX} 활성화)");
+                }
+                break;
+        }
+    }
 
     
 }

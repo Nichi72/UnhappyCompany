@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnhappyCompany.Utility;
 
 public class RampageTrigger : MonoBehaviour
 {
@@ -18,11 +19,33 @@ public class RampageTrigger : MonoBehaviour
     {
         if (rampageAIController.IsInChargeState())
         {
-            if(other.CompareTag(ETag.Pushable.ToString()))
+            // 플레이어 충돌 처리 (데미지 & 넉백)
+            if(other.CompareTag(ETag.Player.ToString()))
+            {
+                if (canDamagePlayer)
+                {
+                    Debug.Log("플레이어와 충돌 발생 - 데미지 & 넉백 적용");
+                    
+                    // 사운드 재생
+                    AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rampageCollisionPlayer, transform, 60f, "Rampage Player Collision");
+                    
+                    // 데미지 적용
+                    other.GetComponent<IDamageable>()?.TakeDamage(rampageAIController.EnemyData.rushDamage, DamageType.Nomal);
+                    
+                    // 넉백 적용
+                    ApplyKnockbackToPlayer(other);
+                    
+                    StartCoroutine(DamageCooldown());
+                    
+                    // SetCollided(true)를 호출하지 않아서 계속 돌진함
+                }
+            }
+            // Pushable 오브젝트 충돌 처리
+            else if(other.CompareTag(ETag.Pushable.ToString()))
             {
                 Push(other);
                 Debug.Log("Pushable 충돌 발생");
-                AudioManager.instance.PlayOneShot(FMODEvents.instance.rampageCollisionObject, transform, "Pushable 충돌하는 소리");
+                AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rampageCollisionObject, transform, 60f, "Rampage Object Collision");
             }
         }
     }
@@ -71,22 +94,7 @@ public class RampageTrigger : MonoBehaviour
         }
     }
 
-    private void OnTriggerExit(Collider other)
-    {
-        if(other.CompareTag(ETag.Player.ToString()))
-        {
-            if (canDamagePlayer && rampageAIController.IsInChargeState())
-            {
-                Debug.Log("플레이어와 충돌 발생 - 데미지만 주고 계속 돌진");
-                // 플레이어에게 데미지만 주고 계속 돌진 (벽에 부딪혀야 패널이 열림)
-                AudioManager.instance.PlayOneShot(FMODEvents.instance.rampageCollisionPlayer, transform, "Rampage 플레이어와 충돌 소리");
-                other.GetComponent<IDamageable>()?.TakeDamage(rampageAIController.EnemyData.rushDamage, DamageType.Nomal);
-                StartCoroutine(DamageCooldown());
-                
-                // SetCollided(true)를 호출하지 않아서 계속 돌진함
-            }
-        }
-    }
+    // OnTriggerExit는 더 이상 사용하지 않음 (플레이어 처리는 OnTriggerEnter로 이동)
 
     private IEnumerator DamageCooldown()
     {
@@ -145,6 +153,59 @@ public class RampageTrigger : MonoBehaviour
     }
     
     /// <summary>
+    /// 플레이어에게 넉백 효과 적용 (AddForce 기반)
+    /// RampageExplodeState의 폭발 넉백과 달리 방향성 있는 밀어내기
+    /// </summary>
+    private void ApplyKnockbackToPlayer(Collider playerCollider)
+    {
+        Rigidbody playerRb = playerCollider.GetComponent<Rigidbody>();
+        if (playerRb == null)
+        {
+            Debug.LogWarning("[RampageTrigger] 플레이어에게 Rigidbody가 없습니다!");
+            return;
+        }
+        
+        // FirstPersonController 찾기
+        var firstPersonController = playerRb.GetComponent<StarterAssets.FirstPersonController>();
+        if (firstPersonController == null)
+        {
+            Debug.LogWarning("[RampageTrigger] FirstPersonController를 찾을 수 없습니다.");
+        }
+        
+        // 원래 Constraints 저장
+        RigidbodyConstraints originalConstraints = playerRb.constraints;
+        
+        // Position Freeze 해제 (넉백 가능), 회전은 모두 고정 (넘어지지 않음)
+        playerRb.constraints = RigidbodyConstraints.FreezeRotationX | 
+                                RigidbodyConstraints.FreezeRotationY | 
+                                RigidbodyConstraints.FreezeRotationZ;
+        
+        // 넉백 방향 계산 (Rampage -> Player)
+        Vector3 knockbackDirection = (playerCollider.transform.position - transform.position).normalized;
+        
+        // RampageAIData에서 넉백 파라미터 가져오기
+        float knockbackForce = rampageAIController.EnemyData.playerKnockbackForce;
+        float knockbackUpward = rampageAIController.EnemyData.playerKnockbackUpwardForce;
+        float restoreDelay = rampageAIController.EnemyData.knockbackRestoreDelay;
+        
+        // 수평 방향 + 약간의 위쪽 힘
+        Vector3 knockbackForceVector = new Vector3(
+            knockbackDirection.x * knockbackForce,
+            knockbackUpward,
+            knockbackDirection.z * knockbackForce
+        );
+        
+        // AddForce로 넉백 적용 (Impulse 모드)
+        playerRb.AddForce(knockbackForceVector, ForceMode.Impulse);
+        
+        Debug.Log($"[RampageTrigger] 플레이어 넉백 적용 - 방향: {knockbackDirection}, 힘: {knockbackForce}");
+        
+        // 플레이어에게 복구 컴포넌트 추가 (독립적으로 복구 처리)
+        RigidbodyConstraintRestore restoreComponent = playerRb.gameObject.AddComponent<RigidbodyConstraintRestore>();
+        restoreComponent.Initialize(playerRb, originalConstraints, restoreDelay, firstPersonController);
+    }
+    
+    /// <summary>
     /// 벽 충돌 시 HP에 따라 다른 사운드 재생
     /// </summary>
     private void PlayWallHitSound()
@@ -177,10 +238,10 @@ public class RampageTrigger : MonoBehaviour
             debugMessage = "벽 충돌 Level 3 (HP 위험!)";
         }
         
-        // 사운드 재생
+        // 사운드 재생 (벽 충돌은 큰 소리이므로 50m)
         if (!soundToPlay.IsNull)
         {
-            AudioManager.instance.PlayOneShot(soundToPlay, transform, debugMessage);
+            AudioManager.instance.Play3DSoundByTransform(soundToPlay, transform, 80f, debugMessage);
             Debug.Log($"[Rampage Wall Hit Sound] {debugMessage} - HP: {rampageAIController.hp}/{rampageAIController.EnemyData.maxHP} ({hpPercent:P0})");
         }
     }
