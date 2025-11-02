@@ -129,24 +129,87 @@ public class QuickSlotSystem : MonoBehaviour
 
     /// <summary>
     /// 퀵슬롯에 아이템을 추가하는 함수
+    /// 스택 가능한 아이템(예: Coin)은 같은 아이템이 있는 슬롯에 먼저 추가를 시도합니다.
     /// </summary>
     /// <param name="item"></param>
-    public void AddItemToQuickSlot(Item item, object state , string uniqueInstanceID)
+    public void AddItemToQuickSlot(Item item, object state , string uniqueInstanceID, int count = 1)
     {
         string newItemID = uniqueInstanceID;
-        Debug.Log($"AddItemToQuickSlot: {item.itemData.name}, ID = {newItemID}");
+        Debug.Log($"AddItemToQuickSlot: {item.itemData.name}, ID = {newItemID}, Count = {count}");
+        
+        int remainingCount = count;
+        ItemStackType stackType = item.itemData.stackType;
+        
+        // 스택 가능한 아이템인 경우 (Single이 아닌 경우)
+        if (stackType != ItemStackType.Single)
+        {
+            // 1단계: 같은 아이템이 있는 슬롯을 찾아서 추가 시도
+            foreach (QuickSlot slot in quickSlots)
+            {
+                if (!slot.IsEmpty() && 
+                    slot.GetItem().itemData == item.itemData)
+                {
+                    int overflow = slot.AddCount(remainingCount);
+                    remainingCount = overflow;
+                    
+                    if (remainingCount == 0)
+                    {
+                        Debug.Log($"QuickSlotSystem: 기존 슬롯에 {count}개 추가 완료.");
+                        UpdatePlayerSpeed();
+                        return;
+                    }
+                }
+            }
+            
+            // 2단계: 남은 개수가 있으면 빈 슬롯에 추가
+            while (remainingCount > 0)
+            {
+                QuickSlot emptySlot = FindEmptySlot();
+                if (emptySlot == null)
+                {
+                    Debug.LogWarning($"QuickSlotSystem: 슬롯이 부족합니다. {remainingCount}개를 추가하지 못했습니다.");
+                    break;
+                }
+                
+                int maxStack = (int)stackType;
+                int countToAdd = Mathf.Min(remainingCount, maxStack);
+                emptySlot.SetItem(item, state, uniqueInstanceID, countToAdd);
+                remainingCount -= countToAdd;
+                
+                Debug.Log($"QuickSlotSystem: 새 슬롯에 {countToAdd}개 추가. 남은 개수: {remainingCount}");
+            }
+        }
+        else
+        {
+            // 스택 불가능한 아이템 (Single) - 기존 로직
+            QuickSlot emptySlot = FindEmptySlot();
+            if (emptySlot != null)
+            {
+                emptySlot.SetItem(item, state, uniqueInstanceID, 1);
+                Debug.Log($"QuickSlotSystem: 빈 슬롯에 {newItemID} 아이템 등록 완료.");
+            }
+            else
+            {
+                Debug.LogWarning("QuickSlotSystem: 더 이상 아이템을 넣을 슬롯이 없습니다.");
+            }
+        }
+        
+        UpdatePlayerSpeed();
+    }
+    
+    /// <summary>
+    /// 빈 슬롯을 찾습니다.
+    /// </summary>
+    private QuickSlot FindEmptySlot()
+    {
         foreach (QuickSlot slot in quickSlots)
         {
             if (slot.IsEmpty())
             {
-                slot.SetItem(item, state, uniqueInstanceID);
-                Debug.Log($"QuickSlotSystem: 빈 슬롯에 {newItemID} 아이템 등록 완료.");
-                UpdatePlayerSpeed();
-                return;
+                return slot;
             }
         }
-
-        Debug.LogWarning("QuickSlotSystem: 더 이상 아이템을 넣을 슬롯이 없습니다.");
+        return null;
     }
 
 
@@ -358,12 +421,14 @@ public class QuickSlotSystem : MonoBehaviour
                 slotState.uniqueItemID = slot.quickSlotState.uniqueItemID;
                 slotState.itemSerializedState = slot.quickSlotState.itemSerializedState;
                 slotState.item = slot.quickSlotState.item;
+                slotState.itemCount = slot.quickSlotState.itemCount; // 개수 저장
             }
             else
             {
                 slotState.uniqueItemID = null;
                 slotState.itemSerializedState = null;
                 slotState.item = null;
+                slotState.itemCount = 1;
             }
             systemState.slots.Add(slotState);
         }
@@ -385,8 +450,8 @@ public class QuickSlotSystem : MonoBehaviour
 
                 if (restoredItem != null)
                 {
-                    // 복구된 아이템을 슬롯에 할당
-                    slot.SetItem(restoredItem, slotState.itemSerializedState, slotState.uniqueItemID);
+                    // 복구된 아이템을 슬롯에 할당 (개수 포함)
+                    slot.SetItem(restoredItem, slotState.itemSerializedState, slotState.uniqueItemID, slotState.itemCount);
                 }
                 else
                 {
@@ -423,5 +488,6 @@ public class QuickSlotState
     public string uniqueItemID; // 슬롯에 들어있는 아이템의 ID. 없으면 null
     public object itemSerializedState; // 필요하면 추가(내부 상태)
     public Item item;
+    public int itemCount = 1; // 스택 가능 아이템의 개수 (기본값 1)
 }
 
