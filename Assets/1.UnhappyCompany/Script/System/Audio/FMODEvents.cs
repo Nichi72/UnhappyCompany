@@ -101,7 +101,9 @@ public class FMODEvents : MonoBehaviour
     [field: SerializeField] public EventReference rspInsertCoin { get; private set; }
     [field: SerializeField] public EventReference rspCoinSpawn  { get; private set; } // 코인이 배출되는 소리
     [field: SerializeField] public EventReference rspCoinDrop { get; private set; } // 코인이 떨어졌을때 소리 , 재질 상관없음 그냥 코인끼리 부딛히는 소리에 가까움, rspCoinSpawn의 소리가 시작되고 0.2초 후 자동으로 재생될꺼임
-    [field: SerializeField] public EventReference rspFootStep { get; private set; }
+    
+    [field: Header("Enemy - RSP")]
+    [field: SerializeField] public EventReference rspFootstep { get; private set; }  // RSP가 이동하면서 바닥에 닿을 때
     
     [field: Header("Enemy - Cube")]
     [field: SerializeField] public EventReference cubeFootstep { get; private set; }        // 큐브가 굴러다니면서 바닥에 닿을 때
