@@ -3,10 +3,10 @@ using FMODUnity;
 using System.Collections.Generic;
 
 /// <summary>
-/// 큐브가 굴러다니면서 바닥에 닿을 때 발소리를 재생하는 시스템입니다.
+/// RSP가 이동하면서 바닥에 닿을 때 발소리를 재생하는 시스템입니다.
 /// 여러 개의 GroundContactRaycast를 관리하고, 접촉 시 사운드를 재생합니다.
 /// </summary>
-public class CubeRollingFootstepSystem : MonoBehaviour
+public class RSPFootstepSystem : MonoBehaviour
 {
     [Header("Sound Settings")]
     [Tooltip("사운드 최대 거리")]
@@ -24,7 +24,7 @@ public class CubeRollingFootstepSystem : MonoBehaviour
     
     // 컴포넌트
     private List<GroundContactRaycast> activeRaycastPoints = new List<GroundContactRaycast>();
-    private EnemyAICube cubeController;
+    private EnemyAIRSP rspController;
     
     // 상태
     private float lastSoundPlayTime = -999f;
@@ -32,7 +32,7 @@ public class CubeRollingFootstepSystem : MonoBehaviour
     
     private void Awake()
     {
-        cubeController = GetComponent<EnemyAICube>();
+        rspController = GetComponent<EnemyAIRSP>();
         SetupRaycastPoints();
     }
     
@@ -67,7 +67,7 @@ public class CubeRollingFootstepSystem : MonoBehaviour
         
         if (showDebugInfo)
         {
-            Debug.Log($"[CubeRollingFootstepSystem] {activeRaycastPoints.Count}개의 Raycast 포인트가 설정되었습니다.");
+            Debug.Log($"[RSPFootstepSystem] {activeRaycastPoints.Count}개의 Raycast 포인트가 설정되었습니다.");
         }
     }
     
@@ -79,14 +79,14 @@ public class CubeRollingFootstepSystem : MonoBehaviour
         totalContactCount++;
         
         // 상태 체크 - Chase 또는 Patrol 상태일 때만 발소리 재생
-        if (cubeController != null && cubeController.currentState != null)
+        if (rspController != null && rspController.currentState != null)
         {
-            string stateName = cubeController.currentState.GetType().Name;
-            if (stateName != "CubeChaseState" && stateName != "CubePatrolState")
+            string stateName = rspController.currentState.GetType().Name;
+            if (stateName != "RSPChaseState" && stateName != "RSPPatrolState")
             {
                 if (showDebugInfo)
                 {
-                    Debug.Log($"[CubeRollingFootstepSystem] 현재 상태({stateName})에서는 발소리를 재생하지 않습니다.");
+                    Debug.Log($"[RSPFootstepSystem] 현재 상태({stateName})에서는 발소리를 재생하지 않습니다.");
                 }
                 return;
             }
@@ -94,7 +94,7 @@ public class CubeRollingFootstepSystem : MonoBehaviour
         
         if (showDebugInfo)
         {
-            Debug.Log($"[CubeRollingFootstepSystem] Raycast 포인트에서 접촉이 감지되었습니다.");
+            Debug.Log($"[RSPFootstepSystem] Raycast 포인트에서 접촉이 감지되었습니다.");
         }
         
         // 전역 쿨다운 체크
@@ -111,11 +111,11 @@ public class CubeRollingFootstepSystem : MonoBehaviour
     /// </summary>
     private void PlayFootstepSound()
     {
-        if (FMODEvents.instance.cubeFootstep.IsNull)
+        if (FMODEvents.instance.rspFootstep.IsNull)
         {
             if (showDebugInfo)
             {
-                Debug.LogWarning($"[CubeRollingFootstepSystem] Cube Footstep 사운드가 FMODEvents에 할당되지 않았습니다!", this);
+                Debug.LogWarning($"[RSPFootstepSystem] RSP Footstep 사운드가 FMODEvents에 할당되지 않았습니다!", this);
             }
             return;
         }
@@ -124,15 +124,15 @@ public class CubeRollingFootstepSystem : MonoBehaviour
         
         // 사운드 재생
         AudioManager.instance.Play3DSoundAtPosition(
-            FMODEvents.instance.cubeFootstep,
+            FMODEvents.instance.rspFootstep,
             transform.position,
             soundMaxDistance,
-            $"CubeFootstep_{gameObject.name}"
+            $"RSPFootstep_{gameObject.name}"
         );
         
         if (showDebugInfo)
         {
-            Debug.Log($"[CubeRollingFootstepSystem] 발소리 재생 (총 접촉: {totalContactCount})");
+            Debug.Log($"[RSPFootstepSystem] 발소리 재생 (총 접촉: {totalContactCount})");
         }
     }
     
@@ -150,7 +150,7 @@ public class CubeRollingFootstepSystem : MonoBehaviour
             
             if (showDebugInfo)
             {
-                Debug.Log($"[CubeRollingFootstepSystem] Raycast 포인트 추가: {raycastPoint.gameObject.name}");
+                Debug.Log($"[RSPFootstepSystem] Raycast 포인트 추가: {raycastPoint.gameObject.name}");
             }
         }
     }
@@ -169,7 +169,7 @@ public class CubeRollingFootstepSystem : MonoBehaviour
             
             if (showDebugInfo)
             {
-                Debug.Log($"[CubeRollingFootstepSystem] Raycast 포인트 제거: {raycastPoint.gameObject.name}");
+                Debug.Log($"[RSPFootstepSystem] Raycast 포인트 제거: {raycastPoint.gameObject.name}");
             }
         }
     }
@@ -186,7 +186,7 @@ public class CubeRollingFootstepSystem : MonoBehaviour
         style.fontSize = 12;
         style.normal.textColor = Color.white;
         
-        string debugText = $"[{gameObject.name}] Cube Footstep System\n";
+        string debugText = $"[{gameObject.name}] RSP Footstep System\n";
         debugText += $"Active Raycast Points: {activeRaycastPoints.Count}\n";
         debugText += $"Total Contacts: {totalContactCount}\n";
         

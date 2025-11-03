@@ -1,4 +1,5 @@
 using UnityEngine;
+using FMODUnity;
 
 /// <summary>
 /// Cube 타입 적의 AI 컨트롤러입니다.
@@ -30,6 +31,11 @@ public class EnemyAICube : EnemyAIController<CubeEnemyAIData>
     
     // 접촉 데미지 쿨다운
     private float lastContactDamageTime = 0f;
+    
+    // 충돌 사운드 쿨타임
+    private float lastPlayerCollisionSoundTime = -999f;
+    private float lastObjectCollisionSoundTime = -999f;
+    private const float COLLISION_SOUND_COOLDOWN = 0.5f; // 충돌 사운드 쿨타임 (초)
 
     [Header("BlendShape Settings")]
     public Transform blendShapeTransform;
@@ -366,6 +372,83 @@ public class EnemyAICube : EnemyAIController<CubeEnemyAIData>
     }
 
     /// <summary>
+    /// 데미지를 받을 때 호출되는 메서드입니다.
+    /// </summary>
+    public override void TakeDamage(int damage, DamageType damageType)
+    {
+        base.TakeDamage(damage, damageType);
+        
+        Debug.Log($"Cube: {damage} 데미지를 받았습니다! (남은 HP: {hp})");
+        
+        // 피격 시 시각적 피드백 (BlendShape 깜빡임)
+        if (skinnedMeshRenderer != null)
+        {
+            StartBlendShapeFlash();
+        }
+        
+        // 피격 사운드 재생
+        if (!FMODEvents.instance.cubeHit.IsNull)
+        {
+            AudioManager.instance.Play3DSoundAtPosition(
+                FMODEvents.instance.cubeHit, 
+                transform.position, 
+                30f, 
+                "Cube Hit"
+            );
+        }
+    }
+    
+    /// <summary>
+    /// BlendShape 깜빡임 효과 (피격 피드백)
+    /// </summary>
+    private void StartBlendShapeFlash()
+    {
+        // 짧은 깜빡임 효과
+        StartCoroutine(BlendShapeFlashCoroutine());
+    }
+    
+    private System.Collections.IEnumerator BlendShapeFlashCoroutine()
+    {
+        // 빠르게 100으로
+        float duration = 0.1f;
+        float elapsed = 0f;
+        float startValue = currentBlendShapeValue;
+        
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+            currentBlendShapeValue = Mathf.Lerp(startValue, 100f, t);
+            
+            if (skinnedMeshRenderer != null)
+            {
+                skinnedMeshRenderer.SetBlendShapeWeight(0, currentBlendShapeValue);
+            }
+            
+            yield return null;
+        }
+        
+        // 빠르게 0으로
+        duration = 0.15f;
+        elapsed = 0f;
+        startValue = currentBlendShapeValue;
+        
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+            currentBlendShapeValue = Mathf.Lerp(startValue, 0f, t);
+            
+            if (skinnedMeshRenderer != null)
+            {
+                skinnedMeshRenderer.SetBlendShapeWeight(0, currentBlendShapeValue);
+            }
+            
+            yield return null;
+        }
+    }
+
+    /// <summary>
     /// Gizmos에 공격 포기 범위 표시
     /// </summary>
     protected override void OnDrawGizmosSelected()
@@ -449,6 +532,13 @@ public class EnemyAICube : EnemyAIController<CubeEnemyAIData>
     {
         if (collision.collider.CompareTag(ETag.Player.ToString()))
         {
+            // 플레이어 충돌 사운드 재생 (쿨타임 체크)
+            if (Time.time - lastPlayerCollisionSoundTime >= COLLISION_SOUND_COOLDOWN)
+            {
+                PlayCollisionSound(FMODEvents.instance.cubeCollisionPlayer, "Player");
+                lastPlayerCollisionSoundTime = Time.time;
+            }
+            
             // 돌진 중이고 아직 돌진 데미지를 주지 않았다면
             if (isRushing && !hasDealtRushDamage)
             {
@@ -458,11 +548,42 @@ public class EnemyAICube : EnemyAIController<CubeEnemyAIData>
                     damageable.TakeDamage(RushDamage, DamageType.Physical);
                     hasDealtRushDamage = true; // 한 번만 데미지
                     Debug.Log($"Cube: 플레이어에게 돌진 데미지 {RushDamage} 적용!");
-                    
-                    // 사운드 재생 (필요시)
-                    // AudioManager.instance.PlayOneShot(FMODEvents.instance.cubeRushHit, transform, "Cube 돌진 충돌");
                 }
             }
+        }
+        else
+        {
+            // 공격 상태(돌진 중)일 때 다른 오브젝트와 충돌
+            if (isAttacking || isRushing)
+            {
+                // 적이 아닌 경우 오브젝트 충돌 사운드 (쿨타임 체크)
+                if (!collision.collider.CompareTag(ETag.Enemy.ToString()))
+                {
+                    if (Time.time - lastObjectCollisionSoundTime >= COLLISION_SOUND_COOLDOWN)
+                    {
+                        PlayCollisionSound(FMODEvents.instance.cubeCollisionObject, "Object");
+                        lastObjectCollisionSoundTime = Time.time;
+                    }
+                }
+            }
+        }
+    }
+    
+    /// <summary>
+    /// 충돌 사운드 재생
+    /// </summary>
+    private void PlayCollisionSound(EventReference soundEvent, string collisionType)
+    {
+        if (!soundEvent.IsNull)
+        {
+            AudioManager.instance.Play3DSoundAtPosition(
+                soundEvent,
+                transform.position,
+                30f,
+                $"Cube Collision {collisionType}"
+            );
+            
+            Debug.Log($"Cube: {collisionType}와 충돌 사운드 재생");
         }
     }
     
