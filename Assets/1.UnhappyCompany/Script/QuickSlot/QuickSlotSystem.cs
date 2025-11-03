@@ -143,11 +143,13 @@ public class QuickSlotSystem : MonoBehaviour
         // 스택 가능한 아이템인 경우 (Single이 아닌 경우)
         if (stackType != ItemStackType.Single)
         {
-            // 1단계: 같은 아이템이 있는 슬롯을 찾아서 추가 시도
+            // 1단계: 같은 아이템이 있는 슬롯을 찾아서 추가 시도 (ItemID로 비교)
+            int targetItemID = item.itemData.savableItemData.GetItemID();
+            
             foreach (QuickSlot slot in quickSlots)
             {
                 if (!slot.IsEmpty() && 
-                    slot.GetItem().itemData == item.itemData)
+                    slot.GetItem().itemData.savableItemData.GetItemID() == targetItemID)
                 {
                     int overflow = slot.AddCount(remainingCount);
                     remainingCount = overflow;
