@@ -37,7 +37,7 @@ public class RSPPatrolState : IState
         // 애니메이션 재생 (기본 대기 애니메이션)
         if (controller.animator != null)
         {
-            controller.PlayAnimation(controller.IdleAnimationName);
+            // controller.PlayAnimation(controller.IdleAnimationName);
         }
         controller.StartCheckCompulsoryPlayStack();
     }

@@ -24,14 +24,14 @@ public class RSPDisableState : IState
             controller.agent.ResetPath();
         }
         
-        // Idle 애니메이션 재생
-        if (controller.animator != null)
-        {
-            controller.PlayAnimation(controller.IdleAnimationName);
-        }
+        // Speed를 0으로 설정 (Blend Tree에서 Idle 상태 유지)
+        controller.SetSpeed(0f);
         
         // 에미션 비활성화
         controller.DisableEmission();
+        
+        // 쿨다운 시작
+        controller.StartCooldown();
     }
 
     public void ExecuteMorning()

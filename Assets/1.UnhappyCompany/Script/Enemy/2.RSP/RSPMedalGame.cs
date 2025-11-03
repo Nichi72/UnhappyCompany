@@ -23,6 +23,9 @@ public class RSPMedalGame : MonoBehaviour
     private System.Action<int> onGameComplete; // 게임 완료 시 결과 전달 콜백
     public RSPUI rspUI;
     
+    // 마지막 메달 게임 결과 저장
+    private int lastResult = 0;
+    
     // 초기화 
     public void Initialize()
     {
@@ -38,11 +41,11 @@ public class RSPMedalGame : MonoBehaviour
     {
         resultTable = new ResultProbability[]
         {
-            new ResultProbability(1, 28f),  // 7번 결과: 15% 확률
-            new ResultProbability(2, 28f),  // 6번 결과: 20% 확률
-            new ResultProbability(4, 20f),  // 5번 결과: 25% 확률
-            new ResultProbability(7, 20f),  // 4번 결과: 15% 확률
-            new ResultProbability(20, 4f),  // 3번 결과: 15% 확률
+            new ResultProbability(1,  30f),  // 1점: 30%
+            new ResultProbability(2,  34f),  // 2점: 35% (가장 흔함) 64프로
+            new ResultProbability(4,  20f),  // 4점: 20%
+            new ResultProbability(7,  12f),  // 7점: 12% 32프로 
+            new ResultProbability(20, 4f),   // 20점: 4% (매우 레어) 4프로
         };
     }
     
@@ -75,6 +78,7 @@ public class RSPMedalGame : MonoBehaviour
     {
         // 확률 기반 결과 선택
         int result = GetRandomResultFromTable();
+        lastResult = result; // 결과 저장
         Debug.Log($"메달 게임 결과: {result}번이 나왔습니다!");
         rspUI.PlayMedalWinAnimation(result);
         // 결과 로그 출력
@@ -105,5 +109,13 @@ public class RSPMedalGame : MonoBehaviour
     public bool IsGameActive()
     {
         return rspUI.isOver;
+    }
+    
+    /// <summary>
+    /// 마지막 메달 게임 결과 반환
+    /// </summary>
+    public int GetLastResult()
+    {
+        return lastResult;
     }
 } 

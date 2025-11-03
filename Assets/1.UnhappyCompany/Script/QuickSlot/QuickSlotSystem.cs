@@ -288,7 +288,7 @@ public class QuickSlotSystem : MonoBehaviour
                 Item item = slot.GetItem();
                 if (item is CoinItem)
                 {
-                    Debug.Log("HasCoin: " + item.itemData.name);
+                    // Debug.Log("HasCoin: " + item.itemData.name);
                     return true;
                 }
             }

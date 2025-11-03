@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 [Serializable]
 public struct RSPChoiceImage
@@ -15,6 +16,16 @@ public struct RSPResultImage
     public RSPResult result;
     public GameObject resultImage;
 }
+[Serializable]
+public struct SlotSpeedProfile
+{
+    public float[] waitTimeByDistance;    // 남은 칸 수별 대기 시간 [5칸전, 4칸전, 3칸전, 2칸전, 1칸전]
+    
+    public SlotSpeedProfile(float slot5, float slot4, float slot3, float slot2, float slot1)
+    {
+        waitTimeByDistance = new float[] { slot5, slot4, slot3, slot2, slot1 };
+    }
+}
 public class RSPUI : MonoBehaviour
 {
     // public List<int> scores;
@@ -22,8 +33,17 @@ public class RSPUI : MonoBehaviour
     public List<RSPChoiceImage> cenerRSPs; // 가위바위보 중앙 이미지
     public List<RSPResultImage> results; // 결과 이미지
     public List<GameObject> numbers; // 숫자 이미지
+    
+    [Header("코인 개수 표시 UI (HP)")]
+    [Tooltip("남은 코인 개수(HP)를 표시할 TextMeshPro 컴포넌트")]
+    [SerializeField] private TextMeshProUGUI remainingCoinsText;
+    
     // 이벤트 호출 함수
     public Action onRotationEnd;
+    
+    // 숫자별 슬롯 속도 프로파일 (남은 칸 수별 직접 대기 시간)
+    private Dictionary<int, SlotSpeedProfile> speedProfiles = new Dictionary<int, SlotSpeedProfile>();
+
 
     // 결과 이미지 인덱스 상수 정의 (명확성을 위해)
     private const int RESULT_WIN_INDEX_1 = 0;  // Win 결과 이미지 1
@@ -31,14 +51,23 @@ public class RSPUI : MonoBehaviour
     private const int RESULT_DRAW_INDEX = 2;   // Draw 결과 이미지
     private const int RESULT_LOSE_INDEX = 3;   // Lose 결과 이미지
 
-    float waitTime = 0.25f;
+    [SerializeField] float defaultSpinIntervalTime = 0.15f; // 기본 대기 시간 (감속 구간 아닐 때)
+    [SerializeField] int slowdownStartDistance = 5; // 감속 시작 거리 (남은 칸 수)
     float rspRotationTime = 0.2f; // 가위바위보 회전 시간
     public bool isOver = false;
     private Coroutine centerRSPCoroutine;
 
     void Start()
     {
-        // scores = new List<int>(){1,2,4,7,20};
+        speedProfiles = new Dictionary<int, SlotSpeedProfile>()
+        {
+            // 각 숫자마다 [5칸전, 4칸전, 3칸전, 2칸전, 1칸전] 대기 시간 (단위: 초)
+            { 1,  new SlotSpeedProfile(0.20f, 0.23f, 0.25f, 0.28f, 0.30f) },  // 1점: 로그 증가 (0.2→0.3)
+            { 2,  new SlotSpeedProfile(0.20f, 0.28f, 0.35f, 0.42f, 0.50f) },  // 2점: 로그 증가 (0.2→0.5)
+            { 4,  new SlotSpeedProfile(0.30f, 0.42f, 0.53f, 0.64f, 0.75f) },  // 4점: 로그 증가 (0.3→0.75)
+            { 7,  new SlotSpeedProfile(0.30f, 0.48f, 0.65f, 0.82f, 1.00f) },  // 7점: 로그 증가 (0.3→1.0)
+            { 20, new SlotSpeedProfile(0.30f, 0.61f, 0.90f, 1.19f, 1.50f) }   // 20점: 로그 증가 (0.3→1.5)
+        };
         
         // 게임 시작 전 모든 Number 비활성화
         HideAllNumbers();
@@ -152,7 +181,7 @@ public class RSPUI : MonoBehaviour
 
     IEnumerator PlayMedalWinAnimationCo(int targetNumber)
     {
-        Debug.Log("메달 게임 애니메이션 시작 - 목표 점수: " + targetNumber);
+        Debug.Log($"메달 게임 애니메이션 시작 - 목표 점수: {targetNumber}");
         
         // 목표 점수에 해당하는 GameObject 찾기
         GameObject scoreNumberstemp = GetNumberFromScore(targetNumber);
@@ -166,9 +195,14 @@ public class RSPUI : MonoBehaviour
         }
         
         int index = GetIndexFromGameObject(scoreNumberstemp);
-        int currentNumber = GetCyclicIndex(index + 4); // 시작 위치를 목표보다 4칸 앞으로
+        int currentNumber = GetCyclicIndex(index); // 시작 위치
         int maxNumber = numbers.Count;
         int loopCount = 0;
+        
+        // [디버그] 회전 횟수 추적 변수
+        int totalSpinCount = 0;
+        int targetIndex = index;
+        Debug.Log($"[슬롯 회전 디버그] 시작 - 목표번호: {targetNumber}, 목표인덱스: {targetIndex}, 시작인덱스: {currentNumber}, 전체슬롯수: {maxNumber}");
         
         foreach (var number in numbers)
         {
@@ -180,25 +214,72 @@ public class RSPUI : MonoBehaviour
             numbers[currentNumber].SetActive(true);
             ToggleResults(isBlink);
             isBlink = !isBlink;
+            
+            // [디버그] 현재 회전 정보 출력
+            totalSpinCount++;
+            
+            // 목표까지 남은 칸 수 계산
+            int remainingSlots = 0;
+            if (loopCount >= 1)
+            {
+                // 한 바퀴 이상 돌았고, 목표 체크 구간
+                int nextNumber = (currentNumber + 1) % maxNumber;
+                if (nextNumber <= targetIndex)
+                {
+                    remainingSlots = targetIndex - nextNumber;
+                }
+                else
+                {
+                    // 순환해야 하는 경우
+                    remainingSlots = (maxNumber - nextNumber) + targetIndex;
+                }
+            }
+            else
+            {
+                // 아직 첫 바퀴 도는 중 - 충분히 큰 값
+                remainingSlots = 999;
+            }
+            
+            // 대기 시간 결정
+            float waitTime;
+            if (remainingSlots <= slowdownStartDistance && remainingSlots >= 0)
+            {
+                // 감속 구간: 남은 칸 수에 따른 대기 시간을 테이블에서 직접 가져오기
+                waitTime = GetWaitTimeByDistance(targetNumber, remainingSlots);
+                
+                Debug.Log($"[슬롯 회전 #{totalSpinCount}] <color=yellow>감속구간!</color> 현재: {currentNumber} ({numbers[currentNumber].name}), 남은칸: {remainingSlots}, 대기시간: {waitTime:F4}초</color>");
+            }
+            else
+            {
+                // 초반: 등속
+                waitTime = defaultSpinIntervalTime;
+                Debug.Log($"[슬롯 회전 #{totalSpinCount}] 현재: {currentNumber} ({numbers[currentNumber].name}), 남은칸: {remainingSlots}, 루프: {loopCount}, 대기시간: {waitTime:F4}초");
+            }
+            
+            // 대기
             yield return new WaitForSeconds(waitTime);
+            
             numbers[currentNumber].SetActive(false);
             
             currentNumber++;
             AudioManager.instance.Play3DSoundByTransform(FMODEvents.instance.rspWheelSpin, transform, 20f, "RSP Wheel Spin");
             if (currentNumber >= maxNumber)
             {
-                Debug.Log("loopCount: " + loopCount);
+                Debug.Log($"[슬롯 회전 디버그] 한 바퀴 완료! 루프횟수: {loopCount} → {loopCount + 1}");
                 currentNumber = 0;
                 loopCount++;
             }
             if (loopCount >= 1)
             {
-                Debug.Log("scoreNumberstemp: " + scoreNumberstemp.name + " numbers[currentNumber]: " + numbers[currentNumber].name);
+                Debug.Log($"[슬롯 회전 디버그] 목표 체크 - 목표: {scoreNumberstemp.name} vs 현재: {numbers[currentNumber].name}");
                 if(scoreNumberstemp == numbers[currentNumber])
                 {
                     numbers[currentNumber].SetActive(true);
                     // results[0].SetActive(true);
                     // results[1].SetActive(true);
+                    
+                    // [디버그] 최종 회전 횟수 출력
+                    Debug.Log($"<color=cyan>[슬롯 회전 완료] 목표번호: {targetNumber}, 총 회전횟수: {totalSpinCount}, 루프횟수: {loopCount}</color>");
                     Debug.Log("메달 게임 당첨!");
                     
                     // 메달 게임 당첨 승리 사운드 재생
@@ -207,6 +288,8 @@ public class RSPUI : MonoBehaviour
                     // 당첨 숫자를 잠깐 보여준 후 모든 숫자 비활성화
                     yield return new WaitForSeconds(1.5f);
                     HideAllNumbers();
+                    
+                    Debug.Log("메달 게임 종료");
                     
                     onRotationEnd?.Invoke();
                     isOver = true;
@@ -293,6 +376,44 @@ public class RSPUI : MonoBehaviour
     }
     
     /// <summary>
+    /// 숫자와 남은 칸 수에 해당하는 대기 시간을 가져오는 함수
+    /// </summary>
+    /// <param name="number">목표 숫자</param>
+    /// <param name="remainingSlots">남은 칸 수 (0~5)</param>
+    /// <returns>대기 시간 (초), 찾지 못하면 기본값 0.25초 반환</returns>
+    private float GetWaitTimeByDistance(int number, int remainingSlots)
+    {
+        // speedProfiles에서 해당 숫자 찾기
+        if (speedProfiles.ContainsKey(number))
+        {
+            SlotSpeedProfile profile = speedProfiles[number];
+            
+            // remainingSlots를 배열 인덱스로 변환
+            // 남은 칸 0 → 1칸 전 값 (index 4)
+            // 남은 칸 1 → 2칸 전 값 (index 3)
+            // 남은 칸 2 → 3칸 전 값 (index 2)
+            // 남은 칸 3 → 4칸 전 값 (index 1)
+            // 남은 칸 4 → 5칸 전 값 (index 0)
+            int index = slowdownStartDistance - remainingSlots - 1;
+            
+            if (index >= 0 && index < profile.waitTimeByDistance.Length)
+            {
+                return profile.waitTimeByDistance[index];
+            }
+            else
+            {
+                Debug.LogWarning($"남은 칸 수 {remainingSlots}가 범위를 벗어났습니다. 기본값 0.25초 사용");
+                return 0.25f;
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"숫자 {number}에 대한 속도 프로파일이 테이블에 없습니다. 기본값 0.25초 사용");
+            return 0.25f;
+        }
+    }
+    
+    /// <summary>
     /// 모든 Number GameObject를 비활성화하는 함수
     /// </summary>
     private void HideAllNumbers()
@@ -374,6 +495,55 @@ public class RSPUI : MonoBehaviour
                 }
                 break;
         }
+    }
+    
+    /// <summary>
+    /// RSP의 남은 코인 개수(HP)를 UI에 업데이트합니다
+    /// </summary>
+    /// <param name="remainingCoins">남은 코인 개수(HP)</param>
+    public void UpdateRemainingCoins(int remainingCoins)
+    {
+        if (remainingCoinsText != null)
+        {
+            // HP가 낮을 때 색상 변경
+            if (remainingCoins <= 10)
+            {
+                remainingCoinsText.color = Color.red; // 낮은 HP는 빨간색
+            }
+            else if (remainingCoins <= 30)
+            {
+                remainingCoinsText.color = Color.yellow; // 중간 HP는 노란색
+            }
+            else
+            {
+                remainingCoinsText.color = Color.white; // 높은 HP는 흰색
+            }
+            
+            remainingCoinsText.text = $"{remainingCoins}";
+            Debug.Log($"RSP UI: HP(코인) 업데이트 - {remainingCoins}");
+        }
+        else
+        {
+            Debug.LogWarning("RSP UI: remainingCoinsText가 설정되지 않았습니다!");
+        }
+    }
+    
+    /// <summary>
+    /// RSP가 죽은 상태를 UI에 표시합니다
+    /// </summary>
+    public void ShowDeadState()
+    {
+        // HP 텍스트 업데이트
+        if (remainingCoinsText != null)
+        {
+            remainingCoinsText.text = "DEAD";
+            remainingCoinsText.color = Color.red; // 빨간색으로 표시
+        }
+        
+        // 게임 종료 애니메이션 (모든 UI 비활성화)
+        GameEndRSPAnimation();
+        
+        Debug.Log("RSP UI: 죽음 상태 표시");
     }
 
     

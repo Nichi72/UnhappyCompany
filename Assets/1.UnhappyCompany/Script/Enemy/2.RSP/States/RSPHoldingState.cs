@@ -35,12 +35,7 @@ public class RSPHoldingState : IState
     /// </summary>
     private void SetupSlotMachineComponents()
     {
-        slotMachineUIPosition = controller.slotMachineUIPosition;
-        
-        if (slotMachineUIPosition == null)
-        {
-            Debug.LogWarning("RSP: 슬롯머신 UI 위치 참조가 없습니다! 기본 위치가 사용됩니다.");
-        }
+      
     }
 
     public void Enter()
@@ -76,7 +71,6 @@ public class RSPHoldingState : IState
     {
         Debug.Log("RSP: 홀딩 상태 종료");
         controller.rspSystem.rspUI.GameEndRSPAnimation();
-        
         player.firstPersonController._input.FreezePlayerInput(false);
     }
 
@@ -113,7 +107,8 @@ public class RSPHoldingState : IState
     {
         Debug.Log("RSP: 점프스퀘어로 점프");
         EnableCompoenet(false);
-        controller.PlayAnimation(controller.HoldingAnimationName, 0f);
+        // Hold 애니메이션 재생 (CrossFade)
+        controller.PlayAnimation(controller.HoldStateName, 0.3f);
 
         Vector3 jumpsquarePosition = player.OffsetLists[0].position;
         while (Vector3.Distance(controller.transform.position, jumpsquarePosition) > 0.1f)
@@ -218,15 +213,15 @@ public class RSPHoldingState : IState
             Debug.LogWarning("RSP: 지면 도착 대기 시간 초과. 강제로 상태 전환합니다.");
         }
         
-        // 7. 스택 상태에 따라 적절한 상태로 전환
+        // 7. 홀딩 완료 후 스택 상태에 따라 적절한 상태로 전환
         if (controller.GetCompulsoryPlayStack() == 0)
         {
-            Debug.Log("RSP: 스택이 0이므로 비활성화 상태로 전환");
+            Debug.Log("RSP: 홀딩 완료 - 스택이 0이므로 비활성화 상태로 전환");
             controller.ChangeState(new RSPDisableState(controller));
         }
         else
         {
-            Debug.Log("RSP: 스택이 남아있으므로 순찰 상태로 전환");
+            Debug.Log("RSP: 홀딩 완료 - 스택이 남아있으므로 순찰 상태로 전환");
             controller.ChangeState(new RSPPatrolState(controller));
         }
     }
@@ -260,7 +255,24 @@ public class RSPHoldingState : IState
         // 코인이 없어서 게임이 시작되지 않은 경우
         if (hasNoCoin)
         {
-            Debug.LogWarning("[RSPHoldingState] 코인이 없어 게임을 진행할 수 없습니다. 속박에서 벗어납니다.");
+            Debug.Log("[RSPHoldingState] 코인이 없어 게임을 진행할 수 없습니다.");
+            
+            // 스택이 4 이상(꽉 찬 상태)이면 플레이어 즉사
+            if (controller.GetCompulsoryPlayStack() >= 4)
+            {
+                Debug.Log("[RSPHoldingState] 스택이 꽉 찬 상태에서 코인 부족! 플레이어를 즉사시킵니다.");
+                
+                if (player != null && player.playerStatus != null)
+                {
+                    player.playerStatus.TakeDamage(9999, DamageType.Nomal);
+                }
+                
+                gameInProgress = false;
+                return;
+            }
+            
+            // 스택이 4 미만이면 속박에서 벗어남
+            Debug.Log("[RSPHoldingState] 스택이 꽉 차지 않았으므로 속박에서 벗어납니다.");
             Debug.Log($"[RSPHoldingState] shouldExitDueToNoCoin 설정 전: {shouldExitDueToNoCoin}");
             shouldExitDueToNoCoin = true;
             Debug.Log($"[RSPHoldingState] shouldExitDueToNoCoin 설정 후: {shouldExitDueToNoCoin}");
@@ -273,18 +285,24 @@ public class RSPHoldingState : IState
         if (rspResult == RSPResult.Win)
         {
             Debug.Log($"승리하고 메달 번호 {medalResult}을(를) 획득했습니다!");
+            // Win 애니메이션 재생 (CrossFade)
+            controller.PlayAnimation(controller.WinStateName, 0.3f);
             // 스택 감소 (승리 시)
             controller.DecrementStack();
         }
         else if (rspResult == RSPResult.Draw)
         {
             Debug.Log($"가위바위보 무승부! 게임이 종료됩니다.");
+            // Walk 애니메이션으로 복귀 (무승부)
+            controller.SetSpeed(0f); // Idle 상태로
             // 무승부도 스택 감소하여 게임 종료
             controller.DecrementStack();
         }
         else
         {
             Debug.Log($"가위바위보에서 {rspResult}했습니다. 다음 기회에!");
+            // 패배 시 Idle 상태 유지
+            controller.SetSpeed(0f);
         }
         
         // 게임 진행 상태 업데이트

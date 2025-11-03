@@ -141,7 +141,10 @@ public class GameManager : MonoBehaviour
         TimeManager.instance.IsStop = true;
         CentralBatterySystem.Instance.isStop = true;
         CloseCenterDoor();
-        RoomManager.Instance.centerNavMeshSurface.enabled = false; // 센터에 몬스터 접근 불가하게 하기 위해서
+        if(RoomManager.Instance != null) // RoomManager는 테스트씬에서 안돌아가는 경우가 대부분임 
+        {
+            RoomManager.Instance.centerNavMeshSurface.enabled = false; // 센터에 몬스터 접근 불가하게 하기 위해서
+        }
     }
     
 
@@ -158,9 +161,11 @@ public class GameManager : MonoBehaviour
             {
                 UIManager.instance.gameOverImage.SetActive(true);
             }
+            // Debug.Log("playerStatus.CurrentHealth: " + playerStatus.CurrentHealth);
 
             if(playerStatus.CurrentHealth <= 0)
             {
+                // Debug.Log("playerStatus.CurrentHealth <= 0");
                 UIManager.instance.gameOverImage.SetActive(true);
             }
             yield return null;

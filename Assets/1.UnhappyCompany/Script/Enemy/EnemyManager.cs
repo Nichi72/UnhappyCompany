@@ -68,8 +68,11 @@ public class EnemyManager : MonoBehaviour
     }
     void Start()
     {
-        RoomManager.Instance.roomGenerator.OnGenerationComplete += SpawnEggsInEachRoom;
-        RoomManager.Instance.roomGenerator.OnGenerationComplete += InitializeRoomSettingsByDoorDirection;
+        if(RoomManager.Instance != null) // RoomManager는 테스트씬에서 안돌아가는 경우가 대부분임 
+        {   
+            RoomManager.Instance.roomGenerator.OnGenerationComplete += SpawnEggsInEachRoom;
+            RoomManager.Instance.roomGenerator.OnGenerationComplete += InitializeRoomSettingsByDoorDirection;
+        }
     }
 
     private void OnDestroy()
