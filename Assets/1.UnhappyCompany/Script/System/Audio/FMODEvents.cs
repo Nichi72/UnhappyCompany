@@ -39,6 +39,7 @@ public class FMODEvents : MonoBehaviour
 	
 	[field: Header("Ambience")]
 	[field: SerializeField] public EventReference computerAmb { get; private set; }
+	[field: SerializeField] public EventReference CenterAMB { get; private set; }
 
     
     [field: Header("Enemy - Rampage")]
@@ -97,6 +98,11 @@ public class FMODEvents : MonoBehaviour
     [field: SerializeField] public EventReference rspInsertCoin { get; private set; }
     [field: SerializeField] public EventReference rspCoinSpawn  { get; private set; } // 코인이 배출되는 소리
     [field: SerializeField] public EventReference rspCoinDrop { get; private set; } // 코인이 떨어졌을때 소리 , 재질 상관없음 그냥 코인끼리 부딛히는 소리에 가까움, rspCoinSpawn의 소리가 시작되고 0.2초 후 자동으로 재생될꺼임
+    
+    [field: Header("Enemy - Egg")]
+    [field: SerializeField] public EventReference EggLevel1 { get; private set; }           // Stage1 무적 상태에서 공격받을 때
+    [field: SerializeField] public EventReference EggLevel2Breaking { get; private set; }   // Stage2로 전환될 때 (깨질 수 있는 상태로 변경)
+    [field: SerializeField] public EventReference EggLevel2Break { get; private set; }      // 알이 파괴될 때
     
     [field: Header("TEST")]
     [field: SerializeField] public EventReference TEST { get; private set; }

@@ -2,6 +2,17 @@ using UnityEngine;
 using UnityEditor;
 using System.IO;
 
+/// <summary>
+/// 아이템의 스택 타입을 정의합니다.
+/// </summary>
+public enum ItemStackType
+{
+    Single = 1,        // 일반 아이템 (무기, 도구 등) - 스택 불가
+    Small = 9,         // 소모품 (코인 등)
+    Medium = 99,       // 중형 스택
+    Large = 999        // 대형 스택
+}
+
 [CreateAssetMenu(fileName = "ItemData", menuName = "Scriptable Objects/ItemData")]
 public class ItemData : ScriptableObject
 {
@@ -10,6 +21,10 @@ public class ItemData : ScriptableObject
     public float weight; 
     public int SellPrice;
     public int BuyPrice;
+
+    [Header("Stack Settings")]
+    [Tooltip("아이템의 스택 타입을 설정합니다. Single은 스택 불가, Small/Medium/Large는 스택 가능")]
+    public ItemStackType stackType = ItemStackType.Single;
 
     //Game Obj Data
     public Sprite icon; 
