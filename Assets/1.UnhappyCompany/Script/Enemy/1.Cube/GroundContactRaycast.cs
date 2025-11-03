@@ -13,8 +13,8 @@ public class GroundContactRaycast : MonoBehaviour
     [Tooltip("레이캐스트 거리")]
     [SerializeField] private float rayDistance = 0.6f;
     
-    [Tooltip("땅으로 인식할 레이어")]
-    [SerializeField] private LayerMask groundLayer = -1;
+    [Tooltip("땅으로 인식할 레이어 (Ground 레이어만 선택 권장)")]
+    [SerializeField] private LayerMask groundLayer;
     
     [Header("Contact Detection")]
     [Tooltip("접촉 감지 쿨다운 (초) - 너무 자주 발동되지 않도록")]
@@ -65,14 +65,28 @@ public class GroundContactRaycast : MonoBehaviour
         // 월드 좌표계로 방향 변환
         Vector3 worldRayDirection = transform.TransformDirection(rayDirection.normalized);
         
-        // 레이캐스트 발사
-        bool hit = Physics.Raycast(transform.position, worldRayDirection, out RaycastHit hitInfo, rayDistance, groundLayer);
+        // 레이캐스트 발사 (groundLayer 필터링으로 이미 땅만 감지됨)
+        RaycastHit[] hits = Physics.RaycastAll(transform.position, worldRayDirection, rayDistance, groundLayer);
         
-        IsGrounded = hit;
+        bool hitGround = hits.Length > 0;
+        IsGrounded = hitGround;
         
-        if (hit)
+        if (hitGround)
         {
-            LastHit = hitInfo;
+            // 가장 가까운 히트 찾기
+            RaycastHit closestHit = hits[0];
+            float closestDistance = closestHit.distance;
+            
+            for (int i = 1; i < hits.Length; i++)
+            {
+                if (hits[i].distance < closestDistance)
+                {
+                    closestHit = hits[i];
+                    closestDistance = hits[i].distance;
+                }
+            }
+            
+            LastHit = closestHit;
             
             // 이전 프레임에서 땅에 닿지 않았고, 지금 닿았으면 -> 접촉 발생
             if (!wasGrounded && CanTriggerContact())
@@ -81,7 +95,7 @@ public class GroundContactRaycast : MonoBehaviour
             }
         }
         
-        wasGrounded = hit;
+        wasGrounded = hitGround;
     }
     
     /// <summary>
@@ -109,6 +123,7 @@ public class GroundContactRaycast : MonoBehaviour
     /// </summary>
     private void TriggerContact()
     {
+        Debug.Log($"[GroundContactRaycast] 접촉이 감지되었습니다.");
         lastContactTime = Time.time;
         OnGroundContact?.Invoke();
     }

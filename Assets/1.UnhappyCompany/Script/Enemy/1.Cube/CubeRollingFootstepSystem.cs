@@ -9,63 +9,30 @@ using System.Collections.Generic;
 public class CubeRollingFootstepSystem : MonoBehaviour
 {
     [Header("Sound Settings")]
-    [Tooltip("재생할 발소리 이벤트")]
-    [SerializeField] private EventReference footstepSound;
-    
     [Tooltip("사운드 최대 거리")]
     [SerializeField] private float soundMaxDistance = 30f;
     
     [Tooltip("전역 사운드 쿨다운 (초) - 모든 raycast 포인트에 적용")]
     [SerializeField] private float globalSoundCooldown = 0.15f;
     
-    [Tooltip("속도에 따른 볼륨 조절")]
-    [SerializeField] private bool adjustVolumeByVelocity = true;
-    
-    [Tooltip("최소 볼륨")]
-    [SerializeField] private float minVolume = 0.3f;
-    
-    [Tooltip("최대 볼륨")]
-    [SerializeField] private float maxVolume = 1.0f;
-    
-    [Tooltip("최소 속도 (이 속도에서 minVolume)")]
-    [SerializeField] private float minVelocity = 1f;
-    
-    [Tooltip("최대 속도 (이 속도에서 maxVolume)")]
-    [SerializeField] private float maxVelocity = 10f;
-    
     [Header("Raycast Points")]
-    [Tooltip("자동으로 Raycast 포인트를 생성할지 여부")]
-    [SerializeField] private bool autoCreateRaycastPoints = true;
-    
-    [Tooltip("Raycast 포인트 거리 (큐브 중심으로부터)")]
-    [SerializeField] private float raycastPointDistance = 0.5f;
-    
-    [Tooltip("수동으로 할당된 Raycast 포인트들 (autoCreateRaycastPoints가 false일 때 사용)")]
-    [SerializeField] private List<GroundContactRaycast> manualRaycastPoints = new List<GroundContactRaycast>();
+    [Tooltip("수동으로 할당할 Raycast 포인트들")]
+    [SerializeField] private List<GroundContactRaycast> raycastPoints = new List<GroundContactRaycast>();
     
     [Header("Debug")]
     [SerializeField] private bool showDebugInfo = true;
     
     // 컴포넌트
     private List<GroundContactRaycast> activeRaycastPoints = new List<GroundContactRaycast>();
-    private Rigidbody rb;
+    private EnemyAICube cubeController;
     
     // 상태
     private float lastSoundPlayTime = -999f;
     private int totalContactCount = 0;
     
-    // 자동 생성된 포인트 홀더
-    private GameObject raycastPointsHolder;
-    
     private void Awake()
     {
-        rb = GetComponent<Rigidbody>();
-        
-        if (rb == null)
-        {
-            Debug.LogError($"[CubeRollingFootstepSystem] {gameObject.name}: Rigidbody를 찾을 수 없습니다!", this);
-        }
-        
+        cubeController = GetComponent<EnemyAICube>();
         SetupRaycastPoints();
     }
     
@@ -86,15 +53,8 @@ public class CubeRollingFootstepSystem : MonoBehaviour
     /// </summary>
     private void SetupRaycastPoints()
     {
-        if (autoCreateRaycastPoints)
-        {
-            CreateRaycastPoints();
-        }
-        else
-        {
-            // 수동 할당된 포인트 사용
-            activeRaycastPoints = new List<GroundContactRaycast>(manualRaycastPoints);
-        }
+        // 수동 할당된 포인트 사용
+        activeRaycastPoints = new List<GroundContactRaycast>(raycastPoints);
         
         // 모든 포인트에 이벤트 구독
         foreach (var point in activeRaycastPoints)
@@ -112,57 +72,30 @@ public class CubeRollingFootstepSystem : MonoBehaviour
     }
     
     /// <summary>
-    /// 큐브의 6면 중심에 Raycast 포인트를 자동 생성합니다.
-    /// </summary>
-    private void CreateRaycastPoints()
-    {
-        // 기존 홀더가 있으면 제거
-        if (raycastPointsHolder != null)
-        {
-            DestroyImmediate(raycastPointsHolder);
-        }
-        
-        raycastPointsHolder = new GameObject("RaycastPoints");
-        raycastPointsHolder.transform.SetParent(transform);
-        raycastPointsHolder.transform.localPosition = Vector3.zero;
-        raycastPointsHolder.transform.localRotation = Quaternion.identity;
-        
-        // 큐브의 6개 면 방향 (로컬 좌표계)
-        Vector3[] faceDirections = new Vector3[]
-        {
-            Vector3.up,      // 위
-            Vector3.down,    // 아래
-            Vector3.left,    // 왼쪽
-            Vector3.right,   // 오른쪽
-            Vector3.forward, // 앞
-            Vector3.back     // 뒤
-        };
-        
-        string[] faceNames = new string[]
-        {
-            "Top", "Bottom", "Left", "Right", "Front", "Back"
-        };
-        
-        activeRaycastPoints.Clear();
-        
-        for (int i = 0; i < faceDirections.Length; i++)
-        {
-            GameObject raycastPoint = new GameObject($"Raycast_{faceNames[i]}");
-            raycastPoint.transform.SetParent(raycastPointsHolder.transform);
-            raycastPoint.transform.localPosition = faceDirections[i] * raycastPointDistance;
-            raycastPoint.transform.localRotation = Quaternion.identity;
-            
-            var raycastComponent = raycastPoint.AddComponent<GroundContactRaycast>();
-            activeRaycastPoints.Add(raycastComponent);
-        }
-    }
-    
-    /// <summary>
     /// Raycast 포인트에서 접촉이 감지되었을 때 호출됩니다.
     /// </summary>
     private void OnRaycastContactDetected()
     {
         totalContactCount++;
+        
+        // 상태 체크 - Chase 또는 Patrol 상태일 때만 발소리 재생
+        if (cubeController != null && cubeController.currentState != null)
+        {
+            string stateName = cubeController.currentState.GetType().Name;
+            if (stateName != "CubeChaseState" && stateName != "CubePatrolState")
+            {
+                if (showDebugInfo)
+                {
+                    Debug.Log($"[CubeRollingFootstepSystem] 현재 상태({stateName})에서는 발소리를 재생하지 않습니다.");
+                }
+                return;
+            }
+        }
+        
+        if (showDebugInfo)
+        {
+            Debug.Log($"[CubeRollingFootstepSystem] Raycast 포인트에서 접촉이 감지되었습니다.");
+        }
         
         // 전역 쿨다운 체크
         if (Time.time - lastSoundPlayTime < globalSoundCooldown)
@@ -178,11 +111,11 @@ public class CubeRollingFootstepSystem : MonoBehaviour
     /// </summary>
     private void PlayFootstepSound()
     {
-        if (footstepSound.IsNull)
+        if (FMODEvents.instance.cubeFootstep.IsNull)
         {
             if (showDebugInfo)
             {
-                Debug.LogWarning($"[CubeRollingFootstepSystem] Footstep Sound가 할당되지 않았습니다!", this);
+                Debug.LogWarning($"[CubeRollingFootstepSystem] Cube Footstep 사운드가 FMODEvents에 할당되지 않았습니다!", this);
             }
             return;
         }
@@ -190,32 +123,14 @@ public class CubeRollingFootstepSystem : MonoBehaviour
         lastSoundPlayTime = Time.time;
         
         // 사운드 재생
-        var emitter = AudioManager.instance.Play3DSoundAtPosition(
-            footstepSound,
+        AudioManager.instance.Play3DSoundAtPosition(
+            FMODEvents.instance.cubeFootstep,
             transform.position,
             soundMaxDistance,
             $"CubeFootstep_{gameObject.name}"
         );
         
-        // 볼륨 조절
-        if (adjustVolumeByVelocity && rb != null && emitter != null)
-        {
-            float velocity = rb.linearVelocity.magnitude;
-            float normalizedVelocity = Mathf.InverseLerp(minVelocity, maxVelocity, velocity);
-            float volume = Mathf.Lerp(minVolume, maxVolume, normalizedVelocity);
-            
-            // FMOD EventInstance 볼륨 설정
-            if (emitter.emitter != null && emitter.emitter.EventInstance.isValid())
-            {
-                emitter.emitter.EventInstance.setVolume(volume);
-            }
-            
-            if (showDebugInfo)
-            {
-                Debug.Log($"[CubeRollingFootstepSystem] 발소리 재생 (속도: {velocity:F1}, 볼륨: {volume:F2}, 총 접촉: {totalContactCount})");
-            }
-        }
-        else if (showDebugInfo)
+        if (showDebugInfo)
         {
             Debug.Log($"[CubeRollingFootstepSystem] 발소리 재생 (총 접촉: {totalContactCount})");
         }
@@ -274,11 +189,6 @@ public class CubeRollingFootstepSystem : MonoBehaviour
         string debugText = $"[{gameObject.name}] Cube Footstep System\n";
         debugText += $"Active Raycast Points: {activeRaycastPoints.Count}\n";
         debugText += $"Total Contacts: {totalContactCount}\n";
-        
-        if (rb != null)
-        {
-            debugText += $"Velocity: {rb.linearVelocity.magnitude:F2} m/s\n";
-        }
         
         int groundedCount = 0;
         foreach (var point in activeRaycastPoints)
