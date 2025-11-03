@@ -134,6 +134,13 @@ public class QuickSlotSystem : MonoBehaviour
     /// <param name="item"></param>
     public void AddItemToQuickSlot(Item item, object state , string uniqueInstanceID, int count = 1)
     {
+        // 개수 유효성 검사
+        if (count <= 0)
+        {
+            Debug.LogWarning($"QuickSlotSystem: 유효하지 않은 개수입니다. count={count}");
+            return;
+        }
+        
         string newItemID = uniqueInstanceID;
         Debug.Log($"AddItemToQuickSlot: {item.itemData.name}, ID = {newItemID}, Count = {count}");
         
@@ -143,6 +150,13 @@ public class QuickSlotSystem : MonoBehaviour
         // 스택 가능한 아이템인 경우 (Single이 아닌 경우)
         if (stackType != ItemStackType.Single)
         {
+            // ItemData 유효성 검사
+            if (item.itemData == null || item.itemData.savableItemData == null)
+            {
+                Debug.LogError("QuickSlotSystem: ItemData 또는 SavableItemData가 null입니다!");
+                return;
+            }
+            
             // 1단계: 같은 아이템이 있는 슬롯을 찾아서 추가 시도 (ItemID로 비교)
             int targetItemID = item.itemData.savableItemData.GetItemID();
             
@@ -239,6 +253,7 @@ public class QuickSlotSystem : MonoBehaviour
 
     /// <summary>
     /// 현재 들고 있는 아이템을 버리는 함수
+    /// 스택 아이템은 1개만 버립니다.
     /// </summary>
     /// <returns></returns>
     public GameObject DropItem()
@@ -247,12 +262,58 @@ public class QuickSlotSystem : MonoBehaviour
         {
             return null;
         }
-        var temp = currentItemObject;
-        currentItemObject.GetComponent<Rigidbody>().isKinematic = false;
-        currentItemObject.GetComponent<Item>().OnDrop();
-        ClearCurrentItemSlot();
-        Debug.Log($"DropItem {temp.name}");
-        return temp;
+        
+        QuickSlot currentSlot = GetCurrentQuickSlot();
+        if (currentSlot == null || currentSlot.IsEmpty())
+        {
+            return null;
+        }
+        
+        Item item = currentSlot.GetItem();
+        ItemStackType stackType = item.itemData.stackType;
+        
+        // 스택 가능한 아이템인 경우 (Single이 아닌 경우)
+        if (stackType != ItemStackType.Single)
+        {
+            // 1개만 제거
+            bool isEmpty = currentSlot.RemoveCount(1);
+            
+            // 슬롯이 완전히 비었으면
+            if (isEmpty)
+            {
+                // 손에 든 아이템 제거
+                if (currentItemObject != null)
+                {
+                    currentItemObject.GetComponent<Item>().UnMount();
+                    Destroy(currentItemObject);
+                    currentItemObject = null;
+                    currentItem = null;
+                }
+                
+                currentSlot.icon.sprite = null;
+                currentSlot.icon.enabled = false;
+            }
+            
+            // 월드에 드롭할 새 아이템 생성
+            GameObject droppedItem = Instantiate(item.itemData.prefab);
+            droppedItem.GetComponent<Item>().itemData = item.itemData;
+            droppedItem.transform.position = player.transform.position + player.transform.forward;
+            droppedItem.GetComponent<Rigidbody>().isKinematic = false;
+            
+            UpdatePlayerSpeed();
+            Debug.Log($"DropItem (스택): {item.itemData.itemName} 1개 버림 (남은 개수: {(isEmpty ? 0 : currentSlot.GetCount())})");
+            return droppedItem;
+        }
+        else
+        {
+            // 스택 불가능한 아이템 - 기존 방식 (전체 제거)
+            var temp = currentItemObject;
+            currentItemObject.GetComponent<Rigidbody>().isKinematic = false;
+            currentItemObject.GetComponent<Item>().OnDrop();
+            ClearCurrentItemSlot();
+            Debug.Log($"DropItem (일반): {temp.name}");
+            return temp;
+        }
     }
 #endregion
 
@@ -386,13 +447,19 @@ public class QuickSlotSystem : MonoBehaviour
                         currentItem = null;
                     }
                     
-                    // 슬롯에서 아이템 제거
-                    slot.icon.sprite = null;
-                    slot.icon.enabled = false;
-                    slot.RemoveItem();
+                    // 스택에서 1개만 제거 (RemoveCount 사용)
+                    bool isEmpty = slot.RemoveCount(1);
+                    
+                    // 슬롯이 완전히 비었으면 아이콘도 제거
+                    if (isEmpty)
+                    {
+                        slot.icon.sprite = null;
+                        slot.icon.enabled = false;
+                    }
+                    
                     UpdatePlayerSpeed();
                     
-                    Debug.Log($"QuickSlotSystem: 코인 제거 완료 (가치: {coinValue})");
+                    Debug.Log($"QuickSlotSystem: 코인 1개 제거 완료 (가치: {coinValue}, 남은 개수: {(isEmpty ? 0 : slot.GetCount())})");
                     return coinValue;
                 }
             }
@@ -452,8 +519,23 @@ public class QuickSlotSystem : MonoBehaviour
 
                 if (restoredItem != null)
                 {
-                    // 복구된 아이템을 슬롯에 할당 (개수 포함)
-                    slot.SetItem(restoredItem, slotState.itemSerializedState, slotState.uniqueItemID, slotState.itemCount);
+                    // 개수 검증 (최소 1개, 최대 스택 수 이하)
+                    int validCount = slotState.itemCount;
+                    if (validCount < 1)
+                    {
+                        Debug.LogWarning($"DeserializeSystem: 잘못된 개수 {validCount}, 1로 보정");
+                        validCount = 1;
+                    }
+                    
+                    int maxStack = (int)restoredItem.itemData.stackType;
+                    if (validCount > maxStack)
+                    {
+                        Debug.LogWarning($"DeserializeSystem: 개수 {validCount}가 최대 {maxStack}를 초과, {maxStack}로 보정");
+                        validCount = maxStack;
+                    }
+                    
+                    // 복구된 아이템을 슬롯에 할당 (검증된 개수 포함)
+                    slot.SetItem(restoredItem, slotState.itemSerializedState, slotState.uniqueItemID, validCount);
                 }
                 else
                 {

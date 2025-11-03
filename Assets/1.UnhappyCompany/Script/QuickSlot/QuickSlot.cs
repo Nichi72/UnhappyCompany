@@ -36,6 +36,11 @@ public class QuickSlot : MonoBehaviour
     public int AddCount(int amount)
     {
         if (quickSlotState.item == null) return amount;
+        if (amount <= 0)
+        {
+            Debug.LogWarning($"[QuickSlot] 유효하지 않은 개수입니다. amount={amount}");
+            return amount;
+        }
         
         int maxStack = (int)quickSlotState.item.itemData.stackType;
         int oldCount = quickSlotState.itemCount;
@@ -65,6 +70,12 @@ public class QuickSlot : MonoBehaviour
     /// <returns>true면 아이템이 모두 소모됨, false면 아직 남음</returns>
     public bool RemoveCount(int amount = 1)
     {
+        if (amount <= 0)
+        {
+            Debug.LogWarning($"[QuickSlot] 유효하지 않은 개수입니다. amount={amount}");
+            return false;
+        }
+        
         int oldCount = quickSlotState.itemCount;
         quickSlotState.itemCount -= amount;
         
