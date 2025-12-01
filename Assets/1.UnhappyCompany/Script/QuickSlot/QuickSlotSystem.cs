@@ -277,42 +277,92 @@ public class QuickSlotSystem : MonoBehaviour
         {
             // 1개만 제거
             bool isEmpty = currentSlot.RemoveCount(1);
+            GameObject droppedItem = null;
             
-            // 슬롯이 완전히 비었으면
+            // 슬롯이 완전히 비었으면 (마지막 아이템을 버리는 경우)
             if (isEmpty)
             {
-                // 손에 든 아이템 제거
+                // 기존 오브젝트를 그대로 버림 (Single과 동일하게 처리)
                 if (currentItemObject != null)
                 {
-                    currentItemObject.GetComponent<Item>().UnMount();
-                    Destroy(currentItemObject);
-                    currentItemObject = null;
-                    currentItem = null;
+                    droppedItem = currentItemObject;
+                    
+                    // 드롭 로직 호출
+                    droppedItem.GetComponent<Item>().OnDrop();
+                    ApplyDropForce(droppedItem);
+                    
+                    // 시스템에서 참조 제거 (Destroy하지 않음)
+                    ClearCurrentItemSlot();
+                    
+                    Debug.Log($"DropItem (스택-마지막): {droppedItem.name} 자연스럽게 드롭");
+                }
+            }
+            else
+            {
+                // 아직 아이템이 남아있는 경우 (n개 중 1개 버림)
+                // 손에는 아이템이 그대로 있어야 하고, 바닥에 새로운 아이템 생성
+                
+                droppedItem = Instantiate(item.itemData.prefab);
+                droppedItem.GetComponent<Item>().itemData = item.itemData;
+                
+                // 위치를 플레이어 앞이 아닌, 현재 들고 있는 아이템(손) 위치에서 생성하여 자연스럽게 연출
+                if (currentItemObject != null)
+                {
+                    // 미세한 위치 랜덤화 (겹침 폭발 방지)
+                    Vector3 randomOffset = UnityEngine.Random.insideUnitSphere * 0.05f;
+                    droppedItem.transform.position = currentItemObject.transform.position + randomOffset;
+                    droppedItem.transform.rotation = currentItemObject.transform.rotation;
+                }
+                else
+                {
+                    droppedItem.transform.position = player.transform.position + player.transform.forward;
                 }
                 
-                currentSlot.icon.sprite = null;
-                currentSlot.icon.enabled = false;
+                // 생성된 아이템에 대해서도 OnDrop 로직 실행 (물리 활성화, 애니메이터 비활성화 등)
+                droppedItem.GetComponent<Item>().OnDrop();
+                ApplyDropForce(droppedItem);
+                
+                Debug.Log($"DropItem (스택-분할): {item.itemData.itemName} 1개 생성하여 버림 (남은 개수: {currentSlot.GetCount()})");
             }
             
-            // 월드에 드롭할 새 아이템 생성
-            GameObject droppedItem = Instantiate(item.itemData.prefab);
-            droppedItem.GetComponent<Item>().itemData = item.itemData;
-            droppedItem.transform.position = player.transform.position + player.transform.forward;
-            droppedItem.GetComponent<Rigidbody>().isKinematic = false;
-            
             UpdatePlayerSpeed();
-            Debug.Log($"DropItem (스택): {item.itemData.itemName} 1개 버림 (남은 개수: {(isEmpty ? 0 : currentSlot.GetCount())})");
             return droppedItem;
         }
         else
         {
             // 스택 불가능한 아이템 - 기존 방식 (전체 제거)
             var temp = currentItemObject;
-            currentItemObject.GetComponent<Rigidbody>().isKinematic = false;
+            // currentItemObject.GetComponent<Rigidbody>().isKinematic = false; // OnDrop 내부에서 처리됨
             currentItemObject.GetComponent<Item>().OnDrop();
+            ApplyDropForce(currentItemObject);
+            
             ClearCurrentItemSlot();
             Debug.Log($"DropItem (일반): {temp.name}");
             return temp;
+        }
+    }
+    
+    /// <summary>
+    /// 버려진 아이템에 물리적인 힘을 가해 자연스럽게 던져지도록 합니다.
+    /// </summary>
+    private void ApplyDropForce(GameObject itemObj)
+    {
+        if (itemObj == null) return;
+
+        Rigidbody rb = itemObj.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            // 플레이어 전방 + 약간 위쪽 방향으로 힘을 줌
+            Vector3 throwDir = player.transform.forward + Vector3.up * 0.2f;
+            // 던지는 방향에도 약간의 랜덤성 추가
+            throwDir += UnityEngine.Random.insideUnitSphere * 0.1f;
+            throwDir.Normalize();
+
+            // 힘의 크기 (너무 세지 않게 조절)
+            float throwPower = 1.5f; 
+
+            // VelocityChange: 질량 무시하고 즉각적인 속도 변경 (가볍게 툭 던지는 느낌)
+            rb.AddForce(throwDir * throwPower, ForceMode.VelocityChange);
         }
     }
 #endregion
